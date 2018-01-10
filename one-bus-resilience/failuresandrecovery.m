@@ -1,5 +1,6 @@
 function [ Recovery ] = failuresandrecovery( n,M,numgen,numload,j )
-%UNTITLED2 Summary of this function goes here
+%failuresandrecovery 
+% Summary of this function goes here
 %   Detailed explanation goes here
 r = 1;
 Recovery = zeros((numgen+numload),j);
