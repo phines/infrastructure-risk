@@ -1,4 +1,4 @@
-function [ H ] = huricane2d( n,M,r )
+function [ H ] = hurricane2d( n,M,r )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 D = zeros(n);
