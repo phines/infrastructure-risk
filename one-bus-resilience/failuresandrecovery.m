@@ -1,7 +1,11 @@
-function [ Recovery ] = failuresandrecovery( n,M,numgen,numload,j )
+function [ Recovery ] = failuresandrecovery( n,M,numgen,numload,j, debug )
 %failuresandrecovery 
 % Summary of this function goes here
 %   Detailed explanation goes here
+if nargin < 6
+    debug =0;
+end
+
 r = 1;
 Recovery = zeros((numgen+numload),j);
 mult = 10;% sets multiplier to be M to be the same as the set huricane top wind speed
@@ -31,11 +35,14 @@ for ii = 1:(numgen+numload)
         line(ii) = 1; %sets the line element with the index of the generator or load to 1 if the line fails
     end
 end
+if debug
 figure(k)
+contour(H)
 hold on
 scatter(location(1,1:numgen),location(2,1:numgen))
 scatter(location(1,(1+numgen):end),location(2,(1+numgen):end),'r')
 hold off
+end
 recoverytime = zeros(numgen+numload,1);
 for ii = 1:(numgen+numload)
 if line(ii) == 1
@@ -54,6 +61,7 @@ Recovery(:,k) = recoverytime;
 end
 ProbGenFail = sum(genfail./numgen)/j
 ProbLineFail = sum(lines./(numgen+numload))/j
+if debug
 figure
 plot(1:k, fails, 1:k, genfail)
 hold on
@@ -63,4 +71,4 @@ ylabel('Number of Failures')
 legend('Numbder of Total Failures', 'Number of Generator Failures', 'Location','northwest')
 hold off
 end
-
+end
