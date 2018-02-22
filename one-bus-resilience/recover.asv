@@ -1,0 +1,18 @@
+function [ Recoveries ] = recover( n, recoveries, stats, failures, Debug );
+%UNTITLED4 Summary of this function goes here
+%   Detailed explanation goes here
+
+for jj = 1:length(recoveries)
+    if recoveries(jj) == 0
+        if failures(jj) == 0
+            recoveries(jj) = 1;
+        else
+            
+    end
+end
+%figures go here
+if Debug
+end
+Recoveries = recoveries;
+end
+
