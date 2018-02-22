@@ -1,15 +1,15 @@
-function [ Recovery, TotFails ] = FailRecoverContDriver( geog, Mag, r, j, numgen, numload, stats, debug)
+function [ Recovery, TotFails ] = FailRecoverContDriver( geog, hurricaneMagnitude, hurricaneSize, numHurricane, numgen, numload, robustness, debug)
 %[ Recovery, TotFails ] = FailRecoverDriver( n, M, r, j, numgen, numload,debug)
 % Generates random hurricanes, checks part failures based on those
 % hurricanes using arbitrary probabilities of 70% for generators and 50%
 % for lines
 %   Inputs:
 %   geog is the size of the square matrix that crudely represents our geography
-%   Mag is the magnitude of the generated hurricanes
+%   hurricaneMagnitude is the magnitude of the generated hurricanes
 %   numgen and num load are the number of generators represented in the
 %   geography and the number of loads represented in the geography,
 %   respectively
-%   j is the number of itereations
+%   numHurricane is the number of hurricane events to simulate
 %   debug creates plots when it is not false, 0, or not input at all
 %   Outputs:
 %   Recovery - recovery time for failed parts
@@ -30,18 +30,18 @@ else
 end
  
 
-Recovery = zeros(j,numgen+numload);
-TotFails = zeros(j,numgen+numload);
-for ii = 1:j
+Recovery = zeros(numHurricane,numgen+numload);
+TotFails = zeros(numHurricane,numgen+numload);
+for ii = 1:numHurricane
     row = geog*rand((numgen+numload),1);
     col = geog*rand((numgen+numload),1);
     location = [row col];  % saving the locations of generation and loads
-    Hurricane = hurricane2dcont(geog,Mag,r,location,Debug);
-    [ failures ] = fail( Hurricane, numgen, numload, stats, Debug );
+    Hurricane = hurricane2dcont(geog,hurricaneMagnitude,hurricaneSize,location,Debug);
+    [ failures ] = fail( Hurricane, robustness, Debug );
     recoveries = zeros(numgen+numload,1); n=0;
     recoveries(failures == 0) = 1; % this part is operational and wasn't critically damaged in hurricane
     while ~isempty(recoveries(recoveries == 0)) || n <= 10
-        [ recoveries ] = recover( n, recoveries, stats, Debug );
+        [ recoveries ] = recover( n, recoveries, robustness, Debug );
         n = n+1;
     end
     TotFails(ii,:) = failures;
