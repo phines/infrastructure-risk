@@ -4,7 +4,7 @@ function [ Recoveries ] = recover( n, recoveries, recoverystats, Debug )
 
 for jj = 1:length(recoveries)
     if recoveries(jj) == 0
-        if rand(1) <= exp(recoverystats(jj))
+        if rand(1) <= exp(-recoverystats(jj))
             recoveries(jj) = n;
         else
             recoveries(jj) = 0;
