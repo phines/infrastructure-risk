@@ -1,8 +1,17 @@
 function [ H ] = hurricane2d( n,M,r,debug )
-%UNTITLED [ H ] = hurricane2d( n,M,r,debug )
-%   Detailed explanation goes here
+%[ H ] = hurricane2d( n,M,r,debug )
+%   Inputs:
+%   n - number of rows in output matrix
+%   M - number of columns in output matrix
+%   r - size  parameter for size of storm
+%   debug - if debug is 0, no plots will occur, if it is included in the
+%   function call, and not set to 0 or 'false' the function will produce
+%   plots.
+%   Outputs:
+%   H - strength array of hurricane wind speeds over the matrix size
+%   specified
 
-if nargin < 4
+if nargin == 3
     debug = 0;
 end
 

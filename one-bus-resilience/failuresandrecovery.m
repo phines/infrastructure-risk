@@ -1,9 +1,25 @@
 function [ Recovery ] = failuresandrecovery( n,M,numgen,numload,j, debug )
-%failuresandrecovery 
-% Summary of this function goes here
-%   Detailed explanation goes here
-if nargin < 6
+%[ Recovery ] = failuresandrecovery( n,M,numgen,numload,j, debug )
+% Generates random hurricanes, checks part failures based on those
+% hurricanes using arbitrary probabilities of 70% for generators and 50%
+% for lines
+%   Inputs:
+%   n is the size of the square matrix that crudely represents our geography
+%   M is the magnitude of the generated hurricanes
+%   numgen and num load are the number of generators represented in the
+%   geography and the number of loads represented in the geography,
+%   respectively
+%   j is the number of itereations
+%   debug creates plots when it is not false, 0, or not input at all
+%   Outputs:
+%   Recovery - recovery time for failed parts
+if nargin <= 5
     debug =0;
+elseif nargin <=4
+    j = 1;
+    fprintf('no number of iterations in inputs, only running for 1')
+elseif nargin <=3
+    fprintf('error: not enough input arguments')
 end
 
 r = 1;
@@ -13,17 +29,15 @@ fails = zeros(1,j);
 genfail = zeros(1,j);
 lines = zeros(1,j);
 for k = 1:j
-Map = zeros(n);
-H= huricane2d(n,M,r);
+H= hurricane2d(n,M,r);
 % check for failures at each generator or load
 fail = zeros(numgen,1);
 line = zeros(numgen+numload,1);
 location = zeros(2,numgen+numload);
 for ii = 1:(numgen+numload)
-    row = randi([1,n],1);
-    col = randi([1,n],1);
-    Map(row,col) = 1; % saving the locations of generators and loads
-    location(:,ii) = [row col];
+    row = randi([1,n],1);% picking random x locations for generators and loads
+    col = randi([1,n],1);% picking random y locations for generators and loads
+    location(:,ii) = [row col];% saving the locations of generators and loads
     Sev = H(row,col);
     strength = rand(1);
     if ii <=numgen
@@ -59,8 +73,8 @@ fails(k) = (length(fail(fail==1)) + length(line(line==1)));
 genfail(k) = length(fail(fail==1));
 Recovery(:,k) = recoverytime;
 end
-ProbGenFail = sum(genfail./numgen)/j
-ProbLineFail = sum(lines./(numgen+numload))/j
+ProbGenFail = sum(genfail./numgen)/j;
+ProbLineFail = sum(lines./(numgen+numload))/j;
 if debug
 figure
 plot(1:k, fails, 1:k, genfail)
@@ -68,7 +82,7 @@ hold on
 title('Number of failures due to hurricane2d')
 xlabel('Run number')
 ylabel('Number of Failures')
-legend('Numbder of Total Failures', 'Number of Generator Failures', 'Location','northwest')
+legend('Number of Total Failures', 'Number of Generator Failures', 'Location','northwest')
 hold off
 end
 end
