@@ -50,7 +50,7 @@ if debug
     figure
     contour(Hurricane)
     hold on
-    plot(location(:,1),location(:,2),'om')
+    plot(location,y,'m')
     title('Huricane Strength over Map')
     xlabel('x location')
     ylabel('y loaction')

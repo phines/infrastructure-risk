@@ -1,4 +1,5 @@
-function [ Recovery, TotFails ] = FailRecoverContDriver( geog, hurricaneMagnitude, hurricaneSize, numHurricane, numgen, numload, robustness, debug)
+function [ Recovery, TotFails ] = FailRecoverContDriver( geog, hurricaneMagnitude, ...
+    hurricaneSize, numHurricane, numgen, numload, robustness, recoveryStats, debug)
 %[ Recovery, TotFails ] = FailRecoverDriver( n, M, r, j, numgen, numload,debug)
 % Generates random hurricanes, checks part failures based on those
 % hurricanes using arbitrary probabilities of 70% for generators and 50%
@@ -12,8 +13,14 @@ function [ Recovery, TotFails ] = FailRecoverContDriver( geog, hurricaneMagnitud
 %   numHurricane is the number of hurricane events to simulate
 %   debug creates plots when it is not false, 0, or not input at all
 %   Outputs:
-%   Recovery - recovery time for failed parts
-if nargin == 7
+%   Recovery - recovery time for each part (column) for each hurricane
+%   (row); if the part did not fail the value will be 1 otherwise the value
+%   will be the timestep at which recovery occured.
+%   TotFails - matrix of failures of each part (column) for each hurricane
+%   (row)
+
+
+if nargin == 9
     if debug >= 2
         Debug = 1;
         debugger =1;
@@ -38,19 +45,18 @@ for ii = 1:numHurricane
     location = [row col];  % saving the locations of generation and loads
     Hurricane = hurricane2dcont(geog,hurricaneMagnitude,hurricaneSize,location,Debug);
     [ failures ] = fail( Hurricane, robustness, Debug );
-    recoveries = zeros(numgen+numload,1); n=0;
-    recoveries(failures == 0) = 1; % this part is operational and wasn't critically damaged in hurricane
-    while ~isempty(recoveries(recoveries == 0)) || n <= 10
-        [ recoveries ] = recover( n, recoveries, robustness, Debug );
+    recoveries = zeros(numgen+numload,1); n=1;
+    recoveries(failures == 0) = 1; % these parts of the system are operational and wasn't critically damaged in hurricane
+    while ~isempty(recoveries(recoveries == 0)) || n <= 100
         n = n+1;
+        [ recoveries ] = recover( n, recoveries, recoveryStats, Debug );
     end
-    TotFails(ii,:) = failures;
-    Recovery(ii,:) = recoveries;
+    TotFails(ii,:) = failures';
+    Recovery(ii,:) = recoveries';
 end
 
 %put figure here
 if debugger
-    
 end
 
 end
