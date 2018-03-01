@@ -8,7 +8,7 @@ function [ Recoveries ] = recover( n, recoveries, recoverystats, Debug )
 %   recoverystats -
 %   Debug - 
 %   Outputs: 
-%   Recoveries - vector of 1s for components that never failed, 0s if it
+%   Recoveries - vector with a 1 for components that never failed and a 0 if it
 %   hasn't recovered yet, and n if it recovered in this time step
 
 numfails = length(recoveries(recoveries==0));
