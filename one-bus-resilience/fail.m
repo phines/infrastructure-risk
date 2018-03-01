@@ -7,7 +7,7 @@ function [ failures ] = fail( hurricaneIntensity, robustness, Debug )
 %   robustness - 
 %   Debug - 
 %   Outputs: 
-%   failures - 
+%   failures - vector of 1s and 0s for each component, 1 is failure, 0 is not
 
 n = length(hurricaneIntensity);
 vulnerability = (robustness).^(-1); % think about this

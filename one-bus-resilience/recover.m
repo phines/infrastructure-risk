@@ -8,9 +8,11 @@ function [ Recoveries ] = recover( n, recoveries, recoverystats, Debug )
 %   recoverystats -
 %   Debug - 
 %   Outputs: 
-%   Recoveries - 
+%   Recoveries - vector of 1s for components that never failed, 0s if it
+%   hasn't recovered yet, and n if it recovered in this time step
 
-recoveries(recoveries==0) = n.*(rand(1) <= (1-exp(-recoverystats(recoveries==0).*n)));
+numfails = length(recoveries(recoveries==0));
+recoveries(recoveries==0) = n.*(rand(numfails,1) < (1-exp(-n.*recoverystats(recoveries==0))));
 Recoveries = recoveries;
 
 return

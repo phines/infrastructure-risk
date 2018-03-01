@@ -4,7 +4,8 @@ function [ H ] = hurricane2dcont( n,M,r,location,debug )
 %   Inputs:
 %   n - number of rows in output matrix
 %   M - number of columns in output matrix
-%   r - radius parameter for size of storm
+%   r - radius parameter for size of storm --- mqybe this should be
+%   stochastic?
 %   location - 
 %   debug - if debug is 0, no plots will occur, if it is included in the
 %   function call, and not set to 0 or 'false' the function will produce

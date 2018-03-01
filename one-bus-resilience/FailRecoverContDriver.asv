@@ -42,6 +42,7 @@ end
 Recovery = zeros(numHurricane,numgen+numload);
 TotFails = zeros(numHurricane,numgen+numload);
 for ii = 1:numHurricane
+    failures = zeros((numgen+numload),1);
     row = geog*rand((numgen+numload),1);
     col = geog*rand((numgen+numload),1);
     location = [row col];  % saving the locations of generation and loads
