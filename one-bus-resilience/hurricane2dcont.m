@@ -31,7 +31,8 @@ a = [x(1) y(1) 0] - [x(end) y(end) 0];
 for ii=1:length(location)
     b = [location(ii,1) location(ii,2) 0] - [x(end) y(end) 0];
     d = norm(cross(a,b)) / norm(a);
-    h = M*(exp(-d/r));
+    h = (exp(-d/r));
+    %h = M*(exp(-d/r));
     H(ii) = h; %distance from line.
 end
 if debug
@@ -44,7 +45,8 @@ if debug
         for jj=1:n
             b = [ii jj 0] - [X(end) Y(end) 0];
             d = norm(cross(a,b)) / norm(a);
-            hh = M*(exp(-d/r));
+            hh = (exp(-d/r));
+            %hh = M*(exp(-d/r));
             Hurricane(jj,ii) = hh; %distance from line.
         end
     end
