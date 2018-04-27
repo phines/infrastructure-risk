@@ -39,8 +39,8 @@ end
 Loads = load('IEEErts96/IEEErts96Loads'); % 51x2 matrix of x and y locations of 51 Loads
 Generators = load('IEEErts96/IEEErts96Generators'); % 33x2 matrix of x and y locations of 33 generators
 Buses = load('IEEErts96/IEEErts96Buses'); % 72x2 matrix of x and y locations of 72 Buses
-numload = length(Loads{1});
-numgen = length(Generators{1); 
+numload = length(Loads.IEEErts96Loads);
+numgen = length(Generators.IEEErts96Generators); 
 
 location = [Generators.IEEErts96Generators; Loads.IEEErts96Loads];  % saving the locations of generation and loads
 
