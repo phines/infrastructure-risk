@@ -1,5 +1,5 @@
 function [ Recovery, TotFails, Hurricane, location ] = FailRecoverContDriver( geog, hurricaneMagnitude, ...
-    hurricaneSize, numHurricane, numgen, numload, robustness, recoveryStats, debug)
+    hurricaneSize, numHurricane, numgen, numload, robustness, recoveryStats, NormalRecovery, debug)
 %[ Recovery, TotFails ] = FailRecoverDriver( n, M, r, j, numgen, numload,debug)
 % Generates random hurricanes, checks part failures based on those
 % hurricanes using arbitrary probabilities of 70% for generators and 50%
@@ -49,9 +49,13 @@ for ii = 1:numHurricane
     [ failures ] = fail( Hurricane, robustness, Debug );
     recoveries = zeros(numgen+numload,1); n=1;
     recoveries(failures == 0) = 1; % these parts of the system are operational and wasn't critically damaged in hurricane
+    if NormalRecovery
     while ~isempty(recoveries(recoveries == 0)) || n <= 100
         n = n+1;
         [ recoveries ] = recover( n, recoveries, recoveryStats, Debug );
+    end
+    else
+        recoveries = recoverPL( recoveries, Debug )
     end
     TotFails(ii,:) = failures';
     Recovery(ii,:) = (recoveries-1)';
