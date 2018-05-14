@@ -1,5 +1,5 @@
-% attempt to recreate using markov modeling why recovery times follow a
-% power law in real life systems
+% attempt to recreate using markov inspired modeling for individual nodes 
+% to recreate recovery times that follow a power law in real life systems
 % the typical model for recovery times is an exponentialdecay curve
 
 
