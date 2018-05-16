@@ -4,8 +4,6 @@ function [recovery, cost, Precover,Bins] = MarkovTestCaseIEEE(coefNeighbors, ave
 % the typical model for recovery times is an exponentialdecay curve
 
 
-
-
 % indroduce parameters
 geog = 100; % size of square geography
 N = 73; % number of nodes allowable states for each node are 0, 1
@@ -37,15 +35,16 @@ for W = 1:length(coefNeighbors)
     for m = 1:averages
         Hurricane = hurricane2dcont1( geog,r,location,debug ); % gives a percent of the intesity of the wind at the locations of each of the nodes
         startingstate = zeros(N,1);
-%         [statematrix,recoverytime(m)] = MarkovModel0(N,edges,Hurricane,neighborWeight,maxtimesteps,startingstate);
+        if isempty(Recoveryrate)
+        [statematrix,recoverytime(m)] = MarkovModel0(N,edges,Hurricane,neighborWeight,maxtimesteps,startingstate);
+        else
         [statematrix,recoverytime(m)] = MarkovModel1(N,edges,Hurricane,neighborWeight,maxtimesteps,startingstate,Recoveryrate);
+        end
             cost(m) = LostLoad(N,edges,GenDemand,statematrix,costloadshed);
     end
     recovery(W,:) = sort(recoverytime);
     Cost(W,:) = sort(cost);
     bins = min(recovery(W,:)):1:max(recovery(W,:));
-
-
 
     Pr = zeros(length(bins));
     binsbackwards = max(recovery(W,:)):-1:min(recovery(W,:));
@@ -57,9 +56,6 @@ for W = 1:length(coefNeighbors)
     Pr = Pr(Pr~=0);
     Bins{W} = binsbackwards(Pr~=0);
     Precover{W} = Pr;
-
-
-
 
     binscost = min(Cost(W,:)):1:max(Cost(W,:));
     figure(gcf)
