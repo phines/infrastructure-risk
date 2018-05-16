@@ -22,8 +22,8 @@ values = [index' location Hurricane' TotFails' Recovery'];
 %values
 
 
-figure
-subplot(1,3,1)
+figure(1)
+subplot(1,2,2)
 hold on
 imagesc(Recovery)
 colormap(jet);
@@ -33,20 +33,20 @@ set(ch,'Ytick',[0 1 max(max(Recovery))],'Yticklabel',{'No Failure','1 Timestep R
 title('Map of Recovery Times over each hurricane(down) and component (across)')
 hold off
 
-subplot(1,3,2)
-hold on
-plot(1:j, sum(TotFails'))
-title('Number of failures due to hurricane2dcont')
-xlabel('Hurricane number')
-ylabel('Number of Failures')
-hold off
-
-cost = 1000;
-Cost = findcost(Recovery, cost);
-subplot(1,3,3)
-hold on
-plot(1:j,Cost)
-title('Cost due to each hurricane')
-xlabel('Hurricane number')
-ylabel('Total Cost')
-hold off
+% subplot(1,3,2)
+% hold on
+% plot(1:j, sum(TotFails'))
+% title('Number of failures due to hurricane2dcont')
+% xlabel('Hurricane number')
+% ylabel('Number of Failures')
+% hold off
+% 
+% cost = 1000;
+% Cost = findcost(Recovery, cost);
+% subplot(1,3,3)
+% hold on
+% plot(1:j,Cost)
+% title('Cost due to each hurricane')
+% xlabel('Hurricane number')
+% ylabel('Total Cost')
+% hold off
