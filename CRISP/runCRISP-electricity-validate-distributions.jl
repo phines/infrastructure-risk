@@ -37,15 +37,15 @@ RecovTime = [RecovTime; RecoveryTimes(mu_line,sigma_line,Nlines)];
 #gens_state = initiate_state(TotalGens, Ngens);
 end
 Nline = sort(Nlines);
-cdf_nlines_empir = collect(1:length(Nline))./length(Nline);
+ccdf_nlines_empir = collect(length(Nline):-1:1)./length(Nline);
 
 RecovTim = RecovTime[2:end];
 RecT = sort(RecovTim);
-cdf_rectime_empir = collect(1:length(RecT))./length(RecT);
+ccdf_rectime_empir = collect(length(RecT):-1:1)./length(RecT);
 
-num = DataFrame(Realizations_of_NumLines = Nlines, Number_Lines_Out = Nline, CDF = cdf_nlines_empir);
-rec = DataFrame(Realizations_of_RecovTime = RecovTim[:], Recovery_Time = RecT, CDF = cdf_rectime_empir);
-k = 1:50;
+num = DataFrame(Realizations_of_NumLines = Nlines, Number_Lines_Out = Nline, CCDF = ccdf_nlines_empir);
+rec = DataFrame(Realizations_of_RecovTime = RecovTim[:], Recovery_Time = RecT, CCDF = ccdf_rectime_empir);
+k = 1:100;
 pdf_nlines = (Nevents/zeta(s_line)).*k.^(-s_line);
 H_k_s = zeros(k[end]);
 for i = 1:k[end]
@@ -53,17 +53,18 @@ for i = 1:k[end]
     H_k_s[i] = H_k_s[i] + 1/(j^s_line);
     end
 end
-cdf_lines = H_k_s./zeta(s_line);
-NumLinesAnalytic = DataFrame(k=k, pdf_Num_Lines_Out=pdf_nlines, cdf_Num_Lines_Out=cdf_lines);
-T = 0:0.01:5000;
-cdf_rectime = zeros(length(T));
+ccdf_lines = (1-H_k_s./zeta(s_line));
+NumLinesAnalytic = DataFrame(k=k, pdf_Num_Lines_Out=pdf_nlines, ccdf_Num_Lines_Out=ccdf_lines);
+T = 0:0.01:10000;
+ccdf_rectime = zeros(length(T));
 for i = 1:length(T)
     t = T[i];
-    cdf_rectime[i] = 0.5(1+erf((log.(t)-mu_line)./(sqrt(2)*sigma_line)));
+    ccdf_rectime[i] = 1-(0.5(1+erf((log.(t)-mu_line)./(sqrt(2)*sigma_line))));
 end
 pdf_rectime = ((length(RecovTime)-1)*(1/(sigma_line*sqrt(2*pi)))).*T.^(-1).*exp.(-((log.(T)-mu_line).^2).*(1/(2*sigma_line^2)));
-RecovTimeAnalytic = DataFrame(T = T, pdf_RecoveryTime=pdf_rectime, cdf_RecoveryTime=cdf_rectime)
+RecovTimeAnalytic = DataFrame(T = T, pdf_RecoveryTime=pdf_rectime, ccdf_RecoveryTime=ccdf_rectime)
 using Gadfly
-var_LoadsFulA = plot(layer(NumLinesAnalytic, x="k", y="cdf_Num_Lines_Out", Theme(default_color=colorant"red"), Geom.line), layer(num, x = "Number_Lines_Out", y ="CDF", Geom.bar), Scale.x_log10);
-var_LoadsFulV = plot(layer(RecovTimeAnalytic, x="T", y="cdf_RecoveryTime", Theme(default_color=colorant"red"), Geom.line), layer(rec, x = "Recovery_Time", y = "CDF", Geom.bar), Scale.x_log10);
-draw(PDF("validate-BPA-distributions0.pdf", 10inch, 6inch), hstack(var_LoadsFulA, var_LoadsFulV));
+NumLines = plot(layer(NumLinesAnalytic, x="k", y="ccdf_Num_Lines_Out", Theme(default_color=colorant"red"), Geom.line), layer(num, x = "Number_Lines_Out", y ="CCDF", Geom.bar), Scale.x_log10);
+RestoreT = plot(layer(RecovTimeAnalytic, x="T", y="ccdf_RecoveryTime", Theme(default_color=colorant"red"), Geom.line), layer(rec, x = "Recovery_Time", y = "CCDF", Geom.bar), Scale.x_log10, Scale.y_log10);
+draw(PDF("validate-BPA-line-outage.pdf", 10inch, 6inch), NumLines);
+draw(PDF("validate-BPA-recovery-time.pdf", 10inch, 6inch), RestoreT);
