@@ -40,11 +40,11 @@ Nline = sort(Nlines);
 cdf_nlines_empir = collect(1:length(Nline))./length(Nline);
 
 RecovTim = RecovTime[2:end];
-RecTime = sort(RecovTim);
-cdf_rectime_empir = collect(1:length(RecTime))./length(RecTime);
+RecT = sort(RecovTim);
+cdf_rectime_empir = collect(1:length(RecT))./length(RecT);
 
 num = DataFrame(Realizations_of_NumLines = Nlines, Number_Lines_Out = Nline, CDF = cdf_nlines_empir);
-rec = DataFrame(Realizations_of_RecovTime = RecovTim[:], Recovery_Time = RecTime, CDF = cdf_rectime_empir);
+rec = DataFrame(Realizations_of_RecovTime = RecovTim[:], Recovery_Time = RecT, CDF = cdf_rectime_empir);
 k = 1:50;
 pdf_nlines = (Nevents/zeta(s_line)).*k.^(-s_line);
 H_k_s = zeros(k[end]);
@@ -61,9 +61,9 @@ for i = 1:length(T)
     t = T[i];
     cdf_rectime[i] = 0.5(1+erf((log.(t)-mu_line)./(sqrt(2)*sigma_line)));
 end
-pdf_rectime = ((length(RecovTime)-1)*(1/(sigma_line*sqrt(2*pi)))).*t.^(-1).*exp.(-((log.(t)-mu_line).^2).*(1/(2*sigma_line^2)));
+pdf_rectime = ((length(RecovTime)-1)*(1/(sigma_line*sqrt(2*pi)))).*T.^(-1).*exp.(-((log.(T)-mu_line).^2).*(1/(2*sigma_line^2)));
 RecovTimeAnalytic = DataFrame(T = T, pdf_RecoveryTime=pdf_rectime, cdf_RecoveryTime=cdf_rectime)
 using Gadfly
 var_LoadsFulA = plot(layer(NumLinesAnalytic, x="k", y="cdf_Num_Lines_Out", Theme(default_color=colorant"red"), Geom.line), layer(num, x = "Number_Lines_Out", y ="CDF", Geom.bar), Scale.x_log10);
 var_LoadsFulV = plot(layer(RecovTimeAnalytic, x="T", y="cdf_RecoveryTime", Theme(default_color=colorant"red"), Geom.line), layer(rec, x = "Recovery_Time", y = "CDF", Geom.bar), Scale.x_log10);
-draw(PDF("validate-BPA-distributions5.pdf", 10inch, 6inch), hstack(var_LoadsFulA, var_LoadsFulV));
+draw(PDF("validate-BPA-distributions0.pdf", 10inch, 6inch), hstack(var_LoadsFulA, var_LoadsFulV));
