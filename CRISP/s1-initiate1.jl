@@ -34,7 +34,7 @@ function init_out_exp(lambda,TotalGens,OriginalGens=TotalGens)
 # an exponential random variable with lambda=1. I would expect that the distribution of
 # generators that experience outages (not caused by grid dynamics) will be steeper than the
 # lines, which is why I am not using the zipf distribution
-ratioG = TotalGens/OrigNumGens;
+ratioG = TotalGens/OriginalGens;
 Ngens1 = -round(log(1- rand(1)));
 Ngens = Int64(Ngens1[1]);
 Ngens = Int64(round(ratioG*Ngens));
@@ -66,4 +66,17 @@ function initiate_state(Total, N);
         State[Nout[i]] = 0;
     end
     return State
+end
+
+function RecTime(RecovTime,state)
+    j = 1;
+    RecTime = zeros(length(state));
+    for i = 1:length(RecovTime)
+        while state[j] == 1
+            j = j+1;
+        end
+        RecTime[j] = RecovTime[i];
+    end
+    data = DataFrame(state = state, recovery_time = RecTime)
+    return data
 end
