@@ -8,6 +8,8 @@ using LinearAlgebra
 #export run_dcpf
 
 function crisp_dcpf!(ps)
+    # constants
+    eps = 1e-6
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -48,17 +50,28 @@ function crisp_dcpf!(ps)
     ps.branch[brst,:Qt] .= 0
     # fix the generation at the slack bus
     mismatch = sum(Pbus)
-    refbusid = ps.bus[isref,:id]
-    is_refgen = (ps.gen[:bus].==refbusid)
-    if sum(is_refgen) != 1
-        error("Must be exactly one ref generator")
+    if abs(mismatch)>eps
+        refbusid = ps.bus[isref,:id]
+        is_refgen = (ps.gen[:bus].==refbusid)
+        if sum(is_refgen) != 1
+            error("Must be exactly one ref generator")
+        end
+        ps.gen[is_refgen,:Pg] -= (mismatch.*ps.baseMVA)
     end
-    ps.gen[is_refgen,:Pg] = Pg[is_refgen] .- mismatch*ps.baseMVA
+    # check the mismatch
+    mis_check = sum(ps.gen.Pg.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
+    if abs(mis_check)>eps
+        println(mismatch)
+        println(Pbus)
+        print("Mismatch = ")
+        println(mis_check)
+        error("Mismach error in crisp_dcpf")
+    end
     # return the resulting system
     return ps
 end
 
-function crisp_lsopf!(ps)
+function crisp_lsopf(ps)
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -103,7 +116,7 @@ function crisp_lsopf!(ps)
     @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
     ### solve the model ###
     solve(m)
-
+    # collect/return the outputs
     dPd_star = getvalue(dPd).*ps.baseMVA
     dPg_star = getvalue(dPg).*ps.baseMVA
     return (dPd_star, dPg_star)

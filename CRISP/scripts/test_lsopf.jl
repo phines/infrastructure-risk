@@ -14,7 +14,7 @@ crisp_dcpf!(ps)
 ps0 = deepcopy(ps)
 
 # run lsopf
-(dPd, dPg) = crisp_lsopf!(ps)
+(dPd, dPg) = crisp_lsopf(ps)
 
 # apply the results
 ps.gen[:Pg]  += dPg
