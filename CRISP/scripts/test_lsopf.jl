@@ -4,6 +4,8 @@ include("../src/parser.jl")
 
 # load the case data
 ps = mp2ps("../data/case6ww.m")
+crisp_dcpf!(ps)
+ps0 = deepcopy(ps)
 
 # remove branches
 ps.branch[1,:status]=0;
@@ -11,7 +13,7 @@ ps.branch[1,:status]=0;
 
 # run the dcpf
 crisp_dcpf!(ps)
-ps0 = deepcopy(ps)
+ps1 = deepcopy(ps)
 
 # run lsopf
 (dPd, dPg) = crisp_lsopf(ps)
@@ -21,6 +23,6 @@ ps.gen[:Pg]  += dPg
 ps.shunt[:P] += dPd
 crisp_dcpf!(ps)
 println("Before")
-print(ps0)
+print(ps1)
 println("After")
 print(ps)
