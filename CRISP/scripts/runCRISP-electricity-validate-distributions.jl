@@ -6,9 +6,9 @@ using CSV; using DataFrames; using SpecialFunctions;
 # time of each failure
 # it also uses an exponential function with paamter lambda=1 to determine the number of generators
 # that are outaged
-include("parser.jl")
+include("..\\src\\parser.jl")
 # network case to model
-ps = mp2ps("case39.m");
+ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39.m")# ("..\\data\\case39.m");
 # parameters of distributions for line outages and recovery times
 #lines_dist = CSV.read("line-distribution-parameters.csv");
 s_line = 2.56;#lines_dist[1];
@@ -24,7 +24,7 @@ Nevents = 10000;
 # number of lines and generators in network case
 TotalLines = length(ps.branch[1]);
 TotalGens =length(ps.gen[1]);
-include("s1-initiate1.jl")
+include("..\\src\\s1-initiate1.jl")
 maxLinesOut = TotalLines;
 Nlines = zeros(Nevents)
 RecovTime = 1;
