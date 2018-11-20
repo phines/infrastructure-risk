@@ -1,3 +1,4 @@
+module CRISP
 #set up packages
 using CSV; using DataFrames; using SpecialFunctions;
 include("s1-initiate1.jl")
@@ -18,4 +19,5 @@ gens_state = initiate_state(TotalGens, Ngens);
 RecovTimeG = RecoveryTimes(mu_gen,sigma_gen,Ngens);
 gens_outage_recovery = RecTime(RecovTimeG,gens_state)
 return gens_outage_recovery
+end
 end
