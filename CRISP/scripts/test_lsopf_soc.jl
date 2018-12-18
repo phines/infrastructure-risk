@@ -1,22 +1,21 @@
 #using CRISP_LSOPF
-include("../src/CRISP_LSOPF.jl")
-#include("../src/CRISP_LSOPF_1.jl")
+include("../src/CRISP_LSOPF_SOC.jl")
 include("../src/parser.jl")
 
 # load the case data
-ps = mp2ps("../data/case6ww.m")
-#ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m")
+ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m") #("../data/case6ww.m")
+#ps = mp2ps("../data/case6ww.m")
 
 # remove branches
-ps.branch[2,:status]=0;
+ps.branch[1,:status]=0;
 ps.branch[5,:status]=0;
 
 # run the dcpf
-crisp_dcpf!(ps)
+crisp_socpf!(ps)
 ps0 = deepcopy(ps)
 
 # run lsopf
-(dPd, dPg) = crisp_lsopf(ps)
+(dPd, dPg) = crisp_soc_lsopf(ps)
 
 # apply the results
 ps.gen[:Pg]  += dPg
