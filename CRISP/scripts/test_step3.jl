@@ -1,9 +1,11 @@
 #using CRISP_LSOPF
 using CSV
-include("../src/CRISP_RLSOPF")
-include("../src/CRISP_LSOPF_1.jl")
-include("../src/parser.jl")
-
+include("..\\src\\CRISP_RLSOPF.jl")
+#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_RLSOPF")
+include("..\\src\\CRISP_LSOPF_1.jl")
+#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_LSOPF_1.jl")
+include("..\\src\\parser.jl")
+#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
 ## load the case data
 ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m") #case39.m")
 #ps = mp2ps("../data/case6ww.m")
@@ -32,11 +34,20 @@ sigma_gen = 2.43;#gens_dist[3];
 orignumLines = 0;
 orignumGen = 0;
 
+#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP-electricity2.jl")
 include("..\\src\\CRISP-electricity2.jl")
-import CRISP
+
+#import CRISP
 # step 1
-Lines_Init_State = CRISP.line_state(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines)
-failures()
+#Lines_Init_State = CRISP.line_state(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines)
+Lines_Init_State = line_state(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines)
+state = Lines_Init_State[:,1];
+print(state)
+recovery_times = Lines_Init_State[:,2];
+print(recovery_times)
+failures = ones(length(state));
+failures[state.!=0] = 0;
+print(failures)
 ## run step 2
 # run the dcpf
 crisp_dcpf!(ps)

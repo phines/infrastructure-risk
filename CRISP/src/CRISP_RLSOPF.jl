@@ -9,7 +9,7 @@ function RLSOPF!(ps,failures,recovery_times)
     for i = 1:length(times)
         T = times[i];
         # set failed branches to status 0
-        failues[T==recovery_times] = 0;
+        failures[T.==recovery_times] = 0;
         # apply to network
         ps.branch[:,:status] = failures;
         # run the dcpf
