@@ -1,12 +1,10 @@
 #module CRISP_LSOPF
-
 using JuMP
 using Clp
 #using SparseArrays
 #using LinearAlgebra
 
 #export run_dcpf
-
 function crisp_dcpf!(ps)
     # constants
     eps = 1e-6
