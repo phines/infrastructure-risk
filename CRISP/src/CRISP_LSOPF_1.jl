@@ -35,7 +35,7 @@ function crisp_dcpf!(ps)
     theta = zeros(n)
     Bsub = Bdc[nonref,nonref]
     Psub = Pbus[nonref]
-    tsub = Bsub\Psub
+    tsub = Bsub\Psub # get an error when network is split into pieces
     theta[nonref] = tsub
     # record the results to the bus matrix
     ps.bus[9] = theta .* (180.0 / pi)
