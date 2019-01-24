@@ -62,11 +62,11 @@ function crisp_rlopf(ps,Pd_max)
     @variable(m,dPg[1:ng])
     @variable(m,dTheta[1:n])
     # variable bounds
-    @constraint(m,-Pd.<=dPd.<=(Pd_max-Pd))
+    @constraint(m,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd))
     @constraint(m,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg))
     @constraint(m,dTheta[1] == 0)
     # objective
-    @objective(m,Max,sum(dPd)) # serve as much load as possible
+    @objective(m,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
     # mapping matrix to map loads/gens to buses
     M_D = sparse(D,1:nd,1.0,n,nd)
     M_G = sparse(G,1:ng,1.0,n,ng)
