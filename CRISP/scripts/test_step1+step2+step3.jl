@@ -11,6 +11,7 @@ ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\
 #ps = mp2ps("../data/case6ww.m")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
+Pd_max = deepcopy(ps.shunt[:P]);
 
 # parameters of distributions for line outages and recovery times
 #lines_dist = CSV.read("line-distribution-parameters.csv");
@@ -51,4 +52,4 @@ ps.shunt[:P] += dPd
 crisp_dcpf!(ps)
 
 ## run step 3
-RLSOPF!(total,ps,failures,recovery_times)
+RLSOPF!(total,ps,failures,recovery_times,Pd_max)
