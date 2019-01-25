@@ -34,4 +34,4 @@ ps.shunt[:P] += dPd
 crisp_dcpf!(ps)
 
 ## run step 3
-RLSOPF!(total,ps,failures,recovery_times,Pd_max)
+RLSOPF!(total,ps,failures,recovery_times,Pd_max,load_cost)

@@ -1,7 +1,10 @@
 #set up packages
 using CSV; using DataFrames; using SpecialFunctions;
 include("CRISP_LSOPF_1.jl")
-function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max)
+function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max,load_cost=0)
+    if load_cost==0
+        load_cost = rand(length(ps.shunt[:P]));
+    end
     rec_t = recovery_times[recovery_times.!=0];
     print(rec_t)
     times = sort(rec_t)
