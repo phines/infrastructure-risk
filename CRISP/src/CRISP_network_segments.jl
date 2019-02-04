@@ -21,29 +21,32 @@ function find_subgraphs(ps)
         A[links[i,1],links[i,2]] = 1
         A[links[i,2],links[i,1]] = 1
     end
-    A = A+eye(length(ps.bus[:id]))
+    A = A+eye(n)
 
+
+    m_int = m; #setting the internal links to all the links
     grNo = 1;
     graphNos = zeros(n);
     linkNos_int = zeros(m_int);
-    next = 1;
-    while ~isempty(next)
-        included = false(n,1);
-        included(next) = true;
+    index = 1;
+    while ~isempty(index)
+        included = zeros(n).==1;
+        included[index] = true;
         oldLen = 0;
         while sum(included) ~= oldLen
             oldLen = sum(included);
-            [Ai,~] = find(A(:,included));
-            included(Ai) = true;
-      end
-      graphNos(included) = grNo;
-      grNo = grNo+1;
-      next = find(graphNos==0,1);
-end
-    return subgraphs
+            Ai = A[index,:].==1;
+            included[Ai] .= true;
+        end
+        graphNos[included] .= grNo;
+        grNo = grNo+1;
+        all_indices = (LinearIndices(graphNos))[graphNos.==0]
+        index = all_indices[1];
+    end
+    return subgraphs = graphNos
 end
 
-function subsetps(subgraphs,ps)
+function subsetps(subgraph,ps)
 
-    return ps_struct
+    return ps_subgraph
 end
