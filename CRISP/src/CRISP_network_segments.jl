@@ -49,11 +49,18 @@ end
 
 function build_islands(subgraph,ps)
     N = max(subgraphs);
+    struct island
+        bus::Array
+        branch::Array
+        shunt::Array
+        gen::Array
+    end
+    ps_ilands = Array{iland}(N);
     for jj = 1:N
         nodes = subgraph.==jj;
-        gen = false(length(ps.gen[:bus]));
-        shunt = false(length(ps.shunt[:bus]));
-        branch = false(length(ps.branch[:f]));
+        gen = falses(length(ps.gen[:bus]));
+        shunt = falses(length(ps.shunt[:bus]));
+        branch = falses(length(ps.branch[:f]));
         for g = 1:length(ps.gen[:bus])
             if sum(ps.gen[:bus].==nodes)
                 gen[g] = true;
@@ -74,6 +81,7 @@ function build_islands(subgraph,ps)
                 end
             end
         end
+        ps_islands[jj] = island(nodes,branch,shunt,gen)
     end
-    return ps_subgraph
+    return ps_islands
 end
