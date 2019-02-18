@@ -7,4 +7,5 @@ function crisp_res(Restore)
   cost_load_shed = Restore[2]; # cost per hour
   T = times[2:end]-times[1:end-1]
   res = sum(T.*cost_load_shed[1:end-1])
+  return res
 end

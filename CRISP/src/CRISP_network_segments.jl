@@ -1,4 +1,5 @@
 # network segmenting functions for CRISP-electricity
+# should also check out JuliaGraphs -> collection of pkgs for common graph analysis
 using SparseArrays
 using LinearAlgebra
 using DataFrames
@@ -46,7 +47,33 @@ function find_subgraphs(ps)
     return subgraphs = graphNos
 end
 
-function subsetps(subgraph,ps)
-
+function build_islands(subgraph,ps)
+    N = max(subgraphs);
+    for jj = 1:N
+        nodes = subgraph.==jj;
+        gen = false(length(ps.gen[:bus]));
+        shunt = false(length(ps.shunt[:bus]));
+        branch = false(length(ps.branch[:f]));
+        for g = 1:length(ps.gen[:bus])
+            if sum(ps.gen[:bus].==nodes)
+                gen[g] = true;
+            end
+        end
+        for s = 1:length(ps.shunt[:bus])
+            if sum(ps.shunt[:bus].==nodes)
+                shunt[s] = true;
+            end
+        end
+        for l = 1:length(ps.branch[:f])
+            if ps.branch[:status]
+                if ps.branch[f].==l
+                  branch[l]=true;
+                end
+                if ps.branch[t].==l
+                  branch[l]=true;
+                end
+            end
+        end
+    end
     return ps_subgraph
 end
