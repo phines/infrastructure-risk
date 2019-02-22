@@ -47,11 +47,6 @@ function find_subgraphs(ps)
     return subgraphs = graphNos
 end
 
-<<<<<<< HEAD
-function subsetps(ps,subgraph)
-    
-    return ps_subgraph
-=======
 function build_islands(subgraph,ps)
     N = max(subgraphs);
     struct island
