@@ -46,7 +46,7 @@ function find_subgraphs(ps)
     return subgraphs = graphNos
 end
 
-function subsetps(subgraph,ps)
-
+function subsetps(ps,subgraph)
+    
     return ps_subgraph
 end
