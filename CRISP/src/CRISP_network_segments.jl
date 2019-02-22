@@ -84,5 +84,4 @@ function build_islands(subgraph,ps)
         ps_islands[jj] = island(nodes,branch,shunt,gen)
     end
     return ps_islands
->>>>>>> 8a61a1e4eca49e36cac2202c996445b8ad5870de
 end
