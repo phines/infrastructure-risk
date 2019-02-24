@@ -34,54 +34,57 @@ function find_subgraphs(ps)
         included = zeros(n).==1;
         included[index] = true;
         oldLen = 0;
-        while sum(included) ~= oldLen
+        while sum(included) != oldLen
             oldLen = sum(included);
             Ai = A[index,:].==1;
             included[Ai] .= true;
         end
         graphNos[included] .= grNo;
         grNo = grNo+1;
-        all_indices = (LinearIndices(graphNos))[graphNos.==0]
-        index = all_indices[1];
+        all_indices = (LinearIndices(graphNos))[graphNos.==0];
+        if !isempty(all_indices)
+            index = all_indices[1];
+        else
+            index = (LinearIndices(graphNos))[graphNos.==0];
+        end
     end
     return subgraphs = graphNos
 end
 
+struct Island_ps
+    bus::Array
+    branch::Array
+    shunt::Array
+    gen::Array
+end
+
 function build_islands(subgraph,ps)
-    N = max(subgraphs);
-    struct island
-        bus::Array
-        branch::Array
-        shunt::Array
-        gen::Array
-    end
-    ps_ilands = Array{iland}(N);
+    N = Int64(findmax(subgraph)[1]);
+    ps_islands = Array{Island_ps}(N);
     for jj = 1:N
         nodes = subgraph.==jj;
+        buses = ps.bus[nodes,:id];
         gen = falses(length(ps.gen[:bus]));
         shunt = falses(length(ps.shunt[:bus]));
         branch = falses(length(ps.branch[:f]));
         for g = 1:length(ps.gen[:bus])
-            if sum(ps.gen[:bus].==nodes)
+            if sum(ps.gen[g,:bus].==buses)!=0
                 gen[g] = true;
             end
         end
         for s = 1:length(ps.shunt[:bus])
-            if sum(ps.shunt[:bus].==nodes)
+            if sum(ps.shunt[s,:bus].==buses)!=0
                 shunt[s] = true;
             end
         end
         for l = 1:length(ps.branch[:f])
-            if ps.branch[:status]
-                if ps.branch[f].==l
-                  branch[l]=true;
-                end
-                if ps.branch[t].==l
+            if ps.branch[l,:status]!=0
+                if sum(ps.branch[l,:f].==buses)!=0 && sum(ps.branch[l,:t].==buses)!=0
                   branch[l]=true;
                 end
             end
         end
-        ps_islands[jj] = island(nodes,branch,shunt,gen)
+        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen)
     end
     return ps_islands
 end
