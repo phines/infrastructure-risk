@@ -1,7 +1,9 @@
 #set up packages
 using CSV; using DataFrames; using SpecialFunctions;
+
 include("CRISP_LSOPF_1.jl")
 include("CRISP_network_segments.jl")
+
 function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
     if load_cost==0
         load_cost = ones(length(ps.shunt[:P]));
@@ -74,26 +76,26 @@ function crisp_rlopf(ps,Pd_max)
         sparse(T,T,+Xinv,n,n) +
         sparse(F,F,+Xinv,n,n)
     ### Build the optimization model ###
-    m = Model(solver = ClpSolver())
+    m1 = Model(solver = ClpSolver())
     # variables
-    @variable(m,dPd[1:nd])
-    @variable(m,dPg[1:ng])
-    @variable(m,dTheta[1:n])
+    @variable(m1,dPd[1:nd])
+    @variable(m1,dPg[1:ng])
+    @variable(m1,dTheta[1:n])
     # variable bounds
-    @constraint(m,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd))
-    @constraint(m,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg))
-    @constraint(m,dTheta[1] == 0)
+    @constraint(m1,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd))
+    @constraint(m1,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg))
+    @constraint(m1,dTheta[1] == 0)
     # objective
-    @objective(m,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
+    @objective(m1,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
     # mapping matrix to map loads/gens to buses
     M_D = sparse(D,1:nd,1.0,n,nd)
     M_G = sparse(G,1:ng,1.0,n,ng)
     # Power balance equality constraint
-    @constraint(m,B*dTheta .== M_G*dPg - M_D*dPd)
+    @constraint(m1,B*dTheta .== M_G*dPg - M_D*dPd)
     # Power flow constraints
-    @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
+    @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
     ### solve the model ###
-    solve(m)
+    solve(m1)
     # collect/return the outputs
     dPd_star = getvalue(dPd).*ps.baseMVA
     dPg_star = getvalue(dPg).*ps.baseMVA
@@ -115,7 +117,7 @@ function crisp_rlopf_island(ps,Pd_max,ps_islands)
         Pd = ps.shunt[ps_islands[z].shunt,:P] ./ ps.baseMVA .* ps.shunt[ps_islands[z].shunt,:status]
         # gen data
         ng = size(ps.gen,1)
-        G = bi[ps.gen[ps_islands[z].gen,:bus]
+        G = bi[ps.gen[ps_islands[z].gen,:bus]]
         Pg = ps.gen[ps_islands[z].gen,:Pg] ./ ps.baseMVA .* ps.gen[ps_islands[z].gen,:status]
         # branch data
         brst = ps_islands[z].branch
@@ -129,26 +131,26 @@ function crisp_rlopf_island(ps,Pd_max,ps_islands)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m = Model(solver = ClpSolver())
+        m1 = Model(solver = ClpSolver())
         # variables
-        @variable(m,dPd[1:nd])
-        @variable(m,dPg[1:ng])
-        @variable(m,dTheta[1:n])
+        @variable(m1,dPd[1:nd])
+        @variable(m1,dPg[1:ng])
+        @variable(m1,dTheta[1:n])
         # variable bounds
-        @constraint(m,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd))
-        @constraint(m,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg))
-        @constraint(m,dTheta[1] == 0)
+        @constraint(m1,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd))
+        @constraint(m1,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg))
+        @constraint(m1,dTheta[1] == 0)
         # objective
-        @objective(m,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
+        @objective(m1,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         M_D = sparse(D,1:nd,1.0,n,nd)
         M_G = sparse(G,1:ng,1.0,n,ng)
         # Power balance equality constraint
-        @constraint(m,B*dTheta .== M_G*dPg - M_D*dPd)
+        @constraint(m1,B*dTheta .== M_G*dPg - M_D*dPd)
         # Power flow constraints
-        @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
+        @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
-        solve(m)
+        solve(m1)
         # collect/return the outputs
         dPd_star[ps_islands[z].shunt] = getvalue(dPd).*ps.baseMVA
         dPg_star[ps_islands[z].gen] = getvalue(dPg).*ps.baseMVA

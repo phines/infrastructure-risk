@@ -3,8 +3,8 @@ using CSV
 #include code for all necessary steps (2,3,4,and grid segmenting)
 include("..\\src\\CRISP_LSOPF_1.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
-include("..\\src\\CRISP_RT")
-inclde("..\\src\\CRISP_network_segments")
+include("..\\src\\CRISP_RT.jl")
+include("..\\src\\CRISP_network_segments.jl")
 include("..\\src\\parser.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
 ## load the case data
@@ -25,13 +25,13 @@ if  M >=2
     ps_islands = build_islands(subgraph,ps)
     ## run step 2
     # run the dcpf
-    crisp_dcpf_islands!(ps,ps_islands[m])
+    crisp_dcpf_islands!(ps,ps_islands)
     # run lsopf
-    (dPd, dPg) = crisp_lsopf_ilands(ps,ps_islands[m])
+    (dPd, dPg) = crisp_lsopf_ilands(ps,ps_islands)
     # apply the results
     ps.gen[:Pg]  += dPg
     ps.shunt[:P] += dPd
-    crisp_dcpf_islands!(ps,ps_islands[m])
+    crisp_dcpf_islands!(ps,ps_islands)
 
     ## run step 3
     Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max)#,load_cost) # data frame [times, load shed in cost per hour]

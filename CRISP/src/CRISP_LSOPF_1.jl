@@ -7,7 +7,7 @@ using Clp
 #export run_dcpf
 function crisp_dcpf!(ps)
     # constants
-    eps = 1e-6
+    tolerance = 1e-6
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -48,7 +48,7 @@ function crisp_dcpf!(ps)
     ps.branch[brst,:Qt] .= 0
     # fix the generation at the slack bus
     mismatch = sum(Pbus)
-    if abs(mismatch)>eps
+    if abs(mismatch)>tolerance
         refbusid = ps.bus[isref,:id]
         is_refgen = (ps.gen[:bus].==refbusid)
         if sum(is_refgen) != 1
@@ -58,7 +58,7 @@ function crisp_dcpf!(ps)
     end
     # check the mismatch
     mis_check = sum(ps.gen[:,:Pg].*ps.gen[:,:status]) - sum(ps.shunt[:,:P].*ps.shunt[:,:status]);
-    if abs(mis_check)>eps
+    if abs(mis_check)>tolerance
         println(mismatch)
         println(Pbus)
         print("Mismatch = ")
@@ -71,7 +71,7 @@ end
 
 function crisp_dcpf_islands!(ps,ps_islands)
     # constants
-    eps = 1e-6
+    tolerance = 1e-6
     M = length(ps_islands)
     for m in 1:M
         ### collect the data that we will need ###
@@ -80,17 +80,19 @@ function crisp_dcpf_islands!(ps,ps_islands)
         bi = sparse(ps.bus[ps_islands[m].bus,:id],fill(1,n),collect(1:n)) # helps us to find things
         if isempty(ps.bus[ps_islands[m].bus,:bus_type].==3)
             if isempty(ps.gen[ps_islands[m].gen,1])
-                busID = ps.bus[ps_islands[m].bus,:id];
+                busID = ps.bus[ps_islands[m].bus,:id][1];
                 island_buses = ps.bus[ps_islands[m].bus,:];
-                isref = (island_buses[1,:id].==island_buses[:,:id])
+                isref = (busID.==island_buses[:,:id])
                 nonref = .~isref
             else
                 busID = ps.gen[ps_islands[m].gen,:bus][1];
                 island_buses = ps.bus[ps_islands[m].bus,:];
-                isref = (island_buses[busID,:id].==island_buses[:,:id])
+                (busID.==island_buses[:,:id])
+                isref = (busID.==island_buses[:,:id])
                 nonref = .~isref
             end
         else
+            island_buses = ps.bus[ps_islands[m].bus,:];
             isref = (ps.bus[ps_islands[m].bus,:bus_type].==3)
             nonref = .~isref
         end
@@ -128,18 +130,21 @@ function crisp_dcpf_islands!(ps,ps_islands)
         ps.branch[brst,:Qt] .= 0
         # fix the generation at the slack bus
         mismatch = sum(Pbus)
-        if abs(mismatch)>eps
-            refbusid = ps.bus[isref,:id]
-            is_refgen = (ps.gen[:bus].==refbusid)
-            if sum(is_refgen) != 1
-                error("Must be exactly one ref generator")
+        if abs(mismatch)>tolerance
+            island_gens = ps.gen[ps_islands[m].gen,:]
+            refbusid = island_buses[isref,:id]
+            is_refgen = (island_gens[:bus].==refbusid)
+            if sum(is_refgen) > 1
+                print("More than 1 ref generator")#error("Must be exactly one ref generator")
+            elseif sum(is_refgen) < 1
+                print("No ref generator")#error("Must be exactly one ref generator")
             end
-            ps.gen[is_refgen,:Pg] -= (mismatch.*ps.baseMVA)
+            island_gens[is_refgen,:Pg] -= (mismatch.*ps.baseMVA)
         end
     end
     # check the mismatch
     mis_check = sum(ps.gen[:,:Pg].*ps.gen[:,:status]) - sum(ps.shunt[:,:P].*ps.shunt[:,:status]);
-    if abs(mis_check)>eps
+    if abs(mis_check)>tolerance
         println(mismatch)
         println(Pbus)
         print("Mismatch = ")
