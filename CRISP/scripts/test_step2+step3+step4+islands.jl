@@ -23,16 +23,18 @@ subgraph = find_subgraphs(ps);
 M = Int64(findmax(subgraph)[1])
 if  M >=2
     ps_islands = build_islands(subgraph,ps)
-    ## run step 2
-    # run the dcpf
-    crisp_dcpf_islands!(ps,ps_islands)
-    # run lsopf
-    (dPd, dPg) = crisp_lsopf_ilands(ps,ps_islands)
-    # apply the results
-    ps.gen[:Pg]  += dPg
-    ps.shunt[:P] += dPd
-    crisp_dcpf_islands!(ps,ps_islands)
-
+    for i in 1:M
+        psi = ps_subset(ps,ps_islands[i])
+        ## run step 2
+        # run the dcpf
+        crisp_dcpf_islands!(ps,ps_islands)
+        # run lsopf
+        (dPd, dPg) = crisp_lsopf_ilands(ps,ps_islands)
+        # apply the results
+        ps.gen[:Pg]  += dPg
+        ps.shunt[:P] += dPd
+        crisp_dcpf_islands!(ps,ps_islands)
+    end
     ## run step 3
     Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max)#,load_cost) # data frame [times, load shed in cost per hour]
 

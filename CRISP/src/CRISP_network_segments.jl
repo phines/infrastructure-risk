@@ -86,3 +86,23 @@ function build_islands(subgraph,ps)
     end
     return ps_islands
 end
+
+mutable struct PSCase
+    baseMVA::Int64
+    bus::DataFrame
+    branch::DataFrame
+    gen::DataFrame
+    gencost::DataFrame
+    shunt::DataFrame
+end
+
+function ps_subset(ps,ps_island)
+    mpBaseMVA = ps.baseMVA;
+    psBusData = ps.bus[ps_island.bus,:];
+    psBranchData = ps.branch[ps_island.branch,:];
+    psGenData = ps.gen[ps_island.gen,:];
+    psGenCostData = ps.gencost[ps_island.gen,:];
+    psShuntData = ps.shunt[ps_island.shunt,:];
+    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psGenCostData, psShuntData);
+    return psi
+end
