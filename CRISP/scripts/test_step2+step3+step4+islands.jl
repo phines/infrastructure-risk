@@ -6,6 +6,7 @@ include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network_segments.jl")
 include("..\\src\\parser.jl")
+include("..\\src\\s1-initiate2.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
 ## load the case data
 ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m") #case39.m")
@@ -15,9 +16,18 @@ total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 
 # remove branches that result in islands
+Nlines = 4;
 ps.branch[4,:status]=0;
+ps.branch[7,:status]=0;
 ps.branch[8,:status]=0;
+ps.branch[11,:status]=0;
 
+failures = ps.branch.status
+mu_line = 3.66;#lines_dist[2];
+sigma_line = 2.43;#lines_dist[3];
+RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
+lines_outage_recovery = RecTime(RecovTimeL,failures);
+recovery_times = lines_outage_recovery[:,2];
 #check for islands
 subgraph = find_subgraphs(ps);
 M = Int64(findmax(subgraph)[1])
@@ -27,13 +37,13 @@ if  M >=2
         psi = ps_subset(ps,ps_islands[i])
         ## run step 2
         # run the dcpf
-        crisp_dcpf_islands!(ps,ps_islands)
+        crisp_dcpf!(psi)
         # run lsopf
-        (dPd, dPg) = crisp_lsopf_ilands(ps,ps_islands)
+        (dPd, dPg) = crisp_lsopf(psi)
         # apply the results
-        ps.gen[:Pg]  += dPg
-        ps.shunt[:P] += dPd
-        crisp_dcpf_islands!(ps,ps_islands)
+        ps.gen[ps_islands[i].gen,:Pg]  += dPg
+        ps.shunt[ps_islands[i].shunt,:P] += dPd
+        crisp_dcpf!(psi)
     end
     ## run step 3
     Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max)#,load_cost) # data frame [times, load shed in cost per hour]

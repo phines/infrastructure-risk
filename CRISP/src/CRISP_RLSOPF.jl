@@ -25,14 +25,17 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
         M = Int64(findmax(subgraph)[1])
         if  M >=2
             ps_islands = build_islands(subgraph,ps)
-            # run the dcpf
-            crisp_dcpf_islands!(ps,ps_islands)
-            # run lsopf
-            (dPd, dPg) = crisp_rlopf_iland(ps,Pd_max,ps_islands)
-            # apply the results
-            ps.gen[:Pg]  += dPg
-            ps.shunt[:P] += dPd
-            crisp_dcpf_islands!(ps,ps_islands)
+            for i in 1:M
+                psi = ps_subset(ps_ilands[i]);
+                # run the dcpf
+                crisp_dcpf!(psi)
+                # run lsopf
+                (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[i].shunt])
+                # apply the results
+                ps.gen[ps_islands[i].gen,:Pg]  += dPg
+                ps.shunt[ps_islands[i].shunt,:P] += dPd
+                crisp_dcpf!(psi)
+            end
         else
             # run the dcpf
             crisp_dcpf!(ps)

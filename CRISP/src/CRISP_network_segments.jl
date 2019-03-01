@@ -15,7 +15,7 @@ function find_subgraphs(ps)
     links = [ps.branch[stats,:f] ps.branch[stats,:t]]
 
     n = length(ps.bus[:id]);
-    m = length(links[:,1]);
+    m = length(ps.branch[stats,:f]);
 
     A = zeros(n,n);
     for i = 1:m
@@ -29,13 +29,18 @@ function find_subgraphs(ps)
     linkNos_int = zeros(m_int);
     index = 1;
     while ~isempty(index)
-        included = zeros(n).==1;
+        included = falses(n);
         included[index] = true;
         oldLen = 0;
         while sum(included) != oldLen
             oldLen = sum(included);
-            Ai = A[index,:].==1;
-            included[Ai] .= true;
+            for jj = 1:n
+                ii = included[jj];
+                if ii
+                    Ai = A[:,jj].==1;
+                    included[Ai] .= true; #####WORKING HEREREERERE
+                end
+            end
         end
         graphNos[included] .= grNo;
         grNo = grNo+1;
@@ -101,7 +106,7 @@ function ps_subset(ps,ps_island)
     psBusData = ps.bus[ps_island.bus,:];
     psBranchData = ps.branch[ps_island.branch,:];
     psGenData = ps.gen[ps_island.gen,:];
-    psGenCostData = ps.gencost[ps_island.gen,:];
+    psGenCostData = ps.gencost;
     psShuntData = ps.shunt[ps_island.shunt,:];
     psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psGenCostData, psShuntData);
     return psi
