@@ -38,7 +38,7 @@ function find_subgraphs(ps)
                 ii = included[jj];
                 if ii
                     Ai = A[:,jj].==1;
-                    included[Ai] .= true; #####WORKING HEREREERERE
+                    included[Ai] .= true;
                 end
             end
         end

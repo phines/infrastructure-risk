@@ -13,15 +13,13 @@ function crisp_dcpf!(ps)
     n = size(ps.bus,1) # the number of buses
     bi = sparse(ps.bus[:id],fill(1,n),collect(1:n)) # helps us to find things
     #figure out reference buses in case of islands
-    if isempty(ps.bus.bus_type.==3)
-        if isempty(ps.gen)
-            return ps
-        elseif isempty(ps.shunt)
+    if isempty(ps.bus.id[ps.bus.bus_type.==3])
+        if isempty(ps.gen) || isempty(ps.shunt)
             return ps
         else
-            maxGen = findmax(psi.gen.Pg)[2]
-            busID = psi.gen[maxGen,:bus];
-            isref = (busID.==psi.bus.id)
+            maxGen = findmax(ps.gen.Pg)[2]
+            busID = ps.gen[maxGen,:bus];
+            isref = (busID.==ps.bus.id)
             nonref = .~isref
         end
     else
