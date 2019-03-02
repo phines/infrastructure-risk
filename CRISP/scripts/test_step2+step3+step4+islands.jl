@@ -31,39 +31,26 @@ recovery_times = lines_outage_recovery[:,2];
 #check for islands
 subgraph = find_subgraphs(ps);
 M = Int64(findmax(subgraph)[1])
-if  M >=2
-    ps_islands = build_islands(subgraph,ps)
-    for i in 1:M
-        psi = ps_subset(ps,ps_islands[i])
-        ## run step 2
-        # run the dcpf
-        crisp_dcpf!(psi)
-        # run lsopf
-        (dPd, dPg) = crisp_lsopf(psi)
-        # apply the results
-        ps.gen[ps_islands[i].gen,:Pg]  += dPg
-        ps.shunt[ps_islands[i].shunt,:P] += dPd
-        crisp_dcpf!(psi)
-    end
-    ## run step 3
-    Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max)#,load_cost) # data frame [times, load shed in cost per hour]
-
-    ## run step 4
-    ResilienceTri = crisp_res(Restore);
-else
+ps_islands = build_islands(subgraph,ps)
+for i in 1:M
+    psi = ps_subset(ps,ps_islands[i])
     ## run step 2
     # run the dcpf
-    crisp_dcpf!(ps)
+    crisp_dcpf!(psi)
     # run lsopf
-    (dPd, dPg) = crisp_lsopf(ps)
+    (dPd, dPg) = crisp_lsopf(psi)
     # apply the results
-    ps.gen[:Pg]  += dPg
-    ps.shunt[:P] += dPd
-    crisp_dcpf!(ps)
-
-    ## run step 3
-    Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max)#,load_cost) # data frame [times, load shed in cost per hour]
-
-    ## run step 4
-    ResilienceTri = crisp_res(Restore);
+    ps.gen[ps_islands[i].gen,:Pg]  += dPg
+    ps.shunt[ps_islands[i].shunt,:P] += dPd
+    crisp_dcpf!(psi)
 end
+## run step 3
+Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max)#,load_cost) # data frame [times, load shed in cost per hour]
+
+## make figure
+using Plots
+p = plot(Restore.time,Restore.load_shed)
+gui(p)
+#save("../results/load_shed_plot1.pdf",p)
+## run step 4
+ResilienceTri = crisp_res(Restore);

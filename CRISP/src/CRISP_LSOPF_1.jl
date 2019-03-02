@@ -71,7 +71,7 @@ function crisp_dcpf!(ps)
         elseif sum(is_refgen) > 1
             error("Must be exactly one ref generator")
         end
-        ps.gen[is_refgen,:Pg] -= (mismatch.*ps.baseMVA)
+        ps.gen[is_refgen,:Pg] .-= (mismatch.*ps.baseMVA)
     end
     # check the mismatch
     mis_check = sum(ps.gen[:,:Pg].*ps.gen[:,:status]) - sum(ps.shunt[:,:P].*ps.shunt[:,:status]);

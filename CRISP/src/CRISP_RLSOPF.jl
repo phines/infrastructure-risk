@@ -17,34 +17,23 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
     for i = 1:length(times)
         T = times[i];
         # set failed branches to status 0
-        failures[T.>=recovery_times] = 1;
+        failures[T.>=recovery_times] .= 1;
         # apply to network
         ps.branch[:,:status] = failures;
         #check for islands
         subgraph = find_subgraphs(ps);
         M = Int64(findmax(subgraph)[1])
-        if  M >=2
-            ps_islands = build_islands(subgraph,ps)
-            for i in 1:M
-                psi = ps_subset(ps_ilands[i]);
-                # run the dcpf
-                crisp_dcpf!(psi)
-                # run lsopf
-                (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[i].shunt])
-                # apply the results
-                ps.gen[ps_islands[i].gen,:Pg]  += dPg
-                ps.shunt[ps_islands[i].shunt,:P] += dPd
-                crisp_dcpf!(psi)
-            end
-        else
+        ps_islands = build_islands(subgraph,ps)
+        for i in 1:M
+            psi = ps_subset(ps,ps_islands[i]);
             # run the dcpf
-            crisp_dcpf!(ps)
+            crisp_dcpf!(psi)
             # run lsopf
-            (dPd, dPg) = crisp_rlopf(ps,Pd_max)
+            (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[i].shunt])
             # apply the results
-            ps.gen[:Pg]  += dPg
-            ps.shunt[:P] += dPd
-            crisp_dcpf!(ps)
+            ps.gen[ps_islands[i].gen,:Pg]  += dPg
+            ps.shunt[ps_islands[i].shunt,:P] += dPd
+            crisp_dcpf!(psi)
         end
         # set load shed for this time step
         load_shed[i+1] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
