@@ -1,11 +1,11 @@
 #module CRISP_LSOPF
 using JuMP
 using Clp
-#using SparseArrays
-#using LinearAlgebra
+using SparseArrays
+using LinearAlgebra
 
 #export run_dcpf
-function crisp_dcpf!(ps)
+function crisp_dcpf1!(ps)
     # constants
     tolerance = 1e-6
     ### collect the data that we will need ###
@@ -26,8 +26,6 @@ function crisp_dcpf!(ps)
         isref = (ps.bus.bus_type.==3)
         nonref = .~isref
     end
-    #isref = (ps.bus[:bus_type].==3)
-    #nonref = .~isref
 
     # load data
     nd = size(ps.shunt,1)
@@ -53,8 +51,8 @@ function crisp_dcpf!(ps)
     tsub = Bsub\Psub # get an error when network is split into pieces
     theta[nonref] = tsub
     # record the results to the bus matrix
-    ps.bus[9] = theta .* (180.0 / pi)
-    ps.bus[8] = ones(n)
+    ps.bus.Va = theta .* (180.0 / pi)
+    ps.bus.Vm = ones(n)
     # compute/record the power flows
     Pf_pu = Xinv .* (theta[F] - theta[T])
     ps.branch[brst,:Pf] = +Pf_pu.*ps.baseMVA
@@ -74,7 +72,7 @@ function crisp_dcpf!(ps)
         ps.gen[is_refgen,:Pg] .-= (mismatch.*ps.baseMVA)
     end
     # check the mismatch
-    mis_check = sum(ps.gen[:,:Pg].*ps.gen[:,:status]) - sum(ps.shunt[:,:P].*ps.shunt[:,:status]);
+    mis_check = sum(ps.gen.Pg.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
     if abs(mis_check)>tolerance
         println(mismatch)
         println(Pbus)
@@ -82,12 +80,12 @@ function crisp_dcpf!(ps)
         println(mis_check)
         error("Mismach error in crisp_dcpf")
     end
-    # return the resulting system
+    #return the resulting system
     return ps
 end
 
 
-function crisp_lsopf(ps)
+function crisp_lsopf1(ps)
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses

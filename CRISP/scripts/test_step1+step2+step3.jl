@@ -2,7 +2,7 @@
 using CSV
 include("..\\src\\CRISP_RLSOPF.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_RLSOPF")
-include("..\\src\\CRISP_LSOPF_1.jl")
+include("..\\src\\CRISP_LSOPF.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_LSOPF_1.jl")
 include("..\\src\\parser.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
@@ -16,7 +16,7 @@ Pd_max = deepcopy(ps.shunt[:P]);
 # parameters of distributions for line outages and recovery times
 #lines_dist = CSV.read("line-distribution-parameters.csv");
 s_line = 2.56;#lines_dist[1];
-maxLinesOut = 70;
+maxLinesOut = 70; # => k in zipf distribution
 mu_line = 3.66;#lines_dist[2];
 sigma_line = 2.43;#lines_dist[3];
 # parameters of distributions for generator outages and recovery times

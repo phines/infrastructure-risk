@@ -6,7 +6,7 @@
 
 using SpecialFunctions;
 
-function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines=0)
+function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch[1]);
 Nlines = init_out_zipf(s_line,maxLinesOut,TotalLines);
@@ -17,7 +17,7 @@ lines_outage_recovery = RecTime(RecovTimeL,lines_state)
 return lines_outage_recovery
 end
 
-function gen_state(ps,lambda_gen,mu_gen,sigma_gen,orignumGen)
+function gen_state(ps,lambda_gen,mu_gen,sigma_gen;orignumGen=0)
 # number of lines and generators in network case
 TotalGens =length(ps.gen[1]);
 Ngens = init_out_exp(lambda_gen,TotalGens);
@@ -27,7 +27,7 @@ gens_outage_recovery = RecTime(RecovTimeG,gens_state)
 return gens_outage_recovery
 end
 
-function init_out_zipf(s,k,TotalLines,OrigNumLines=TotalLines)
+function init_out_zipf(s,k,TotalLines;OrigNumLines=TotalLines)
 ratioL = TotalLines/OrigNumLines;
 # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
 # the cdf of a zipf distribution with
@@ -50,7 +50,7 @@ Nlines = Int64(round(ratioL*Nlines)) #
 return Nlines
 end
 
-function init_out_exp(lambda,TotalGens,OriginalGens=TotalGens)
+function init_out_exp(lambda,TotalGens;OriginalGens=TotalGens)
 # since we do not have the outage distribution of generators, I am modeling it temporariliy as
 # an exponential random variable with lambda=1. I would expect that the distribution of
 # generators that experience outages (not caused by grid dynamics) will be steeper than the

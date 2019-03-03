@@ -2,7 +2,7 @@
 using CSV
 include("..\\src\\CRISP_RLSOPF.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_RLSOPF")
-include("..\\src\\CRISP_LSOPF_1.jl")
+include("..\\src\\CRISP_LSOPF.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_LSOPF_1.jl")
 include("..\\src\\parser.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
@@ -34,4 +34,4 @@ ps.shunt[:P] += dPd
 crisp_dcpf!(ps)
 
 ## run step 3
-RLSOPF!(total,ps,failures,recovery_times,Pd_max,load_cost)
+RLSOPF!(total,ps,failures,recovery_times,Pd_max)

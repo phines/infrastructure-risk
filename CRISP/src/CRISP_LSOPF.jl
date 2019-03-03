@@ -14,8 +14,21 @@ function crisp_dcpf!(ps)
     # bus data
     n = size(ps.bus,1) # the number of buses
     bi = sparse(ps.bus[:id],fill(1,n),collect(1:n)) # helps us to find things
-    isref = (ps.bus[:bus_type].==3)
-    nonref = .~isref
+    if isempty(ps.bus.id[ps.bus.bus_type.==3])
+        if isempty(ps.gen) || isempty(ps.shunt)
+            return ps
+        else
+            maxGen = findmax(ps.gen.Pg)[2]
+            busID = ps.gen[maxGen,:bus];
+            isref = (busID.==ps.bus.id)
+            nonref = .~isref
+        end
+    else
+        isref = (ps.bus.bus_type.==3)
+        nonref = .~isref
+    end
+    #isref = (ps.bus[:bus_type].==3)
+    #nonref = .~isref
     # load data
     nd = size(ps.shunt,1)
     D = bi[ps.shunt[:bus]]
@@ -23,7 +36,7 @@ function crisp_dcpf!(ps)
     # gen data
     ng = size(ps.gen,1)
     G = bi[ps.gen[:bus]]
-    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status] 
+    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
     # branch data
     brst = (ps.branch[:status].==1)
     F = bi[ps.branch[brst,:f]]
@@ -37,7 +50,7 @@ function crisp_dcpf!(ps)
     theta = zeros(n)
     Bsub = Bdc[nonref,nonref]
     Psub = Pbus[nonref]
-    tsub = Bsub\Psub 
+    tsub = Bsub\Psub
     theta[nonref] = tsub
     # record the results to the bus matrix
     ps.bus.Va = theta .* (180.0 / pi)
@@ -83,7 +96,7 @@ function crisp_lsopf(ps)
     # gen data
     ng = size(ps.gen,1)
     G = bi[ps.gen[:bus]]
-    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status] 
+    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
     # branch data
     brst = (ps.branch[:status].==1)
     F = bi[ps.branch[brst,:f]]
