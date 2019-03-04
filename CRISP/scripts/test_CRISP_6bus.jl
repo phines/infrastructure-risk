@@ -8,9 +8,12 @@ include("..\\src\\CRISP_network_segments.jl")
 include("..\\src\\parser.jl")
 include("..\\src\\s1-initiate2.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
+
+## number of failure scenarios to run through
+Num = 10;
 ## load the case data
-ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39.m")
-#ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m")
+#ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39.m")
+ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m")
 #ps = mp2ps("../data/case6ww.m")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
@@ -33,6 +36,8 @@ sigma_gen = 2.43;#gens_dist[3];
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP-electricity2.jl")
 include("..\\src\\CRISP-electricity2.jl")
 
+
+for iterat in 1:Num
 #import CRISP
 # step 1
 #Lines_Init_State = CRISP.line_state(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines)
@@ -65,18 +70,14 @@ ResilienceTri = crisp_res(Restore);
 
 ## save data
 using CSV
-CSV.write("results\\test_initial_outage_case39.csv", Lines_Init_State);
-CSV.write("results\\test_restoration_case39.csv", Restore);
+CSV.write("results\\case6ww\\test_initial_outage_$iterat.csv", Lines_Init_State);
+CSV.write("results\\case6ww\\test_restoration_$iterat.csv", Restore);
 ## make figure
 using StatsPlots
 @df Restore plot(:time, :load_shed,
-        title = "Resilience Trianglge",
+        title = "Resilience Triangle",
         xlabel = "time", ylabel = "load shed")
 
 # save a png
-png("results\\Restri2")
-#using Gadfly
-# make plots
-#A = Gadfly.plot(Restore, x="time", y="load_shed", Geom.line);
-#save plots
-#draw(PNG("results\\ResTri1.png", 6inch, 6inch), A);
+png("results\\case6ww\\ResTri_$iterat")
+end
