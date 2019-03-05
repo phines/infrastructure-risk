@@ -35,6 +35,7 @@ subgraph = find_subgraphs(ps);
 M = Int64(findmax(subgraph)[1]);
 ps_islands = build_islands(subgraph,ps);
 for i in 1:M
+    ## might check 
     psi = ps_subset(ps,ps_islands[i]);
     ## run step 2
     # run the dcpf
@@ -46,6 +47,8 @@ for i in 1:M
     ps.shunt[ps_islands[i].shunt,:P] += dPd;
     crisp_dcpf!(psi);
 end
+## save initial outage ps file
+
 ## run step 3
 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 

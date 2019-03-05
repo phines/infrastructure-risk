@@ -20,9 +20,10 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
         # apply to network
         ps.branch[:,:status] = failures;
         #check for islands
-        subgraph = find_subgraphs(ps);
+        subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
-        ps_islands = build_islands(subgraph,ps);
+        ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
+        ## for every island that changed (eventually)
         for i in 1:M
             psi = ps_subset(ps,ps_islands[i]);
             # run the dcpf
