@@ -38,7 +38,8 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
         load_shed[i+1] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     end
     times = [0;times];
-    Restore = DataFrame(time = times, load_shed = load_shed);
+    perc_load_served = (sum(load_cost.*Pd_max) - load_shed)./sum(load_cost.*Pd_max);
+    Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served);
     return Restore
 end
 

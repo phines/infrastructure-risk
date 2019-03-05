@@ -58,9 +58,13 @@ CSV.write("results\\test_initial_outage_case6ww.csv", Lines_Init_State);
 CSV.write("results\\test_restoration_case6ww.csv", Restore);
 ## make figure
 using StatsPlots
-@df Restore plot(:time, :load_shed,
-        title = "Resilience Trianglge",
-        xlabel = "time", ylabel = "load shed")
+%#df Restore plot(:time, :load_shed,
+#        title = "Resilience Triangle",
+#        xlabel = "time", ylabel = "load shed")
+
+@df Restore plot(:time, :perc_load_served,
+                title = "Resilience Triangle",
+                xlabel = "time", ylabel = "percent load served")
 
 # save a png
-png("results\\Restri2")
+png("results\\ResTri_perc")
