@@ -4,19 +4,23 @@ using CSV; using DataFrames; using SpecialFunctions;
 include("CRISP_LSOPF_1.jl")
 include("CRISP_network_segments.jl")
 
-function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
+function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
     if load_cost==0
         load_cost = ones(length(ps.shunt[:P]));
     end
     rec_t = recovery_times[recovery_times.!=0];
     times = sort(rec_t);
-    load_shed = zeros(length(times)+1);
+    load_shed = zeros(length(times)+2);
+    load_shed[1] = 0;
+    lines_out = zeros(length(times)+2);
+    lines_out[2] = length(failures) - sum(failures);
     # set load shed for the step just before restoration process
-    load_shed[1] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
+    load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     for i = 1:length(times)
         T = times[i];
         # set failed branches to status 0
         failures[T.>=recovery_times] .= 1;
+        lines_out[i+2] = length(failures) - sum(failures);
         # apply to network
         ps.branch[:,:status] = failures;
         #check for islands
@@ -24,23 +28,23 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;load_cost=0)
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
         ## for every island that changed (eventually)
-        for i in 1:M
-            psi = ps_subset(ps,ps_islands[i]);
+        for j in 1:M
+            psi = ps_subset(ps,ps_islands[j]);
             # run the dcpf
             crisp_dcpf!(psi);
             # run lsopf
-            (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[i].shunt]);
+            (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[j].shunt]);
             # apply the results
-            ps.gen[ps_islands[i].gen,:Pg]  += dPg;
-            ps.shunt[ps_islands[i].shunt,:P] += dPd;
+            ps.gen[ps_islands[j].gen,:Pg]  += dPg;
+            ps.shunt[ps_islands[j].shunt,:P] += dPd;
             crisp_dcpf!(psi);
         end
         # set load shed for this time step
-        load_shed[i+1] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
+        load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     end
-    times = [0;times];
+    times = [0;t0;times+t0];
     perc_load_served = (sum(load_cost.*Pd_max) - load_shed)./sum(load_cost.*Pd_max);
-    Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served);
+    Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served, num_lines_out = lines_out);
     return Restore
 end
 
@@ -94,3 +98,14 @@ function crisp_rlopf(ps,Pd_max)
     dPg_star = getvalue(dPg).*ps.baseMVA;
     return (dPd_star, dPg_star)
 end
+
+#makes plots to illustrate restoration process
+
+#function make_plots(Restore,filename)
+#  using StatsPlots; using DataFrames
+#  @df Restore plot(:time, :load_shed,
+#        title = "Resilience Triangle",
+#        xlabel = "time", ylabel = "load shed")
+#  # save a png
+#  png("results\\$filename")
+#end

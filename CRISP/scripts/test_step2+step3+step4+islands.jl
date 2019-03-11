@@ -5,7 +5,7 @@ include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network_segments.jl")
-include("..\\src\\parser.jl")
+include("..\\src\\parser2.jl")
 include("..\\src\\s1-initiate2.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
 ## load the case data

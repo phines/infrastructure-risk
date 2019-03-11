@@ -135,4 +135,26 @@ function crisp_lsopf(ps)
     return (dPd_star, dPg_star)
 end
 
+function crisp_lsopf_1bus(ps)
+    if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
+        dPg = -(ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status])
+        dPd = -(ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status])
+        dPd_star = dPd.*ps.baseMVA
+        dPg_star = dPg.*ps.baseMVA
+    elseif !isempty(ps.gen) && !isempty(ps.shunt)
+        Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+        Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
+        Pg_cap = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
+        if Pg_cap >= Pd
+            dPd = 0;
+            dPg = Pd-Pg;
+        else
+            dPd = Pd-Pg_cap;
+            dPg = Pg_cap-Pg;
+        end
+        dPd_star = dPd.*ps.baseMVA;
+        dPg_star = dPg.*ps.baseMVA;
+    end
+end
+
 #end
