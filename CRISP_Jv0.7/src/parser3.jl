@@ -26,11 +26,11 @@ function findBusData(filename)
     inBusData = false;
     open(filename) do file
         for i in enumerate(eachline(file))
-            if (ismatch(r".*\.bus\s*=\s*\[", i[2]))
+            if (occursin(r".*\.bus\s*=\s*\[", i[2]))
                 busDataStarts = i[1];
                 inBusData = true;
             end
-            if (ismatch(r".*\](;)?", i[2]) & inBusData)
+            if (occursin(r".*\](;)?", i[2]) & inBusData)
                 busDataEnds = i[1];
                 inBusData = false;
                 break;
@@ -46,11 +46,11 @@ function findBranchData(filename)
     inBranchData = false;
     open(filename) do file
         for i in enumerate(eachline(file))
-            if (ismatch(r".*\.branch\s*=\s*\[", i[2]))
+            if (occursin(r".*\.branch\s*=\s*\[", i[2]))
                 branchDataStarts = i[1];
                 inBranchData = true;
             end
-            if (ismatch(r".*\](;)?", i[2]) & inBranchData)
+            if (occursin(r".*\](;)?", i[2]) & inBranchData)
                 branchDataEnds = i[1];
                 inBranchData = false;
                 break;
@@ -66,11 +66,11 @@ function findGenCostData(filename)
     inGenCostData = false;
     open(filename) do file
         for i in enumerate(eachline(file))
-            if (ismatch(r".*\.gencost\s*=\s*\[", i[2]))
+            if (occursin(r".*\.gencost\s*=\s*\[", i[2]))
                 genCostDataStarts = i[1];
                 inGenCostData = true;
             end
-            if (ismatch(r".*\](;)?", i[2]) & inGenCostData)
+            if (occursin(r".*\](;)?", i[2]) & inGenCostData)
                 genCostDataEnds = i[1];
                 inGenCostData = false;
                 break;
@@ -86,11 +86,11 @@ function findGenData(filename)
     inGenData = false;
     open(filename) do file
         for i in enumerate(eachline(file))
-            if (ismatch(r".*\.gen\s*=\s*\[", i[2]))
+            if (occursin(r".*\.gen\s*=\s*\[", i[2]))
                 genDataStarts = i[1];
                 inGenData = true;
             end
-            if (ismatch(r".*\](;)?", i[2]) & inGenData)
+            if (occursin(r".*\](;)?", i[2]) & inGenData)
                 genDataEnds = i[1];
                 inGenData = false;
                 break;
@@ -104,7 +104,7 @@ function findBaseMVA(filename)
     baseMVAisAt = 0;
     open(filename) do file
         for i in enumerate(eachline(file))
-            if (ismatch(r".*\.baseMVA\s*=\s*", i[2]))
+            if (occursin(r".*\.baseMVA\s*=\s*", i[2]))
                 baseMVAisAt = i[1];
                 break;
             end
@@ -133,7 +133,7 @@ function readBusData(filename)
         for i in enumerate(eachline(file))
             if (i[1]> busDataStart && i[1] < busDataEnd)
                 line = i[2];
-                if (ismatch(r"%.*", line))
+                if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
                 row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
@@ -157,7 +157,7 @@ function readBranchData(filename)
         for i in enumerate(eachline(file))
             if (i[1]> branchDataStart && i[1] < branchDataEnd)
                 line = i[2];
-                if (ismatch(r"%.*", line))
+                if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
                 row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
@@ -181,7 +181,7 @@ function readGenData(filename)
         for i in enumerate(eachline(file))
             if (i[1]> genDataStart && i[1] < genDataEnd)
                 line = i[2];
-                if (ismatch(r"%.*", line))
+                if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
                 row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
@@ -205,7 +205,7 @@ function readGenCostData(filename)
         for i in enumerate(eachline(file))
             if (i[1]> genCostDataStart && i[1] < genCostDataEnd)
                 line = i[2];
-                if (ismatch(r"%.*", line))
+                if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
                 row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
@@ -259,8 +259,8 @@ function getShuntData(busData, ybus_includeZshunts = false)
     Gs = busData[:, 5];
     Bs = busData[:, 6];
 
-    ixS = find((Pd + im*Qd) .!= 0);
-    ixY = find((Gs + im*Bs) .!= 0);
+    ixS = findall((Pd + im*Qd) .!= 0);
+    ixY = findall((Gs + im*Bs) .!= 0);
 
     S = Pd[ixS] + im*Qd[ixS];
     Y = Gs[ixY] + im*Bs[ixY];
@@ -273,12 +273,12 @@ function getShuntData(busData, ybus_includeZshunts = false)
 
     shuntData = zeros(numRows, numCols);
 
-    shuntData[:, 1] = busData[[ixS;ixY], 1]; # Bus ID
-    shuntData[:, 2] = fixed; # Shunt Type: TODO
-    shuntData[find(busData[[ixS;ixY], 2] .!= 4), 3] = 1; # Bus Type != 4 == Isolated Bus
-    shuntData[(1:ns), 4] = real(S);
-    shuntData[(ns+1 : nsy) , 4] = real(Y);
-    shuntData[(1:ns), 5] = imag(S);
+    shuntData[:, 1] .= busData[[ixS;ixY], 1]; # Bus ID
+    shuntData[:, 2] .= fixed; # Shunt Type: TODO
+    shuntData[findall(busData[[ixS;ixY], 2] .!= 4), 3] .= 1; # Bus Type != 4 == Isolated Bus
+    shuntData[(1:ns), 4] .= real(S);
+    shuntData[(ns+1 : nsy) , 4] .= real(Y);
+    shuntData[(1:ns), 5] .= imag(S);
 
     if (ybus_includeZshunts)
         shuntData[(ns+1 : nsy), 5] = imag(Y);
@@ -286,8 +286,8 @@ function getShuntData(busData, ybus_includeZshunts = false)
         shuntData[(ns+1 : nsy), 5] = -imag(Y);
     end
 
-    shuntData[(1:ns), 6] = 1;
-    shuntData[(ns+1 : nsy), 7] = 1;
+    shuntData[(1:ns), 6] .= 1;
+    shuntData[(ns+1 : nsy), 7] .= 1;
 
     return shuntData;
 end

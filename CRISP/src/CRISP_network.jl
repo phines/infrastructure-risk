@@ -45,7 +45,7 @@ function find_subgraphs(ps)
         A[links[i,1],links[i,2]] = 1
         A[links[i,2],links[i,1]] = 1
     end
-    A = A+eye(n)
+    A = A+Matrix{Float64}(I,n,n)
     m_int = m; #setting the internal links to all the links
     grNo = 1;
     graphNos = zeros(n);
