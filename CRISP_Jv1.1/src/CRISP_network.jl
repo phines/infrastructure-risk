@@ -6,25 +6,25 @@ using DataFrames
 using CSV
 #import ps from csv files
 function import_ps(filename)
-    psBusIndex = CSV.read("$filename\\bus.csv")
-    psBusData = CSV.read("$filename\\bus.csv")
-    psBranchData = CSV.read("$filename\\branch.csv");
-    psGenData = CSV.read("$filename\\gen.csv");
-    psShuntData = CSV.read CSV.write("$filename\\shunt.csv");
-    mpBaseMVA = CSV.write("$filename\\baseMVA.csv")[1,1];
+    psBusIndex = CSV.read("$filename\\bi.csv",allowmissing=:none)
+    psBusData = CSV.read("$filename\\bus.csv",allowmissing=:none)
+    psBranchData = CSV.read("$filename\\branch.csv",allowmissing=:none);
+    psGenData = CSV.read("$filename\\gen.csv",allowmissing=:none);
+    psShuntData = CSV.read("$filename\\shunt.csv",allowmissing=:none);
+    mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
-    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psGenCostData, psShuntData);
+    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return ps
 end
 
 # exports ps structure to several csv files
 function export_ps(ps,filename)
-    if !isempty(ps.bus) CSV.write("$filename-bus.csv",ps.bus) end
-    if !isempty(ps.branch) CSV.write("$filename-branch.csv",ps.branch) end
-    if !isempty(ps.gen) CSV.write("$filename-gen.csv",ps.gen) end
-    if !isempty(ps.shunt) CSV.write("$filename-shunt.csv",ps.shunt) end
-    if !isempty(ps.baseMVA) CSV.write("$filename-baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
-    if !isempty(ps.bi) CSV.write("$filename-bi.csv",ps.bi) end
+    if !isempty(ps.bus) CSV.write("$filename\\bus.csv",ps.bus) end
+    if !isempty(ps.branch) CSV.write("$filename\\branch.csv",ps.branch) end
+    if !isempty(ps.gen) CSV.write("$filename\\gen.csv",ps.gen) end
+    if !isempty(ps.shunt) CSV.write("$filename\\shunt.csv",ps.shunt) end
+    if !isempty(ps.baseMVA) CSV.write("$filename\\baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
+    if !isempty(ps.bi) CSV.write("$filename\\bi.csv",ps.bi) end
 end
 
 function find_subgraphs(ps)
@@ -131,6 +131,6 @@ function ps_subset(ps,ps_island)
     psGenData = ps.gen[ps_island.gen,:];
     psShuntData = ps.shunt[ps_island.shunt,:];
     psBusIndex = ps.bi[ps_island.bi,:];
-    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psBusIndex, psShuntData);
+    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return psi
 end
