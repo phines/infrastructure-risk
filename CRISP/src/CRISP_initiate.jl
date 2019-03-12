@@ -5,15 +5,16 @@
 # that are outaged
 
 using SpecialFunctions;
+using Random
 
 function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch[1]);
 Nlines = init_out_zipf(s_line,maxLinesOut,TotalLines);
 lines_state = initiate_state(TotalLines, Nlines);
-ps.branch[:status] = lines_state
+ps.branch[:status] = lines_state;
 RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
-lines_outage_recovery = RecTime(RecovTimeL,lines_state)
+lines_outage_recovery = RecTime(RecovTimeL,lines_state);
 return lines_outage_recovery
 end
 
@@ -82,7 +83,7 @@ end
 function initiate_state(TotalS, N);
     Index = collect(1:TotalS);
     State = ones(TotalS);
-    Nout = shuffle(Index);
+    Nout = Random.shuffle(Index);
     for i = 1:N
         State[Nout[i]] = 0;
     end

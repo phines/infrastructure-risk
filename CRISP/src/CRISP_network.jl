@@ -86,7 +86,7 @@ end
 
 function build_islands(subgraph,ps)
     N = Int64(findmax(subgraph)[1]);
-    ps_islands = Array{Island_ps}(N);
+    ps_islands = Array{Island_ps}(undef,N);
     for jj = 1:N
         nodes = subgraph.==jj;
         buses = ps.bus[nodes,:id];
@@ -110,7 +110,7 @@ function build_islands(subgraph,ps)
                 end
             end
         end
-        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen)
+        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen);
     end
     return ps_islands
 end

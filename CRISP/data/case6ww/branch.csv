@@ -1,4 +1,4 @@
-f,t,R,X,B,rateA,rateB,rateC,tap,shift,status,angMin,angMax,Pf,Qf,Pt,Qt,MU_SF,MU_ST,MU_ANGMIN,MU_ANGMAX,kind,tap_min,tap_max,Pf_des,ImF,ImT
+f,t,R,X,B,rateA,rateB,rateC,tap,shift,status,angMin,angMax,Pf,Qf,Pt,Qt,MU_SF,MU_ST,MU_ANGMIN,MU_ANGMAX,bus_type,tap_min,tap_max,Pf_des,ImF,ImT
 1,2,0.1,0.2,0.04,40,40,40,0,0,1,-360,360,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 1,4,0.05,0.2,0.04,60,60,60,0,0,1,-360,360,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 1,5,0.08,0.3,0.06,40,40,40,0,0,1,-360,360,0,0,0,0,0,0,0,0,0,0,0,0,0,0

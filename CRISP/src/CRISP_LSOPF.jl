@@ -1,5 +1,3 @@
-#module CRISP_LSOPF
-
 using JuMP
 using Clp
 using SparseArrays
@@ -13,7 +11,7 @@ function crisp_dcpf!(ps)
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
-    bi = sparse(ps.bus[:id],fill(1,n),collect(1:n)) # helps us to find things
+    bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
     if isempty(ps.bus.id[ps.bus.bus_type.==3])
         if isempty(ps.gen) || isempty(ps.shunt)
             return ps
@@ -59,8 +57,8 @@ function crisp_dcpf!(ps)
     Pf_pu = Xinv .* (theta[F] - theta[T])
     ps.branch[brst,:Pf] = +Pf_pu.*ps.baseMVA
     ps.branch[brst,:Pt] = -Pf_pu.*ps.baseMVA
-    ps.branch[brst,:Qf] .= 0
-    ps.branch[brst,:Qt] .= 0
+    ps.branch.Qf[brst] .= 0
+    ps.branch.Qt[brst] .= 0
     # fix the generation at the slack bus
     mismatch = sum(Pbus)
     if abs(mismatch)>eps
@@ -69,7 +67,7 @@ function crisp_dcpf!(ps)
         if sum(is_refgen) != 1
             error("Must be exactly one ref generator")
         end
-        ps.gen[is_refgen,:Pg] -= (mismatch.*ps.baseMVA)
+        ps.gen.Pg[is_refgen] -= (mismatch.*ps.baseMVA)
     end
     # check the mismatch
     mis_check = sum(ps.gen.Pg.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
@@ -88,73 +86,81 @@ function crisp_lsopf(ps)
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
-    bi = sparse(ps.bus[:id],fill(1,n),collect(1:n)) # helps us to find things
-    # load data
-    nd = size(ps.shunt,1)
-    D = bi[ps.shunt[:bus]]
-    Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
-    # gen data
-    ng = size(ps.gen,1)
-    G = bi[ps.gen[:bus]]
-    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
-    # branch data
-    brst = (ps.branch[:status].==1)
-    F = bi[ps.branch[brst,:f]]
-    T = bi[ps.branch[brst,:t]]
-    flow0 = ps.branch[brst,:Pf]./ps.baseMVA
-    flow_max = ps.branch[brst,:rateA]./ps.baseMVA # this could also be rateB
-    Xinv = (1 ./ ps.branch[brst,:X])
-    B = sparse(F,T,-Xinv,n,n) +
-        sparse(T,F,-Xinv,n,n) +
-        sparse(T,T,+Xinv,n,n) +
-        sparse(F,F,+Xinv,n,n)
-    ### Build the optimization model ###
-    m = Model(solver = ClpSolver())
-    # variables
-    @variable(m,dPd[1:nd])
-    @variable(m,dPg[1:ng])
-    @variable(m,dTheta[1:n])
-    # variable bounds
-    @constraint(m,-Pd.<=dPd.<=0)
-    @constraint(m,-Pg.<=dPg.<=0)
-    @constraint(m,dTheta[1] == 0)
-    # objective
-    @objective(m,Max,sum(dPd)) # serve as much load as possible
-    # mapping matrix to map loads/gens to buses
-    M_D = sparse(D,1:nd,1.0,n,nd)
-    M_G = sparse(G,1:ng,1.0,n,ng)
-    # Power balance equality constraint
-    @constraint(m,B*dTheta .== M_G*dPg - M_D*dPd)
-    # Power flow constraints
-    @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
-    ### solve the model ###
-    solve(m)
-    # collect/return the outputs
-    dPd_star = getvalue(dPd).*ps.baseMVA
-    dPg_star = getvalue(dPg).*ps.baseMVA
-    return (dPd_star, dPg_star)
-end
-
-function crisp_lsopf_1bus(ps)
-    if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
-        dPg = -(ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status])
-        dPd = -(ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status])
-        dPd_star = dPd.*ps.baseMVA
-        dPg_star = dPg.*ps.baseMVA
-    elseif !isempty(ps.gen) && !isempty(ps.shunt)
-        Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
-        Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
-        Pg_cap = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
-        if Pg_cap >= Pd
-            dPd = 0;
-            dPg = Pd-Pg;
+    if n>1
+        bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
+        # load data
+        nd = size(ps.shunt,1)
+        D = bi[ps.shunt.bus]
+        Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
+        # gen data
+        ng = size(ps.gen,1)
+        G = bi[ps.gen.bus]
+        Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
+        # branch data
+        brst = (ps.branch.status.==1)
+        F = bi[ps.branch.f[brst]]
+        T = bi[ps.branch.t[brst]]
+        flow0 = ps.branch.Pf[brst]./ps.baseMVA
+        flow_max = ps.branch.rateA[brst]./ps.baseMVA # this could also be rateB
+        Xinv = (1 ./ ps.branch.X[brst])
+        B = sparse(F,T,-Xinv,n,n) +
+            sparse(T,F,-Xinv,n,n) +
+            sparse(T,T,+Xinv,n,n) +
+            sparse(F,F,+Xinv,n,n)
+        ### Build the optimization model ###
+        m = Model(with_optimizer(Clp.Optimizer))
+        # variables
+        @variable(m,dPd[1:nd])
+        @variable(m,dPg[1:ng])
+        @variable(m,dTheta[1:n])
+        # variable bounds
+        @constraint(m,-Pd.<=dPd.<=0)
+        @constraint(m,-Pg.<=dPg.<=0)
+        @constraint(m,dTheta[1] == 0)
+        # objective
+        @objective(m,Max,sum(dPd)) # serve as much load as possible
+        # mapping matrix to map loads/gens to buses
+        M_D = sparse(D,1:nd,1.0,n,nd)
+        M_G = sparse(G,1:ng,1.0,n,ng)
+        # Power balance equality constraint
+        @constraint(m,B*dTheta .== M_G*dPg - M_D*dPd)
+        # Power flow constraints
+        @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
+        ### solve the model ###
+        solve(m)
+        # collect/return the outputs
+        dPd_star = getvalue(dPd).*ps.baseMVA
+        dPg_star = getvalue(dPg).*ps.baseMVA
+        ps.shunt.P += dPd_star;
+        ps.gen.Pg += dPg_star;
+    else
+        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
+            dPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
+            dPd = -(ps.shunt.P ./ ps.baseMVA .* ps.shunt.status);
+            dPd_star = dPd.*ps.baseMVA;
+            dPg_star = dPg.*ps.baseMVA;
+            ps.gen  += dPg_star;
+            ps.shunt += dPd_star;
+        elseif !isempty(ps.gen) && !isempty(ps.shunt)
+            Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
+            Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
+            Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
+            if Pg_cap >= Pd
+                dPd = 0;
+                dPg = Pd-Pg;
+            else
+                dPd = Pd-Pg_cap;
+                dPg = Pg_cap-Pg;
+            end
+            dPd_star = dPd.*ps.baseMVA;
+            dPg_star = dPg.*ps.baseMVA;
+            ps.gen  = dPg_star;
+            ps.shunt = dPd_star;
         else
-            dPd = Pd-Pg_cap;
-            dPg = Pg_cap-Pg;
+            ps.gen  = ps.gen.Pg.*0;
+            ps.shunt = ps.shunt.P.*0;
         end
-        dPd_star = dPd.*ps.baseMVA;
-        dPg_star = dPg.*ps.baseMVA;
     end
+    return ps
 end
-
 #end

@@ -27,5 +27,5 @@ orignumGen = 0;
 include("..\\src\\CRISP-electricity.jl")
 import CRISP
 # step 1
-Lines_Init_State = CRISP.line_state(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines)
+Lines_Init_State = CRISP.line_state(ps,s_line,maxLinesOut,mu_line,sigma_line)
 Gens_Init_State = CRISP.gen_state(ps,lambda_gen,mu_gen,sigma_gen,orignumGen)

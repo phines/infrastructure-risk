@@ -1,10 +1,8 @@
 include("../src/CRISP_LSOPF.jl")
-#include("../src/CRISP_LSOPF_1.jl")
-include("../src/parser.jl")
+include("../src/CRISP_network.jl")
 
 # load the case data
-ps = ("../data/case6ww.m")
-#ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39.m")
+ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww\\")
 
 # dcpf
 crisp_dcpf!(ps)

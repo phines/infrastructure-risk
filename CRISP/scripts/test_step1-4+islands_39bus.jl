@@ -4,19 +4,14 @@ using CSV
 include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
-include("..\\src\\CRISP_network_segments.jl")
-include("..\\src\\parser.jl")
-include("..\\src\\s1-initiate2.jl")
+include("..\\src\\CRISP_network.jl")
+include("..\\src\\CRISP_initiate.jl")
 #include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
 ## load the case data
-ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39.m")
-#ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m")
-#ps = mp2ps("../data/case6ww.m")
+ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39\\")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
-
-
 
 # parameters of distributions for line outages and recovery times
 #lines_dist = CSV.read("line-distribution-parameters.csv");
@@ -29,9 +24,6 @@ sigma_line = 2.43;#lines_dist[3];
 lambda_gen = 1;#gens_dist[1];
 mu_gen = 3.66;#gens_dist[2];
 sigma_gen = 2.43;#gens_dist[3];
-
-#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP-electricity2.jl")
-include("..\\src\\CRISP-electricity2.jl")
 
 #import CRISP
 # step 1

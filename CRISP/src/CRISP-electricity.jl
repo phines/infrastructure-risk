@@ -1,6 +1,6 @@
 #set up packages
 using CSV; using DataFrames; using SpecialFunctions;
-include("s1-initiate1.jl")
+include("CRISP_initiate.jl")
 function line_state(ps,s_line,maxLinesOut,mu_line,sigma_line,orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch[1]);

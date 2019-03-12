@@ -1,4 +1,4 @@
-bus,kind,status,P,Q,fracS,fracY,fracE,gamma,Qmin,Qmax,Qinc,Qcon
+bus,bus_type,status,P,Q,fracS,fracY,fracE,gamma,Qmin,Qmax,Qinc,Qcon
 1,1,1,97.6,44.2,1,0,0,0,0,0,0,0
 3,1,1,322,2.4,1,0,0,0,0,0,0,0
 4,1,1,500,184,1,0,0,0,0,0,0,0

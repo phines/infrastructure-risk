@@ -1,13 +1,12 @@
 #this will be easy
-include("..\\src\\CRISP_network_segments.jl")
-include("../src/parser.jl")
+include("..\\src\\CRISP_network.jl")
 # pass nodes and link
 #make line graph--> test answer is correct
 
 
 ## load the case data
 #ps = mp2ps("../data/case6ww.m")
-ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m")
+ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww\\")
 
 # remove branches
 ps.branch[4,:status]=0;

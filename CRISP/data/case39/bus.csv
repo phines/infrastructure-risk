@@ -1,4 +1,4 @@
-id,kind,Pd,Qd,Gs,Bs,area,Vm,Va,baseKV,zone,Vmax,Vmin,LAM_P,LAM_Q,MU_VMAX,MU_VMIN,Vsp,locX,locY
+id,bus_type,Pd,Qd,Gs,Bs,area,Vm,Va,baseKV,zone,Vmax,Vmin,LAM_P,LAM_Q,MU_VMAX,MU_VMIN,Vsp,locX,locY
 1,1,0,0,0,0,2,1.0393836,-13.536602,345,1,1.06,0.94,0,0,0,0,0,0,0
 2,1,0,0,0,0,2,1.0484941,-9.7852666,345,1,1.06,0.94,0,0,0,0,0,0,0
 3,1,0,0,0,0,2,1.0307077,-12.276384,345,1,1.06,0.94,0,0,0,0,0,0,0
