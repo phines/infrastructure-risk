@@ -1,4 +1,5 @@
 using DataFrames
+using CSV
 
 function mp2ps(case, ybus_includeZshunts = false)
     (mpBusData, numBusRows, nunBusCols) = readBusData(case);
@@ -136,7 +137,7 @@ function readBusData(filename)
                 if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
-                row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
+                row = map(x -> parse(ComplexF64,x), collect(m.match for m in eachmatch(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line)));
                 for data in row
                     push!(busData, data);
                 end
@@ -160,7 +161,7 @@ function readBranchData(filename)
                 if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
-                row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
+                row = map(parse, collect(m.match for m in eachmatch(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line)));
                 for data in row
                     push!(branchData, data);
                 end
@@ -184,7 +185,7 @@ function readGenData(filename)
                 if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
-                row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
+                row = map(parse, collect(m.match for m in eachmatch(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line)));
                 for data in row
                     push!(genData, data);
                 end
@@ -208,7 +209,7 @@ function readGenCostData(filename)
                 if (occursin(r"%.*", line))
                     line = replace(line, r"%.*", " ");
                 end
-                row = map(parse, matchall(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line));
+                row = map(parse, collect(m.match for m in eachmatch(r"((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+)", line)));
                 for data in row
                     push!(genCostData, data);
                 end
@@ -227,7 +228,7 @@ function readBaseMVA(filename)
         for i in enumerate(eachline(file))
             if (i[1] == baseMVAisAt)
                 line = i[2];
-                baseMVAString = match(r".*\.baseMVA\s*=\s*((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+);", line);
+                baseMVAString = collect(m.match for m in eachmatch(r".*\.baseMVA\s*=\s*((?:[-+]?[0-9]*(e-|\.)?[0-9]+)+);", line));
                 baseMVA = parse(baseMVAString.captures[1]);
                 break;
             end

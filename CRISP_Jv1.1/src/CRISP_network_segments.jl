@@ -3,6 +3,29 @@
 using SparseArrays
 using LinearAlgebra
 using DataFrames
+using CSV
+#import ps from csv files
+function import_ps(filename)
+    psBusIndex = CSV.read("$filename\\bus.csv")
+    psBusData = CSV.read("$filename\\bus.csv")
+    psBranchData = CSV.read("$filename\\branch.csv");
+    psGenData = CSV.read("$filename\\gen.csv");
+    psShuntData = CSV.read CSV.write("$filename\\shunt.csv");
+    mpBaseMVA = CSV.write("$filename\\baseMVA.csv")[1,1];
+    #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
+    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psGenCostData, psShuntData);
+    return ps
+end
+
+# exports ps structure to several csv files
+function export_ps(ps,filename)
+    if !isempty(ps.bus) CSV.write("$filename-bus.csv",ps.bus) end
+    if !isempty(ps.branch) CSV.write("$filename-branch.csv",ps.branch) end
+    if !isempty(ps.gen) CSV.write("$filename-gen.csv",ps.gen) end
+    if !isempty(ps.shunt) CSV.write("$filename-shunt.csv",ps.shunt) end
+    if !isempty(ps.baseMVA) CSV.write("$filename-baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
+    if !isempty(ps.bi) CSV.write("$filename-bi.csv",ps.bi) end
+end
 
 function find_subgraphs(ps)
     # usage: [graphNos,nSubGraphs,linkNos] = find_subgraphs(nodes_A,links)
@@ -97,8 +120,8 @@ mutable struct PSCase
     bus::DataFrame
     branch::DataFrame
     gen::DataFrame
-    gencost::DataFrame
     shunt::DataFrame
+    bi::DataFrame
 end
 
 function ps_subset(ps,ps_island)
@@ -106,8 +129,8 @@ function ps_subset(ps,ps_island)
     psBusData = ps.bus[ps_island.bus,:];
     psBranchData = ps.branch[ps_island.branch,:];
     psGenData = ps.gen[ps_island.gen,:];
-    psGenCostData = ps.gencost;
     psShuntData = ps.shunt[ps_island.shunt,:];
-    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psGenCostData, psShuntData);
+    psBusIndex = ps.bi[ps_island.bi,:];
+    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psBusIndex, psShuntData);
     return psi
 end
