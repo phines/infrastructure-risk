@@ -139,8 +139,8 @@ function crisp_lsopf!(ps)
         if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
             deltaPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
             deltaPd = -(ps.shunt.P ./ ps.baseMVA .* ps.shunt.status);
-            deltaPd_star = deltaPd.*ps.baseMVA;
             deltaPg_star = deltaPg.*ps.baseMVA;
+            deltaPd_star = deltaPd.*ps.baseMVA;
             ps.gen.Pg  += deltaPg_star;
             ps.shunt.P += deltaPd_star;
         elseif !isempty(ps.gen) && !isempty(ps.shunt)
@@ -148,19 +148,19 @@ function crisp_lsopf!(ps)
             Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
             Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
             if Pg_cap >= Pd
-                deltaPd = 0;
+                deltaPd = 0.0;
                 deltaPg = Pd-Pg;
             else
                 deltaPd = Pd-Pg_cap;
                 deltaPg = Pg_cap-Pg;
             end
             deltaPd_star = deltaPd.*ps.baseMVA;
-            dPg_star = deltaPg.*ps.baseMVA;
+            deltaPg_star = deltaPg.*ps.baseMVA;
             ps.gen.Pg  = deltaPg_star;
             ps.shunt.P = deltaPd_star;
         else
-            ps.gen.Pg  = ps.gen.Pg.*0;
-            ps.shunt.P = ps.shunt.P.*0;
+            ps.gen.Pg  = ps.gen.Pg.*0.0;
+            ps.shunt.P = ps.shunt.P.*0.0;
         end
     end
     return ps

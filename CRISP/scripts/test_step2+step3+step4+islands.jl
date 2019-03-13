@@ -37,6 +37,7 @@ for i in 1:M
     crisp_dcpf!(psi);
     # run lsopf
     crisp_lsopf!(psi);
+    add_changes!(ps,psi,ps_islands[i]);
     crisp_dcpf!(psi);
 end
 ## save initial outage ps file

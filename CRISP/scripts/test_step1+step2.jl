@@ -33,9 +33,9 @@ for i in 1:M
     psi = ps_subset(ps,ps_islands[i]);
     ## run step 2
     crisp_lsopf!(psi)
+    add_changes!(ps,psi,ps_islands[i]);
     crisp_dcpf!(psi)
 end
-crisp_dcpf!(ps) #just to check the solution works as a whole
 
 println("Before");
 print(sum(ps0.gen[:Pg]));

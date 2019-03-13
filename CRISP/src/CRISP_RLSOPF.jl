@@ -1,6 +1,4 @@
-#set up packages
 using CSV; using DataFrames; using SpecialFunctions;
-
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
@@ -30,10 +28,10 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
         ## for every island that changed (eventually)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
-            if sum(ps_islands[j].bus)==1
-                #Don't need to rerun for single bus islands (already ran any single bus in lsopf).
-                #Note, this will change if generators or loads start getting damaged
-            else
+#            if sum(ps_islands[j].bus)==1
+#                #Don't need to rerun for single bus islands (already ran any single bus in lsopf).
+#                #Note, this will change if generators or loads start getting damaged
+#            else
                 # run the dcpf
                 crisp_dcpf!(psi);
                 # run lsopf
@@ -42,7 +40,7 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
                 ps.gen[ps_islands[j].gen,:Pg]  += dPg;
                 ps.shunt[ps_islands[j].shunt,:P] += dPd;
                 crisp_dcpf!(psi);
-            end
+#            end
         end
         # set load shed for this time step
         load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
@@ -88,7 +86,7 @@ function crisp_rlopf(ps,Pd_max)
     @constraint(m1,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg));
     @constraint(m1,dTheta[1] == 0);
     # objective
-    @objective(m1,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
+    @objective(m1,Max,sum(dPd) - 0.9*sum(dPg)); # serve as much load as possible
     # mapping matrix to map loads/gens to buses
     M_D = sparse(D,1:nd,1.0,n,nd);
     M_G = sparse(G,1:ng,1.0,n,ng);
@@ -105,14 +103,3 @@ function crisp_rlopf(ps,Pd_max)
     dPg_star = sol_dPg.*ps.baseMVA;
     return (dPd_star, dPg_star)
 end
-
-#makes plots to illustrate restoration process
-
-#function make_plots(Restore,filename)
-#  using StatsPlots; using DataFrames
-#  @df Restore plot(:time, :load_shed,
-#        title = "Resilience Triangle",
-#        xlabel = "time", ylabel = "load shed")
-#  # save a png
-#  png("results\\$filename")
-#end

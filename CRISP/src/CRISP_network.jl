@@ -141,3 +141,8 @@ function ps_subset(ps,ps_island)
     psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return psi
 end
+
+function add_changes!(ps,psi,ps_island);
+    ps.gen[ps_island.gen,:] = psi.gen
+    ps.shunt[ps_island.shunt,:] = psi.shunt
+end
