@@ -43,6 +43,7 @@ export_ps(ps,"data\\saved_ps\\case39_severe")
 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 #make_plots(Restore,filename)
 using Plots; using StatsPlots
+#theme(:sand)
 plot1 = @df Restore plot(:time, :perc_load_served,
       title = "Resilience Triangle",
       xlabel = "time", ylabel = "load served (%)") #, legend = off, grid = off
@@ -50,7 +51,7 @@ plot2 = @df Restore plot(:time, :num_lines_out,
             title = "Line Restoration",
             xlabel = "time", ylabel = "number of lines out")
 #putting 2 plots together
-P = plot(plot1,plot2,layout = (2,1))
+P = plot(plot1,plot2,layout = (2,1),legend=false,grid=false)
 # save a png
 png(P,"results\\$filename")
 ## run step 4

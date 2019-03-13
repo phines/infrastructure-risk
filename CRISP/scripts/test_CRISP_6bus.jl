@@ -54,24 +54,6 @@ for iterat in 1:Num
     recovery_times = Lines_Init_State[:,2];
     failures = state;
 
-    #check for islands
-    subgraph = find_subgraphs(ps);
-    M = Int64(findmax(subgraph)[1]);
-    ps_islands = build_islands(subgraph,ps);
-    for i in 1:M
-        psi = ps_subset(ps,ps_islands[i]);
-        # run the dcpf
-        crisp_dcpf!(psi);
-        # run lsopf
-        crisp_lsopf!(psi);
-        crisp_dcpf!(psi);
-    end
-    ## run step 3
-    Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
-
-    ## run step 4
-    ResilienceTri = crisp_res(Restore);
-
     ## save data
     using CSV
     CSV.write("results\\case6ww\\test_initial_outage_case6ww_$iterat.csv", Lines_Init_State);
@@ -85,7 +67,7 @@ for iterat in 1:Num
             title = "Line Restoration",
             xlabel = "time", ylabel = "number of lines out")
     #putting 2 plots together
-    P = plot(plot1,plot2,layout = (2,1))
+    P = plot(plot1,plot2,layout = (2,1),legend=false,grid=false)
     # save a png
     png(P,"results\\case6ww\\ResTri_case6ww_$iterat")
 end

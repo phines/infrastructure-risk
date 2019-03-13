@@ -6,8 +6,9 @@ include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 
 ## number of failure scenarios to run through
-Num = 10;
-
+Num = 1000;
+# initialize vector of costs from events
+ResilienceTri = Array{Float64}(undef,Num,1);
 ## load the case data
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39\\") #case39\\")
 #ps = import_ps("../data/case6ww/")
@@ -39,35 +40,23 @@ for iterat in 1:Num
         crisp_dcpf!(psi);
         # run lsopf
         crisp_lsopf!(psi);
-        add_changes!(ps,psi,ps_islands[i]);
         crisp_dcpf!(psi);
     end
-    ## save initial outage ps file
-    # make export routine, Pkg.JLD
     ## run step 3
     Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 
     ## run step 4
-    ResilienceTri = crisp_res(Restore);# step 1
-    Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
-    state = Lines_Init_State[:,1];
-    recovery_times = Lines_Init_State[:,2];
-    failures = state;
-
+    ResilienceTri[iterat] = crisp_res(Restore);
+end
+    case39_res = DataFrame(resilience = ResilienceTri[:,1]);
     ## save data
-    using CSV
-    CSV.write("results\\case39\\test_initial_outage_case39_$iterat.csv", Lines_Init_State);
-    CSV.write("results\\case39\\test_restoration_case39_$iterat.csv", Restore);
+    CSV.write("results\\case39\\resilience_case39.csv", case39_res);
     ## make figure
     using Plots; using StatsPlots
-    plot1 = @df Restore plot(:time, :perc_load_served,
-            title = "Resilience Triangle",
-            xlabel = "time", ylabel = "load served (%)")
-    plot2 = @df Restore plot(:time, :num_lines_out,
-            title = "Line Restoration",
-            xlabel = "time", ylabel = "number of lines out")
+    plot1 = @df case39_res histogram(:resilience,
+            title = "Resilience Distribution 39 bus",
+            xlabel = "cost", ylabel = "number of events")
     #putting 2 plots together
-    P = plot(plot1,plot2,layout = (2,1),legend=false,grid=false)
+    P = plot(plot1,legend=false,grid=false)
     # save a png
-    png(P,"results\\case39\\ResTri_case39_$iterat")
-end
+    png(P,"results\\case39\\Resilience_Dist_39bus")
