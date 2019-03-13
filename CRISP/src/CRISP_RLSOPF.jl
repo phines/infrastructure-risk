@@ -1,12 +1,12 @@
 #set up packages
 using CSV; using DataFrames; using SpecialFunctions;
 
-include("CRISP_LSOPF_1.jl")
-include("CRISP_network_segments.jl")
+include("CRISP_LSOPF.jl")
+include("CRISP_network.jl")
 
 function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
-    if load_cost==0
-        load_cost = ones(length(ps.shunt[:P]));
+    if sum(load_cost)==0
+        load_cost = ones(length(ps.shunt.P));
     end
     rec_t = recovery_times[recovery_times.!=0];
     times = sort(rec_t);
@@ -30,20 +30,25 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
         ## for every island that changed (eventually)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
-            # run the dcpf
-            crisp_dcpf!(psi);
-            # run lsopf
-            (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[j].shunt]);
-            # apply the results
-            ps.gen[ps_islands[j].gen,:Pg]  += dPg;
-            ps.shunt[ps_islands[j].shunt,:P] += dPd;
-            crisp_dcpf!(psi);
+            if sum(ps_islands[j].bus)==1
+                #Don't need to rerun for single bus islands (already ran any single bus in lsopf).
+                #Note, this will change if generators or loads start getting damaged
+            else
+                # run the dcpf
+                crisp_dcpf!(psi);
+                # run lsopf
+                (dPd, dPg) = crisp_rlopf(psi,Pd_max[ps_islands[j].shunt]);
+                # apply the results
+                ps.gen[ps_islands[j].gen,:Pg]  += dPg;
+                ps.shunt[ps_islands[j].shunt,:P] += dPd;
+                crisp_dcpf!(psi);
+            end
         end
         # set load shed for this time step
         load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     end
-    times = [0;t0;times+t0];
-    perc_load_served = (sum(load_cost.*Pd_max) - load_shed)./sum(load_cost.*Pd_max);
+    times = [0.0;t0*1.0;times.+t0*1.0];
+    perc_load_served = (sum(load_cost.*Pd_max) .- load_shed)./sum(load_cost.*Pd_max);
     Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served, num_lines_out = lines_out);
     return Restore
 end
@@ -71,31 +76,33 @@ function crisp_rlopf(ps,Pd_max)
     B = sparse(F,T,-Xinv,n,n) +
         sparse(T,F,-Xinv,n,n) +
         sparse(T,T,+Xinv,n,n) +
-        sparse(F,F,+Xinv,n,n)
+        sparse(F,F,+Xinv,n,n);
     ### Build the optimization model ###
-    m1 = Model(solver = ClpSolver())
+    m1 = Model(with_optimizer(Clp.Optimizer));
     # variables
-    @variable(m1,dPd[1:nd])
-    @variable(m1,dPg[1:ng])
-    @variable(m1,dTheta[1:n])
+    @variable(m1,dPd[1:nd]);
+    @variable(m1,dPg[1:ng]);
+    @variable(m1,dTheta[1:n]);
     # variable bounds
-    @constraint(m1,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd))
-    @constraint(m1,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg))
-    @constraint(m1,dTheta[1] == 0)
+    @constraint(m1,-Pd.<=dPd.<=(Pd_max./ ps.baseMVA-Pd));
+    @constraint(m1,-Pg.<=dPg.<=(ps.gen[:Pmax]-Pg));
+    @constraint(m1,dTheta[1] == 0);
     # objective
     @objective(m1,Max,sum(dPd) - 0.9*sum(dPg)) # serve as much load as possible
     # mapping matrix to map loads/gens to buses
     M_D = sparse(D,1:nd,1.0,n,nd);
     M_G = sparse(G,1:ng,1.0,n,ng);
     # Power balance equality constraint
-    @constraint(m1,B*dTheta .== M_G*dPg - M_D*dPd)
+    @constraint(m1,B*dTheta .== M_G*dPg - M_D*dPd);
     # Power flow constraints
-    @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
+    @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max);
     ### solve the model ###
-    solve(m1)
+    optimize!(m1);
     # collect/return the outputs
-    dPd_star = getvalue(dPd).*ps.baseMVA;
-    dPg_star = getvalue(dPg).*ps.baseMVA;
+    sol_dPd=value.(dPd);
+    sol_dPg=value.(dPg);
+    dPd_star = sol_dPd.*ps.baseMVA;
+    dPg_star = sol_dPg.*ps.baseMVA;
     return (dPd_star, dPg_star)
 end
 

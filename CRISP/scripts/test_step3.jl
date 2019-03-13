@@ -1,13 +1,11 @@
 #using CRISP_LSOPF
 using CSV
 include("..\\src\\CRISP_RLSOPF.jl")
-#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_RLSOPF")
 include("..\\src\\CRISP_LSOPF.jl")
-#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\CRISP_LSOPF_1.jl")
-include("..\\src\\parser.jl")
-#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
+include("..\\src\\CRISP_network.jl")
+
 ## load the case data
-ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m") #case39.m")
+ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww\\") #case39\\")
 #ps = mp2ps("../data/case6ww.m")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
@@ -27,10 +25,7 @@ recovery_times[5] = 10;
 # run the dcpf
 crisp_dcpf!(ps)
 # run lsopf
-(dPd, dPg) = crisp_lsopf(ps)
-# apply the results
-ps.gen[:Pg]  += dPg
-ps.shunt[:P] += dPd
+crisp_lsopf!(ps)
 crisp_dcpf!(ps)
 
 ## run step 3

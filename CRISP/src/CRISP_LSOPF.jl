@@ -12,7 +12,7 @@ function crisp_dcpf!(ps)
     # bus data
     n = size(ps.bus,1) # the number of buses
     bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
-    if isempty(ps.bus.id[ps.bus.bus_type.==3])
+    if isempty(ps.bus.id[ps.bus.bus_type.==3]) # note in Pavan's ps structure I beleive it's called 'kind' not 'bus_type'
         if isempty(ps.gen) || isempty(ps.shunt)
             return ps
         else
@@ -55,8 +55,8 @@ function crisp_dcpf!(ps)
     ps.bus.Vm = ones(n)
     # compute/record the power flows
     Pf_pu = Xinv .* (theta[F] - theta[T])
-    ps.branch[brst,:Pf] = +Pf_pu.*ps.baseMVA
-    ps.branch[brst,:Pt] = -Pf_pu.*ps.baseMVA
+    ps.branch.Pf[brst] = +Pf_pu.*ps.baseMVA
+    ps.branch.Pt[brst] = -Pf_pu.*ps.baseMVA
     ps.branch.Qf[brst] .= 0
     ps.branch.Qt[brst] .= 0
     # fix the generation at the slack bus
@@ -67,7 +67,7 @@ function crisp_dcpf!(ps)
         if sum(is_refgen) != 1
             error("Must be exactly one ref generator")
         end
-        ps.gen.Pg[is_refgen] -= (mismatch.*ps.baseMVA)
+        ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)
     end
     # check the mismatch
     mis_check = sum(ps.gen.Pg.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
@@ -82,7 +82,7 @@ function crisp_dcpf!(ps)
     return ps
 end
 
-function crisp_lsopf(ps)
+function crisp_lsopf!(ps)
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -127,38 +127,40 @@ function crisp_lsopf(ps)
         # Power flow constraints
         @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
-        solve(m)
+        optimize!(m);
         # collect/return the outputs
-        dPd_star = getvalue(dPd).*ps.baseMVA
-        dPg_star = getvalue(dPg).*ps.baseMVA
+        sol_dPd=value.(dPd)
+        sol_dPg=value.(dPg)
+        dPd_star = sol_dPd.*ps.baseMVA
+        dPg_star = sol_dPg.*ps.baseMVA
         ps.shunt.P += dPd_star;
         ps.gen.Pg += dPg_star;
     else
         if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
-            dPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
-            dPd = -(ps.shunt.P ./ ps.baseMVA .* ps.shunt.status);
-            dPd_star = dPd.*ps.baseMVA;
-            dPg_star = dPg.*ps.baseMVA;
-            ps.gen  += dPg_star;
-            ps.shunt += dPd_star;
+            deltaPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
+            deltaPd = -(ps.shunt.P ./ ps.baseMVA .* ps.shunt.status);
+            deltaPd_star = deltaPd.*ps.baseMVA;
+            deltaPg_star = deltaPg.*ps.baseMVA;
+            ps.gen.Pg  += deltaPg_star;
+            ps.shunt.P += deltaPd_star;
         elseif !isempty(ps.gen) && !isempty(ps.shunt)
             Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
             Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
             Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
             if Pg_cap >= Pd
-                dPd = 0;
-                dPg = Pd-Pg;
+                deltaPd = 0;
+                deltaPg = Pd-Pg;
             else
-                dPd = Pd-Pg_cap;
-                dPg = Pg_cap-Pg;
+                deltaPd = Pd-Pg_cap;
+                deltaPg = Pg_cap-Pg;
             end
-            dPd_star = dPd.*ps.baseMVA;
-            dPg_star = dPg.*ps.baseMVA;
-            ps.gen  = dPg_star;
-            ps.shunt = dPd_star;
+            deltaPd_star = deltaPd.*ps.baseMVA;
+            dPg_star = deltaPg.*ps.baseMVA;
+            ps.gen.Pg  = deltaPg_star;
+            ps.shunt.P = deltaPd_star;
         else
-            ps.gen  = ps.gen.Pg.*0;
-            ps.shunt = ps.shunt.P.*0;
+            ps.gen.Pg  = ps.gen.Pg.*0;
+            ps.shunt.P = ps.shunt.P.*0;
         end
     end
     return ps

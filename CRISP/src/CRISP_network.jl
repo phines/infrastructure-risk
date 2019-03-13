@@ -13,6 +13,13 @@ function import_ps(filename)
     psShuntData = CSV.read("$filename\\shunt.csv",allowmissing=:none);
     mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
+    ## Changing types in dataframes:
+    psBranchData[:,:Pf] = psBranchData[:,:Pf].*1.0;
+    psBranchData[:,:Qf] = psBranchData[:,:Qf].*1.0;
+    psBranchData[:,:Pt] = psBranchData[:,:Pt].*1.0;
+    psBranchData[:,:Qt] = psBranchData[:,:Qt].*1.0;
+    psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
+    psShuntData[:,:P] = psShuntData[:,:P].*1.0;
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return ps
 end
@@ -74,7 +81,7 @@ function find_subgraphs(ps)
             index = (LinearIndices(graphNos))[graphNos.==0];
         end
     end
-    return subgraphs = graphNos
+    return subgraphs = Int64.(graphNos)
 end
 
 struct Island_ps
@@ -121,7 +128,7 @@ mutable struct PSCase
     branch::DataFrame
     gen::DataFrame
     shunt::DataFrame
-    bi::DataFrame
+    bi::DataFrame # not quite right, Pavan uses SparseMatrixCSC{Int64,Int64} # TODO: figure out how to make this the same as Pavan's PSCase
 end
 
 function ps_subset(ps,ps_island)
@@ -130,7 +137,7 @@ function ps_subset(ps,ps_island)
     psBranchData = ps.branch[ps_island.branch,:];
     psGenData = ps.gen[ps_island.gen,:];
     psShuntData = ps.shunt[ps_island.shunt,:];
-    psBusIndex = ps.bi[ps_island.bi,:];
+    psBusIndex = DataFrame(bi=ps.bi.bi[ps_island.bus]);
     psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return psi
 end

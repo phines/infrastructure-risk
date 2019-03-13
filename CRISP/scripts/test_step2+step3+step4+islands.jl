@@ -1,16 +1,13 @@
-#using CRISP_LSOPF
 using CSV
-#include code for all necessary steps (2,3,4,and grid segmenting)
+include("..\\src\\CRISP_initiate.jl")
 include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
-include("..\\src\\CRISP_network_segments.jl")
-include("..\\src\\parser2.jl")
-include("..\\src\\s1-initiate2.jl")
-#include("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\src\\parser.jl")
+include("..\\src\\CRISP_network.jl")
+
 ## load the case data
-ps = mp2ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww.m"); #case39.m")
-#ps = mp2ps("../data/case6ww.m")
+ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww\\") #case39\\")
+#ps = import_ps("../data/case6ww/")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
@@ -36,14 +33,10 @@ M = Int64(findmax(subgraph)[1]);
 ps_islands = build_islands(subgraph,ps);
 for i in 1:M
     psi = ps_subset(ps,ps_islands[i]);
-    ## run step 2
     # run the dcpf
     crisp_dcpf!(psi);
     # run lsopf
-    (dPd, dPg) = crisp_lsopf(psi);
-    # apply the results
-    ps.gen[ps_islands[i].gen,:Pg]  += dPg;
-    ps.shunt[ps_islands[i].shunt,:P] += dPd;
+    crisp_lsopf!(psi);
     crisp_dcpf!(psi);
 end
 ## save initial outage ps file
