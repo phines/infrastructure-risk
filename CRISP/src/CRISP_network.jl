@@ -19,6 +19,7 @@ function import_ps(filename)
     psBranchData[:,:Pt] = psBranchData[:,:Pt].*1.0;
     psBranchData[:,:Qt] = psBranchData[:,:Qt].*1.0;
     psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
+    psGenData[:,:Pmax] = psGenData[:,:Pmax].*1.0;
     psShuntData[:,:P] = psShuntData[:,:P].*1.0;
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return ps

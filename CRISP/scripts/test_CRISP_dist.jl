@@ -51,15 +51,3 @@ end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
     ## save data
     CSV.write("results\\case6ww\\resilience_case6ww.csv", case_res);
-    ## make figure
-    using Plots; using StatsPlots
-    plot1 = @df case_res histogram(:resilience,
-            title = "Resilience Distribution 6 bus",
-            xlabel = "cost", ylabel = "number of events",
-            legend=false, grid=false)
-    #plot = histogram(ResilienceTri[:,1],
-    #        title = "Resilience Distribution 6 bus",
-    #        xlabel = "cost", ylabel = "number of events",
-    #        legend=false, grid=false)
-    # save a png
-    png(plot1,"results\\case6ww\\Resilience_Dist_6bus")

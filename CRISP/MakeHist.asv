@@ -13,13 +13,10 @@ N = length(costs);
 Pr=(N:-1:1)/N;
 sorted_costs = sort(costs);
 for jj = 1:N
-    if sorted_costs(jj)<0.01
-    sorted_costs(jj) = 0;
-    end
-end
+    sorted_costs(jj) = 
 
 semilogx(sorted_costs,Pr)
 hold on
 title("Resilience Distribution 39 bus");
-xlabel("C"); ylabel("Prob(Cost \geq C)")
+xlabel("cost"); ylabel("CCDF")
 hold off
