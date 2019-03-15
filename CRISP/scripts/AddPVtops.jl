@@ -28,7 +28,7 @@ for s = 1:N_panels
     Params = randperm(length(gen.Pg))[1];
     PV = deepcopy(gen[Params,:]);
     PV.bus = D_bus[s];
-    PV.Pmax = SolarP[s];
+    PV.Pmax = SolarP[s]; #could also just reduce the load...
     append!(gen,PV)
 end
 
