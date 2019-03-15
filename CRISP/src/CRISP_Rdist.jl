@@ -14,6 +14,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     crisp_dcpf!(ps)
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
+    ps0 = deepcopy(ps);
 
     if isempty(param_file)
         # parameters of distributions for line outages and recovery times
@@ -24,6 +25,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     end
 
     for iterat in 1:Num
+        ps = deepcopy(ps0); # reset network to original state
         # step 1
         Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
         state = Lines_Init_State[:,1];
@@ -40,16 +42,23 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             crisp_dcpf!(psi);
             # run lsopf
             crisp_lsopf!(psi);
+            ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
+            ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
             crisp_dcpf!(psi);
         end
+
+        tolerance = 10^(-7);
+        if (abs(total-sum(ps.shunt.P)) <= tolerance)
+            ResilienceTri[iterat] = 0;
+        else
         ## run step 3
         Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
-
         ## run step 4
         ResilienceTri[iterat] = crisp_res(Restore);
+        end
     end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
     ## save data
-    CSV.write("results\\$out_folder\\resilience_dist.csv", case_res);
+    CSV.write("results\\$out_folder", case_res);
 
 end

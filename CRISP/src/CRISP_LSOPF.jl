@@ -147,20 +147,63 @@ function crisp_lsopf!(ps)
             Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
             Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
             Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
-            if Pg_cap >= Pd
+            if sum(Pg_cap) >= sum(Pd)
                 deltaPd = 0.0;
-                deltaPg = Pd-Pg;
+                deltaPg = sum(Pd)-sum(Pg);
             else
-                deltaPd = Pd-Pg_cap;
-                deltaPg = Pg_cap-Pg;
+                deltaPd = sum(Pd)-sum(Pg_cap);
+                deltaPg = sum(Pg_cap)-sum(Pg);
             end
-            deltaPd_star = deltaPd.*ps.baseMVA;
-            deltaPg_star = deltaPg.*ps.baseMVA;
-            ps.gen.Pg  = deltaPg_star;
+            if length(Pd)  > 1
+                deltaPd_star = zeros(length(Pd))
+                deltaPd_used = 0;
+                for load = 1:length(Pd)
+                    if abs(deltaPd) >= abs(deltaPd_used)
+                        dload = 0;
+                    else
+                        if abs(Pd[load]) < abs(deltaPd_used - deltaPd)
+                            dload = -Pd[load]
+                        else
+                            dload = -abs(deltaPd_used - deltaPd)
+                        end
+                    end
+                    deltaPd_star[load] = dload.*ps.baseMVA;
+                    deltaPd_used = deltaPd_used + dload;
+                end
+            else
+                deltaPd_star = deltaPd.*ps.baseMVA;
+            end
+            if length(Pg) > 1
+                deltaPg_star = zeros(length(Pg))
+                deltaPg_used = 0;
+                for gen = 1:length(Pg)
+                    deltaPg_star[gen] = deltaPg.*ps.baseMVA;
+                    if abs(deltaPg) >= abs(deltaPg_used)
+                        dgen = 0;
+                    else
+                        if abs(Pg[gen]) < abs(deltaPg_used - deltaPg)
+                            if deltaPg < 0
+                                dgen = -Pg[gen]
+                            else
+                                dgen = Pg[gen]
+                            end
+                        elseif deltaPg < 0
+                            dgen = -abs(deltaPg_used - deltaPg)
+                        else
+                            dgen = abs(deltaPg_used - deltaPg)
+                        end
+                    end
+                    deltaPg_star[gen] = dgen.*ps.baseMVA;
+                    deltaPg_used = deltaPg_used + dgen;
+                end
+            else
+                deltaPg_star = deltaPg.*ps.baseMVA;
+            end
             ps.shunt.P = deltaPd_star;
+            ps.gen.Pg  = deltaPg_star;
         else
-            ps.gen.Pg  = ps.gen.Pg.*0.0;
             ps.shunt.P = ps.shunt.P.*0.0;
+            ps.gen.Pg  = ps.gen.Pg.*0.0;
         end
     end
     return ps

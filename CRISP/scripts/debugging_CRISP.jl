@@ -37,7 +37,7 @@ for i in 1:M
 end
 
 # save ps structure
-export_ps(ps,"data\\saved_ps\\case39_severe")
+#export_ps(ps,"data\\saved_ps\\case39_severe")
 
 ## run step 3
 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]

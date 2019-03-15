@@ -144,6 +144,53 @@ function ps_subset(ps,ps_island)
 end
 
 function add_changes!(ps,psi,ps_island);
-    ps.gen[ps_island.gen,:] = psi.gen
-    ps.shunt[ps_island.shunt,:] = psi.shunt
+    ps.gen[ps_island.gen,:Pg] = psi.gen.Pg
+    ps.shunt[ps_island.shunt,:P] = psi.shunt.P
+end
+
+function ps_visualize(ps,filename)
+    data = []
+    nbu = size(ps.bus,1)
+    nbr = size(ps.branch,1)
+    # initialize bus sizes
+    bus_sizes = zeros(nbu,1)
+
+    for i = 1:nbr
+        # TODO: Convert this using the bus index
+        # find the end points
+        f = ps.branch.f[i]
+        t = ps.branch.t[i]
+        fromX = ps.bus.locX[f]
+        toX = ps.bus.locX[t]
+        fromY = ps.bus.locY[f]
+        toY = ps.bus.locY[t]
+        # choose the line thickness
+        br_size = sqrt(abs(ps.branch.Pf[i])) * 4;
+        # update the bus size
+        bus_sizes[f] = max(br_size,bus_sizes[f])
+        bus_sizes[t] = max(br_size,bus_sizes[t])
+        # choose the line color
+        # TODO: compute the line color here
+        # plot
+        line = scatter(;x=[fromX,toX],y=[fromY,toY],mode="lines",line_width=br_size)
+        if i==1
+            data = [line]
+        else
+            push!(data,line)
+        end
+    end
+    # plot the buses
+    nbu = size(ps.bus,1)
+    for i=1:nbu
+        # decide on the marker size
+        s = bus_sizes[i]
+        bus = scatter(;x=[ps.bus.locX[i]],y=[ps.bus.locY[i]],mode="markers",marker_size=s)
+        push!(data,bus)
+    end
+
+    println(data)
+    out = plot(data,Layout(title="A power system"))
+    f = "$filename.pdf"
+    savefig(out,f)
+    return f
 end
