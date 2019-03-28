@@ -48,11 +48,7 @@ for iterat in 1:Num
     Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 
     ## run step 4
-    ResilienceTri = crisp_res(Restore);# step 1
-    Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
-    state = Lines_Init_State[:,1];
-    recovery_times = Lines_Init_State[:,2];
-    failures = state;
+    ResilienceTri = crisp_res(Restore);
 
     ## save data
     using CSV

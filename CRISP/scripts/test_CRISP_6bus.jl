@@ -48,18 +48,14 @@ for iterat in 1:Num
     Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 
     ## run step 4
-    ResilienceTri = crisp_res(Restore);# step 1
-    Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
-    state = Lines_Init_State[:,1];
-    recovery_times = Lines_Init_State[:,2];
-    failures = state;
+    ResilienceTri = crisp_res(Restore);
 
     ## save data
     using CSV
-    CSV.write("results\\case6ww\\test_initial_outage_case6ww_$iterat.csv", Lines_Init_State);
-    CSV.write("results\\case6ww\\test_restoration_case6ww_$iterat.csv", Restore);
+    CSV.write("results\\case6ww\\test2_initial_outage_case6ww_$iterat.csv", Lines_Init_State);
+    CSV.write("results\\case6ww\\test2_restoration_case6ww_$iterat.csv", Restore);
     ## make figure
-    using Plots; using StatsPlots
+    using StatsPlots
     plot1 = @df Restore plot(:time, :perc_load_served,
             title = "Resilience Triangle",
             xlabel = "time", ylabel = "load served (%)")
@@ -69,5 +65,5 @@ for iterat in 1:Num
     #putting 2 plots together
     P = plot(plot1,plot2,layout = (2,1),legend=false,grid=false)
     # save a png
-    png(P,"results\\case6ww\\ResTri_case6ww_$iterat")
+    png(P,"results\\case6ww\\ResTri_case6ww2_$iterat")
 end

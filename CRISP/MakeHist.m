@@ -1,10 +1,10 @@
 % simple script to plot histograms when in a hurry
 
-costs = xlsread('results\case39\resilience_case39.csv')
+costs = xlsread('results\case6ww\resilience_out1.csv')
 figure
 hist(costs)
 hold on
-title("Resilience Distribution 39 bus");
+title("Resilience Distribution 6 bus");
 xlabel("cost"); ylabel("number of events")
 hold off
 
@@ -20,6 +20,6 @@ end
 
 semilogx(sorted_costs,Pr)
 hold on
-title("Resilience Distribution 39 bus");
+title("Resilience Distribution 6 bus");
 xlabel("C"); ylabel("Prob(Cost \geq C)")
 hold off
