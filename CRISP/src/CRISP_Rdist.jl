@@ -47,7 +47,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             crisp_dcpf!(psi);
         end
 
-        tolerance = 10^(-7);
+        tolerance = 10^(-10);
         if (abs(total-sum(ps.shunt.P)) <= tolerance)
             ResilienceTri[iterat] = 0;
         else
