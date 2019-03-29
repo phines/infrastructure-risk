@@ -7,14 +7,14 @@ using LinearAlgebra
 
 function crisp_dcpf!(ps)
     # constants
-    eps = 1e-6
+    tolerance = 1e-6
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
     bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
     if isempty(ps.bus.id[ps.bus.bus_type.==3]) # note in Pavan's ps structure I beleive it's called 'kind' not 'bus_type'
         if isempty(ps.gen) || isempty(ps.shunt)
-            return ps
+            return ps #TODO: is this working?
         else
             maxGen = findmax(ps.gen.Pg)[2]
             busID = ps.gen[maxGen,:bus];
@@ -61,7 +61,7 @@ function crisp_dcpf!(ps)
     ps.branch.Qt[brst] .= 0
     # fix the generation at the slack bus
     mismatch = sum(Pbus)
-    if abs(mismatch)>eps
+    if abs(mismatch)>tolerance
         refbusid = ps.bus[isref,:id]
         is_refgen = (ps.gen[:bus].==refbusid)
         if sum(is_refgen) != 1
@@ -71,7 +71,7 @@ function crisp_dcpf!(ps)
     end
     # check the mismatch
     mis_check = sum(ps.gen.Pg.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
-    if abs(mis_check)>eps
+    if abs(mis_check)>tolerance
         println(mismatch)
         println(Pbus)
         print("Mismatch = ")
@@ -133,8 +133,8 @@ function crisp_lsopf!(ps)
         sol_dPg=value.(dPg)
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = sol_dPg.*ps.baseMVA
-        ps.shunt.P += dPd_star;
-        ps.gen.Pg += dPg_star;
+        ps.shunt.P += dPd_star; #changes ps structure
+        ps.gen.Pg += dPg_star; #changes ps structure
     else
         if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
             deltaPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
