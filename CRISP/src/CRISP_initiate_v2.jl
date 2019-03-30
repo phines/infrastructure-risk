@@ -67,11 +67,15 @@ function RecoveryTimes(mu,sigma,N)
 # the restoration time of the lines was fit to log normal with underlying_normal_mean=2.66 and
 # underlying_normal_variance= 2.43^2
 # the cdf of a lognormal with
-    N = Int64(N[1]);
-    RecovTime = zeros(N);
-    cdf_RT_real = rand(N);
-    for m = 1:N
-        RecovTime[m] = exp(erfinv(2*cdf_RT_real[m]-1)*(sqrt(2)*sigma)).*exp(mu);
+    if N==0
+        RecovTime = [];
+    else
+        N = Int64(N[1]);
+        RecovTime = zeros(N);
+        cdf_RT_real = rand(N);
+        for m = 1:N
+            RecovTime[m] = exp(erfinv(2*cdf_RT_real[m]-1)*(sqrt(2)*sigma)).*exp(mu);
+        end
     end
     return RecovTime
 end

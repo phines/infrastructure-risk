@@ -39,7 +39,7 @@ for i = 1:k
     end
 end
 cdf_lines = H_k_s./zeta(s);
-P_leqNlinesOut = rand(1);
+P_leqNlinesOut = rand(rng,1);
 n = 0;
 cdf_k = cdf_lines[k];
 while n <= (k-2) && cdf_k > P_leqNlinesOut[1]
@@ -57,7 +57,7 @@ function init_out_exp(lambda,TotalGens;OriginalGens=TotalGens)
 # generators that experience outages (not caused by grid dynamics) will be steeper than the
 # lines, which is why I am not using the zipf distribution
 ratioG = TotalGens/OriginalGens;
-Ngens1 = -round.(log.(1- rand(1)));
+Ngens1 = -round.(log.(1- rand(rng,1)));
 Ngens = Int64(Ngens1[1]);
 Ngens = Int64(round(ratioG*Ngens));
 return Ngens
@@ -69,7 +69,7 @@ function RecoveryTimes(mu,sigma,N)
 # the cdf of a lognormal with
     N = Int64(N[1]);
     RecovTime = zeros(N);
-    cdf_RT_real = rand(N);
+    cdf_RT_real = rand(rng,N);
     for m = 1:N
         RecovTime[m] = exp(erfinv(2*cdf_RT_real[m]-1)*(sqrt(2)*sigma)).*exp(mu);
     end
@@ -83,7 +83,7 @@ end
 function initiate_state(TotalS, N);
     Index = collect(1:TotalS);
     State = ones(TotalS);
-    Nout = Random.shuffle(Index);
+    Nout = Random.shuffle(rng,Index);
     for i = 1:N
         State[Nout[i]] = 0;
     end

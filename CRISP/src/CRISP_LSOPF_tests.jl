@@ -4,7 +4,6 @@ using SparseArrays
 using LinearAlgebra
 
 #export run_dcpf
-
 function crisp_dcpf!(ps)
     # constants
     tolerance = 1e-6
@@ -86,7 +85,6 @@ function crisp_lsopf!(ps)
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
-    if n>1
         bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
         # load data
         nd = size(ps.shunt,1)
@@ -135,77 +133,7 @@ function crisp_lsopf!(ps)
         dPg_star = sol_dPg.*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg += dPg_star; #changes ps structure
-    else
-        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
-            deltaPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
-            deltaPd = -(ps.shunt.P ./ ps.baseMVA .* ps.shunt.status);
-            deltaPg_star = deltaPg.*ps.baseMVA;
-            deltaPd_star = deltaPd.*ps.baseMVA;
-            ps.gen.Pg  += deltaPg_star;
-            ps.shunt.P += deltaPd_star;
-        elseif !isempty(ps.gen) && !isempty(ps.shunt)
-            Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
-            Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
-            Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
-            if sum(Pg_cap) >= sum(Pd)
-                deltaPd = 0.0;
-                deltaPg = sum(Pd)-sum(Pg);
-            else
-                deltaPd = sum(Pd)-sum(Pg_cap);
-                deltaPg = sum(Pg_cap)-sum(Pg);
-            end
-            if length(Pd)  > 1
-                deltaPd_star = zeros(length(Pd))
-                deltaPd_used = 0;
-                for load = 1:length(Pd)
-                    if abs(deltaPd) >= abs(deltaPd_used)
-                        dload = 0;
-                    else
-                        if abs(Pd[load]) < abs(deltaPd_used - deltaPd)
-                            dload = -Pd[load]
-                        else
-                            dload = -abs(deltaPd_used - deltaPd)
-                        end
-                    end
-                    deltaPd_star[load] = dload.*ps.baseMVA;
-                    deltaPd_used = deltaPd_used + dload;
-                end
-            else
-                deltaPd_star = deltaPd.*ps.baseMVA;
-            end
-            if length(Pg) > 1
-                deltaPg_star = zeros(length(Pg))
-                deltaPg_used = 0;
-                for gen = 1:length(Pg)
-                    deltaPg_star[gen] = deltaPg.*ps.baseMVA;
-                    if abs(deltaPg) >= abs(deltaPg_used)
-                        dgen = 0;
-                    else
-                        if abs(Pg[gen]) < abs(deltaPg_used - deltaPg)
-                            if deltaPg < 0
-                                dgen = -Pg[gen]
-                            else
-                                dgen = Pg[gen]
-                            end
-                        elseif deltaPg < 0
-                            dgen = -abs(deltaPg_used - deltaPg)
-                        else
-                            dgen = abs(deltaPg_used - deltaPg)
-                        end
-                    end
-                    deltaPg_star[gen] = dgen.*ps.baseMVA;
-                    deltaPg_used = deltaPg_used + dgen;
-                end
-            else
-                deltaPg_star = deltaPg.*ps.baseMVA;
-            end
-            ps.shunt.P = deltaPd_star;
-            ps.gen.Pg  = deltaPg_star;
-        else
-            ps.shunt.P = ps.shunt.P.*0.0;
-            ps.gen.Pg  = ps.gen.Pg.*0.0;
-        end
-    end
+
     return ps
 end
 #end
