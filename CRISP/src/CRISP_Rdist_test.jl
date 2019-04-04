@@ -1,19 +1,17 @@
 using CSV
 include("CRISP_initiate.jl")
 include("CRISP_LSOPF_tests.jl")
-include("CRISP_RLSOPF.jl")
+include("CRISP_RLSOPF_test.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
-function Res_dist(Num,ps_folder,out_folder;param_file = "")
-    #set randomized seed
-    rng = MersenneTwister(10000);
+function Res_dist_test(Num,ps_folder,out_folder;param_file = "")
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
     ps = import_ps("$ps_folder")
-    crisp_dcpf!(ps)
+    crisp_dcpf1!(ps)
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
     ps0 = deepcopy(ps);
@@ -21,7 +19,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     if isempty(param_file)
         # parameters of distributions for line outages and recovery times
         s_line = 2.56;#lines_dist[1];
-        maxLinesOut = 2; #length(ps.branch.f); # => k in zipf distribution
+        maxLinesOut = length(ps.branch.f); # => k in zipf distribution
         mu_line = 3.66;#lines_dist[2];
         sigma_line = 2.43;#lines_dist[3];
     end
@@ -41,12 +39,12 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
         for i in 1:M
             psi = ps_subset(ps,ps_islands[i]);
             # run the dcpf
-            crisp_dcpf!(psi);
+            crisp_dcpf1!(psi);
             # run lsopf
-            crisp_lsopf!(psi);
+            crisp_lsopf1!(psi);
             ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
             ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-            crisp_dcpf!(psi);
+            crisp_dcpf1!(psi);
         end
 
         tolerance = 10^(-10);
@@ -54,7 +52,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             ResilienceTri[iterat] = 0;
         else
         ## run step 3
-        Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+        Restore = RLSOPF1!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
         ## run step 4
         ResilienceTri[iterat] = crisp_res(Restore);
         end

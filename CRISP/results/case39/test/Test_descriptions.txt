@@ -1,0 +1,4 @@
+resilience_out_test001 & """002 --- tried making sure multiple generators per bus were being used in dcpf!. No difference between cost arrays.
+resilience_out_test001 & """003 --- tried making sure multiple generators per bus were being used in dcpf! and lsopf!. No difference between cost arrays.
+Maybe, the functions with the same name mess things up. adding 1 onto test functions.
+resilience_out_test01 & """03 --- tried making sure multiple generators per bus were being used in dcpf! and lsopf!. 
