@@ -50,7 +50,7 @@ function crisp_dcpf1!(ps)
     Bdc = sparse(F,T,-Xinv,n,n) + sparse(T,F,-Xinv,n,n) +
           sparse(T,T,+Xinv,n,n) + sparse(F,F,+Xinv,n,n)
     # bus injection
-    Pbus = Array(sparse(G,fill(1,ng),Pg,n,1) - sparse(D,fill(1,nd),Pd,n,1))
+    Pbus = Pg_bus-Pd_bus;#Array(sparse(G,fill(1,ng),Pg,n,1) - sparse(D,fill(1,nd),Pd,n,1))
     # angles
     theta = zeros(n)
     Bsub = Bdc[nonref,nonref]
@@ -134,10 +134,11 @@ function crisp_lsopf1!(ps)
         # objective
         @objective(m,Max,sum(dPd)) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
-        M_D = sparse(D,1:nd,1.0,n,nd)
-        M_G = sparse(G,1:ng,1.0,n,ng)
+        #TODO working here
+        M_D = Array(sparse(D,ones(size(D)),dPd,n,1));#sparse(D,1:nd,1.0,n,nd)
+        M_G = Array(sparse(G,ones(size(G)),dPg,n,1));#sparse(G,1:ng,1.0,n,ng)
         # Power balance equality constraint
-        @constraint(m,B*dTheta .== M_G*dPg - M_D*dPd)
+        @constraint(m,B*dTheta .== M_G - M_D)# M_G*dPg - M_D*dPd)
         # Power flow constraints
         @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
