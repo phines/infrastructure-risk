@@ -97,6 +97,7 @@ function crisp_lsopf1!(ps)
         # load data
         nd = size(ps.shunt,1)
         D = bi[ps.shunt[:bus]]
+        D_bus = sparse(D,collect(1:nd),1.,n,nd);
         Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
         if any(D.<1) || any(D.>n)
             error("Bad indices in shunt matrix")
@@ -105,6 +106,7 @@ function crisp_lsopf1!(ps)
         # gen data
         ng = size(ps.gen,1)
         G = bi[ps.gen[:bus]]
+        G_bus = sparse(G,collect(1:ng),1.,n,ng);
         Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
@@ -126,19 +128,25 @@ function crisp_lsopf1!(ps)
         # variables
         @variable(m,dPd[1:nd])
         @variable(m,dPg[1:ng])
+        @variable(m,dPd_bus[1:n])
+        @variable(m,dPg_bus[1:n])
         @variable(m,dTheta[1:n])
         # variable bounds
         @constraint(m,-Pd.<=dPd.<=0)
         @constraint(m,-Pg.<=dPg.<=0)
+        @constraint(m,-Pd_bus.<=dPd_bus.<=0)
+        @constraint(m,-Pg_bus.<=dPg_bus.<=0)
         @constraint(m,dTheta[1] == 0)
+        #coupling constraint
+        @constraint(m,dPd_bus .== D_bus*dPd) #TODO only works when there are not multiple loads per bus...need ==Array(sparse(D,ones(size(D)),dPd,n,1)))
+        @constraint(m,dPg_bus .== G_bus*dPg) #TODO only works when there are not multiple gens per bus...need ==Array(sparse(G,ones(size(G)),dPg,n,1)))
         # objective
         @objective(m,Max,sum(dPd)) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
-        #TODO working here
-        M_D = Array(sparse(D,ones(size(D)),dPd,n,1));#sparse(D,1:nd,1.0,n,nd)
-        M_G = Array(sparse(G,ones(size(G)),dPg,n,1));#sparse(G,1:ng,1.0,n,ng)
+        #M_D = (sparse(D,ones(size(D)),1.0,n,1));#sparse(D,1:nd,1.0,n,nd)
+        #M_G = (sparse(G,ones(size(G)),1.0,n,1));#sparse(G,1:ng,1.0,n,ng)
         # Power balance equality constraint
-        @constraint(m,B*dTheta .== M_G - M_D)# M_G*dPg - M_D*dPd)
+        @constraint(m,B*dTheta .== dPg_bus-dPd_bus);#M_G*dPg - M_D*dPd)
         # Power flow constraints
         @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
