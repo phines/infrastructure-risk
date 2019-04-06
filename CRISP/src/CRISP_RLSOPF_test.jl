@@ -57,13 +57,23 @@ function crisp_rlopf1(ps,Pd_max)
     n = size(ps.bus,1); # the number of buses
     bi = sparse(ps.bus[:id],fill(1,n),collect(1:n)); # helps us to find things
     # load data
-    nd = size(ps.shunt,1);
-    D = bi[ps.shunt[:bus]];
-    Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status];
+    nd = size(ps.shunt,1)
+    D = bi[ps.shunt[:bus]]
+    D_bus = sparse(D,collect(1:nd),1.,n,nd);
+    Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+    if any(D.<1) || any(D.>n)
+        error("Bad indices in shunt matrix")
+    end
+    Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
     # gen data
-    ng = size(ps.gen,1);
-    G = bi[ps.gen[:bus]];
-    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status];
+    ng = size(ps.gen,1)
+    G = bi[ps.gen[:bus]]
+    G_bus = sparse(G,collect(1:ng),1.,n,ng);
+    Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
+    if any(G.<1) || any(G.>n)
+        error("Bad indices in gen matrix")
+    end
+    Pg_bus = Array(sparse(G,ones(size(G)),Pg,n,1))
     # branch data
     brst = (ps.branch[:status].==1);
     F = bi[ps.branch[brst,:f]];
@@ -91,7 +101,8 @@ function crisp_rlopf1(ps,Pd_max)
     M_D = sparse(D,1:nd,1.0,n,nd);
     M_G = sparse(G,1:ng,1.0,n,ng);
     # Power balance equality constraint
-    @constraint(m1,B*dTheta .== M_G*dPg - M_D*dPd);
+    @constraint(m1,B*dTheta .== G_bus*dPg-D_bus*dPd);
+    #@constraint(m1,B*dTheta .== M_G*dPg - M_D*dPd);
     # Power flow constraints
     @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max);
     ### solve the model ###

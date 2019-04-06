@@ -1,4 +1,7 @@
 resilience_out_test001 & """002 --- tried making sure multiple generators per bus were being used in dcpf!. No difference between cost arrays.
 resilience_out_test001 & """003 --- tried making sure multiple generators per bus were being used in dcpf! and lsopf!. No difference between cost arrays.
 Maybe, the functions with the same name mess things up. adding 1 onto test functions.
-resilience_out_test01 & """03 --- tried making sure multiple generators per bus were being used in dcpf! and lsopf!. 
+resilience_out_test01 & """03 --- tried making sure multiple generators per bus were being used in dcpf! and lsopf! More of the same ->(010,030,0100,0300,01001,03001)and res_out_test01001,03001
+res_out_test01 & """04 Added mult gen and loads per bus to rlsopf as well.
+res_out_test01 & """05 Removed islanding code when there are no islands, and kept max number of lines out at 1.-> Promising
+res_out_test01 & """06 Removed islanding code when there are no islands, and kept max number of lines out at the total numer of lines (as before).

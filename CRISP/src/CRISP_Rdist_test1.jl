@@ -5,7 +5,7 @@ include("CRISP_RLSOPF_test.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
-function Res_dist_test(Num,ps_folder,out_folder;param_file = "")
+function Res_dist_test1(Num,ps_folder,out_folder;param_file = "")
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     ResilienceTri = Array{Float64}(undef,Num,1);
@@ -35,21 +35,16 @@ function Res_dist_test(Num,ps_folder,out_folder;param_file = "")
         #check for islands
         subgraph = find_subgraphs(ps);
         M = Int64(findmax(subgraph)[1]);
-        if M>1
-            ps_islands = build_islands(subgraph,ps);
-            for i in 1:M
-                psi = ps_subset(ps,ps_islands[i]);
-                # run the dcpf
-                crisp_dcpf1!(psi);
-                # run lsopf
-                crisp_lsopf1!(psi);
-                ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-                ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-                crisp_dcpf1!(psi);
-            end
-        else
-            crisp_lsopf1!(ps);
-            crisp_dcpf1!(ps);
+        ps_islands = build_islands(subgraph,ps);
+        for i in 1:M
+            psi = ps_subset(ps,ps_islands[i]);
+            # run the dcpf
+            crisp_dcpf1!(psi);
+            # run lsopf
+            crisp_lsopf1!(psi);
+            ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
+            ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
+            crisp_dcpf1!(psi);
         end
 
         tolerance = 10^(-10);

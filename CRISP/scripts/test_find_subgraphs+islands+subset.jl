@@ -14,6 +14,14 @@ ps.branch[11,:status]=0;
 #find subgraph and print
 subgraph = find_subgraphs(ps)
 println(subgraph)
+#find islands and print
+ps_islands = build_islands(subgraph,ps);
+println(ps_islands[1])
+ps1 = ps_subset(ps,ps_islands[1]);
+println(ps1)
+println(ps_islands[2])
+ps2 = ps_subset(ps,ps_islands[2]);
+println(ps2)
 
 #subgraph 2
 # load the case data
@@ -22,8 +30,13 @@ ps = deepcopy(ps0);
 ps.branch[4,:status]=0;
 ps.branch[7,:status]=0;
 #find subgraph and print
-subgraph = find_subgraphs(ps)
+subgraph = find_subgraphs(ps);
 println(subgraph)
+#find islands and print
+ps_islands = build_islands(subgraph,ps);
+println(ps_islands[1])
+ps1 = ps_subset(ps,ps_islands[1]);
+println(ps1)
 
 #subgraph 3
 # load the case data
@@ -33,6 +46,11 @@ ps.branch[11,:status]=0;
 #find subgraph and print
 subgraph = find_subgraphs(ps)
 println(subgraph)
+#find islands and print
+ps_islands = build_islands(subgraph,ps);
+println(ps_islands[1])
+ps1 = ps_subset(ps,ps_islands[1]);
+println(ps1)
 
 #subgraph 4
 # load the case data
@@ -42,3 +60,8 @@ ps.branch[1,:status]=0;
 #find subgraph and print
 subgraph = find_subgraphs(ps)
 println(subgraph)
+#find islands and print
+ps_islands = build_islands(subgraph,ps);
+println(ps_islands[1])
+ps1 = ps_subset(ps,ps_islands[1]);
+println(ps1)
