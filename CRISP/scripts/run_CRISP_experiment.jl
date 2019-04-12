@@ -1,33 +1,33 @@
 #include("..\\src\\CRISP_Rdist.jl")
-include("..\\src\\CRISP_Rdist_test.jl")
+include("..\\src\\CRISP_Rdist_test2.jl")
 ## folder of case data
-case1 = "data\\case39\\"
-case2 = "data\\saved_ps\\case39_05PV\\"
-case3 = "data\\saved_ps\\case39_05PV_RS\\"
+case1 = "data\\case6ww\\"
+case2 = "data\\saved_ps\\case6ww_05PV\\"
+case3 = "data\\saved_ps\\case6ww_05PV_RS\\"
 #case3 = "data\\saved_ps\\case39_30PV\\"
 # number of events
 N = 1000;
 #set randomized seed
-rng = MersenneTwister(0);
+rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename1 = "res_out_case39";
+filename1 = "res_out_case6ww_A0O";
 out_folder1 = "\\experiments\\1\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test(N,case1,out_folder1)
+res = Res_dist_test2(N,case1,out_folder1)
 #set randomized seed
-rng = MersenneTwister(0);
+rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename2 = "res_out_case39_05PV";
+filename2 = "res_out_case6ww_05PV_A0O";
 out_folder2 = "\\experiments\\1\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test(N,case2,out_folder2)
+res = Res_dist_test2(N,case2,out_folder2)
 #set randomized seed
-rng = MersenneTwister(0);
+rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename3 = "res_out_case39_05PV_RS";
+filename3 = "res_out_case6ww_05PV_RS_A0O";
 out_folder3 = "\\experiments\\1\\$filename3.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test(N,case3,out_folder3)
+res = Res_dist_test2(N,case3,out_folder3)
 
 using CSV
 using DataFrames

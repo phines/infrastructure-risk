@@ -25,9 +25,13 @@
 % costs2 = xlsread('results\experiments\1\res_out_case6ww_05PV.csv');
 % costs3 = xlsread('results\experiments\1\res_out_case6ww_05PV_RS.csv');
 
-costs1 = xlsread('results\experiments\2\res_out_case39_orig_bias_samp1.csv');
-costs2 = xlsread('results\experiments\2\res_out_case39_allow_0out.csv');
-costs3 = xlsread('results\experiments\2\res_out_case39_fair_sample_no0.csv');
+% costs1 = xlsread('results\experiments\2\res_out_case39_orig_bias_samp1.csv');
+% costs2 = xlsread('results\experiments\2\res_out_case39_allow_0out.csv');
+% costs3 = xlsread('results\experiments\2\res_out_case39_fair_sample_no0.csv');
+
+costs1 = xlsread('results\experiments\1\res_out_case6ww_A0O.csv');
+costs2 = xlsread('results\experiments\1\res_out_case6ww_05PV_A0O.csv');
+costs3 = xlsread('results\experiments\1\res_out_case6ww_05PV_RS_A0O.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -57,6 +61,7 @@ hold on
 semilogx(sorted_costs2,Pr)
 semilogx(sorted_costs3,Pr)
 title("Resilience 6 bus")
-legend("39 bus - bias sample 1 line out", "39 bus - allow 0 outages", "39 bus - fair sample");
+legend("6 bus", "6 bus 5% PV", "6 bus 5% RL");
+%legend("39 bus - bias sample 1 line out", "39 bus - allow 0 outages", "39 bus - fair sample");
 xlabel("C (MWh)"); ylabel("Prob(Cost \geq C)")
 hold off
