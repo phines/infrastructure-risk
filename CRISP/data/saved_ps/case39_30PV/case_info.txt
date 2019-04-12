@@ -1,1 +1,1 @@
-Original_case = CRISP\data\case39\Added solar to cover 0.3 percent of demandTo 0.6 fraction of demand buses
+Original_case = CRISP\data\case39\.  Added solar to cover 0.3 percent of demand.  To 0.6 fraction of demand buses.  

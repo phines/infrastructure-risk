@@ -4,6 +4,8 @@ include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
+#set randomized seed
+rng = MersenneTwister(0);
 
 ## number of failure scenarios to run through
 Num = 1000;
@@ -50,4 +52,4 @@ for iterat in 1:Num
 end
     case39_res = DataFrame(resilience = ResilienceTri[:,1]);
     ## save data
-    CSV.write("results\\case39\\resilience_case39.csv", case39_res);
+    CSV.write("results\\case39\\resilience_case39_3.csv", case39_res);

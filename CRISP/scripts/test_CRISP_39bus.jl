@@ -1,17 +1,17 @@
 using CSV
 include("..\\src\\CRISP_initiate.jl")
-include("..\\src\\CRISP_LSOPF.jl")
-include("..\\src\\CRISP_RLSOPF.jl")
+include("..\\src\\CRISP_LSOPF_tests.jl")
+include("..\\src\\CRISP_RLSOPF_test.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 
 ## number of failure scenarios to run through
-Num = 10;
+Num = 4;
 
 ## load the case data
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39\\") #case39\\")
 #ps = import_ps("../data/case6ww/")
-crisp_dcpf!(ps)
+crisp_dcpf1!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 
@@ -36,24 +36,24 @@ for iterat in 1:Num
     for i in 1:M
         psi = ps_subset(ps,ps_islands[i]);
         # run the dcpf
-        crisp_dcpf!(psi);
+        crisp_dcpf1!(psi);
         # run lsopf
-        crisp_lsopf!(psi);
+        crisp_lsopf1!(psi);
         add_changes!(ps,psi,ps_islands[i]);
-        crisp_dcpf!(psi);
+        crisp_dcpf1!(psi);
     end
     ## save initial outage ps file
     # make export routine, Pkg.JLD
     ## run step 3
-    Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+    Restore = RLSOPF1!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 
     ## run step 4
     ResilienceTri = crisp_res(Restore);
 
     ## save data
     using CSV
-    CSV.write("results\\case39\\test_initial_outage_case39_$iterat.csv", Lines_Init_State);
-    CSV.write("results\\case39\\test_restoration_case39_$iterat.csv", Restore);
+    CSV.write("results\\case39\\test_initial_outage_case39_2$iterat.csv", Lines_Init_State);
+    CSV.write("results\\case39\\test_restoration_case39_2$iterat.csv", Restore);
     ## make figure
     using Plots; using StatsPlots
     plot1 = @df Restore plot(:time, :perc_load_served,
@@ -65,5 +65,5 @@ for iterat in 1:Num
     #putting 2 plots together
     P = plot(plot1,plot2,layout = (2,1),legend=false,grid=false)
     # save a png
-    png(P,"results\\case39\\ResTri_case39_$iterat")
+    png(P,"results\\case39\\ResTri_case39_2$iterat")
 end

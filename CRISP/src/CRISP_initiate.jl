@@ -18,6 +18,31 @@ lines_outage_recovery = RecTime(RecovTimeL,lines_state);
 return lines_outage_recovery
 end
 
+function line_state2!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
+# number of lines and generators in network case
+TotalLines = length(ps.branch[1]);
+Nlines = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
+lines_state = initiate_state(TotalLines, Nlines);
+ps.branch[:status] = lines_state;
+RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
+lines_outage_recovery = RecTime(RecovTimeL,lines_state);
+return lines_outage_recovery
+end
+
+function line_state3!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
+# number of lines and generators in network case
+TotalLines = length(ps.branch[1]);
+Nlines = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
+while Nlines==0
+    Nlines = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
+end
+lines_state = initiate_state(TotalLines, Nlines);
+ps.branch[:status] = lines_state;
+RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
+lines_outage_recovery = RecTime(RecovTimeL,lines_state);
+return lines_outage_recovery
+end
+
 function gen_state(ps,lambda_gen,mu_gen,sigma_gen;orignumGen=0)
 # number of lines and generators in network case
 TotalGens =length(ps.gen[1]);
@@ -40,13 +65,29 @@ for i = 1:k
 end
 cdf_lines = H_k_s./zeta(s);
 P_leqNlinesOut = rand(rng,1);
-n = 0;
-cdf_k = cdf_lines[k];
-while n <= (k-2) && cdf_k > P_leqNlinesOut[1]
-    n = n+1;
-    cdf_k = cdf_lines[k-n];
+cdf_lines = H_k_s./zeta(s);
+P_leqNlinesOut = rand(1);
+Nlines = sum(P_leqNlinesOut.>=cdf_lines);
+if Nlines==0
+    Nlines=1;
 end
-Nlines = k-n;
+Nlines = Int64(round(ratioL*Nlines)) #
+return Nlines
+end
+
+function init_out_zipf_a0(s,k,TotalLines;OrigNumLines=TotalLines)
+ratioL = TotalLines/OrigNumLines;
+# the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
+# the cdf of a zipf distribution with
+H_k_s = zeros(k);
+for i = 1:k
+    for n = 1:i
+    H_k_s[i] = H_k_s[i] + 1/(n^s);
+    end
+end
+cdf_lines = H_k_s./zeta(s);
+P_leqNlinesOut = rand(1);
+Nlines = sum(P_leqNlinesOut.>=cdf_lines);
 Nlines = Int64(round(ratioL*Nlines)) #
 return Nlines
 end

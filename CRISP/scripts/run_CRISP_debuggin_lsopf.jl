@@ -1,4 +1,4 @@
-include("..\\src\\CRISP_Rdist_test1.jl")
+include("..\\src\\CRISP_Rdist.jl")
 include("..\\src\\CRISP_Rdist_test.jl")
 ## folder of case data
 case = "data\\case39\\"
@@ -7,14 +7,14 @@ N = 1000;
 #set randomized seed
 rng = MersenneTwister(0);
 #save restoration data to folder within results folder:
-filename1 = "res_out_test_008";
+filename1 = "res_out_test_010";
 out_folder1 = "\\case39\\test\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test1(N,case,out_folder1)
+res = Res_dist(N,case,out_folder1)
 #set randomized seed
 rng = MersenneTwister(0);
 #save restoration data to folder within results folder:
-filename2 = "res_out_test_009";
+filename2 = "res_out_test_011";
 out_folder2 = "\\case39\\test\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist_test(N,case,out_folder2)
@@ -22,8 +22,8 @@ res = Res_dist_test(N,case,out_folder2)
 using CSV
 using DataFrames
 
-out1 = CSV.read("results\\"*out_folder1)
-out2 = CSV.read("results\\"*out_folder2)
+out1 = CSV.read("results\\"*out_folder1,allowmissing=:none)
+out2 = CSV.read("results\\"*out_folder2,allowmissing=:none)
 tol = 0.0001;
 if sum(abs.(out1[:,1]-out2[:,1]))>tol
     println("disagree at cost on lines")

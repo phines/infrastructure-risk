@@ -48,6 +48,7 @@ function Res_dist_test(Num,ps_folder,out_folder;param_file = "")
                 crisp_dcpf1!(psi);
             end
         else
+            crisp_dcpf1!(ps);
             crisp_lsopf1!(ps);
             crisp_dcpf1!(ps);
         end

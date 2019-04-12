@@ -7,7 +7,7 @@ rng = MersenneTwister(0);
 # it also uses an exponential function with paamter lambda=1 to determine the number of generators
 # that are outaged
 include("..\\src\\CRISP_network.jl")
-include("..\\src\\CRISP_initiate_v2.jl")
+include("..\\src\\CRISP_initiate.jl")
 # network case to model
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39\\")
 # parameters of distributions for line outages and recovery times
@@ -25,7 +25,7 @@ maxLinesOut = TotalLines;
 Nlines = zeros(Nevents);
 Times = [];
 for n = 1:Nevents
-    Nlines[n] = init_out_zipf(s_line,maxLinesOut,TotalLines);
+    Nlines[n] = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
 end
 for n = 1:Nevents
     push!(Times,RecoveryTimes(mu_line,sigma_line,1)[1,1]);
