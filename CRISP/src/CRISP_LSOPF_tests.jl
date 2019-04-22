@@ -44,9 +44,9 @@ function crisp_dcpf1!(ps)
             if isempty(ps.shunt) && !isempty(ps.gen)
                 ps.gen.Pg .= 0.0
             elseif !isempty(ps.shunt) && isempty(ps.gen)
-                ps.shunt.P .= 0
+                ps.shunt.P .= 0.0
             end
-            return ps #TODO: is this working?
+            return ps #TODO
         else
             maxGen = findmax(ps.gen.Pg)[2]
             busID = ps.gen[maxGen,:bus];
@@ -80,9 +80,14 @@ function crisp_dcpf1!(ps)
         refbusid = ps.bus[isref,:id]
         is_refgen = (ps.gen[:bus].==refbusid)
         if sum(is_refgen) != 1
-            error("Must be exactly one ref generator")
+            println("Multiple Gen on ref bus, splitting mismatch among them.")
+        #if sum(is_refgen) != 1
+        #    error("Must be exactly one ref generator")
+        #end
+            ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)/sum(is_refgen)
+        else
+            ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)
         end
-        ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)
     end
     # check the mismatch
     mis_check = sum(ps.gen.Pg.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
@@ -98,6 +103,8 @@ function crisp_dcpf1!(ps)
 end
 
 function crisp_lsopf1!(ps)
+    # constants
+    tolerance = 1e-6
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -117,6 +124,7 @@ function crisp_lsopf1!(ps)
         G = bi[ps.gen[:bus]]
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
         Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
+        Pg_max = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -140,7 +148,7 @@ function crisp_lsopf1!(ps)
         @variable(m,dTheta[1:n])
         # variable bounds
         @constraint(m,-Pd.<=dPd.<=0)
-        @constraint(m,-Pg.<=dPg.<=0)
+        @constraint(m,-Pg.<=dPg.<=Pg_max-Pg)
         @constraint(m,dTheta[1] == 0)
         # objective
         @objective(m,Max,sum(dPd)) # serve as much load as possible
@@ -159,13 +167,9 @@ function crisp_lsopf1!(ps)
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg += dPg_star; #changes ps structure
     else
-        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt))
-            deltaPg = -(ps.gen.Pg ./ ps.baseMVA .* ps.gen.status);
-            deltaPd = -(ps.shunt.P ./ ps.baseMVA .* ps.shunt.status);
-            deltaPg_star = deltaPg.*ps.baseMVA;
-            deltaPd_star = deltaPd.*ps.baseMVA;
-            ps.gen.Pg  += deltaPg_star;
-            ps.shunt.P += deltaPd_star;
+        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt)) || (isempty(ps.gen) && isempty(ps.shunt))
+            ps.gen.Pg  .= ps.gen.Pg.*0.0;
+            ps.shunt.P .= ps.shunt.P.*0.0;
         elseif !isempty(ps.gen) && !isempty(ps.shunt)
             Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
             Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
@@ -174,7 +178,7 @@ function crisp_lsopf1!(ps)
                 deltaPd = 0.0;
                 deltaPg = sum(Pd)-sum(Pg);
             else
-                deltaPd = sum(Pd)-sum(Pg_cap);
+                deltaPd = sum(Pg_cap)-sum(Pd);
                 deltaPg = sum(Pg_cap)-sum(Pg);
             end
             if length(Pd)  > 1
@@ -222,13 +226,16 @@ function crisp_lsopf1!(ps)
             else
                 deltaPg_star = deltaPg.*ps.baseMVA;
             end
-            ps.shunt.P = deltaPd_star;
-            ps.gen.Pg  = deltaPg_star;
+            ps.shunt.P .+= deltaPd_star;
+            ps.gen.Pg  .+= deltaPg_star;
         else
             ps.shunt.P = ps.shunt.P.*0.0;
             ps.gen.Pg  = ps.gen.Pg.*0.0;
         end
     end
+    #adding criteria that should produce errors if incorrect.
+    @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
+    #@assert 0.<=ps.shunt.P
     return ps
 end
 #end

@@ -34,13 +34,20 @@
 % costs3 = xlsread('results\experiments\1\res_out_case6ww_100PV_A0O.csv');
 % costs3 = xlsread('results\experiments\1\res_out_case6ww_05PV_RS_A0O.csv');
 
-costs1 = xlsread('results\experiments\3\res_out_case6ww_A0O.csv');
-costs2 = xlsread('results\experiments\3\res_out_case6ww_05PV_v2_A0O.csv');
-costs3 = xlsread('results\experiments\3\res_out_case6ww_100PV_A0O.csv');
+% costs1 = xlsread('results\experiments\3\res_out_case6ww_A0O_1.csv');
+% costs2 = xlsread('results\experiments\3\res_out_case6ww_05PV_v2_A0O_1.csv');
+% costs3 = xlsread('results\experiments\3\res_out_case6ww_20PV_A0O_1.csv');
+% costs4 = xlsread('results\experiments\3\res_out_case6ww_100PV_A0O_1.csv');
+
+costs1 = xlsread('results\experiments\4\res_out_case39_A0O_1.csv');
+costs2 = xlsread('results\experiments\4\res_out_case39_05PV_A0O_1.csv');
+costs3 = xlsread('results\experiments\4\res_out_case39_20PV_A0O_1.csv');
+costs4 = xlsread('results\experiments\4\res_out_case39_100PV_A0O_1.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
 costs3(isnan(costs3))=0;
+costs4(isnan(costs4))=0;
 
 % make ccdf plost
 N = length(costs1);
@@ -48,6 +55,7 @@ Pr=(N:-1:1)/N;
 sorted_costs1 = sort(costs1);
 sorted_costs2 = sort(costs2);
 sorted_costs3 = sort(costs3);
+sorted_costs4 = sort(costs4);
 for jj = 1:N
     if sorted_costs1(jj)<0.001 || isnan(sorted_costs1(jj))
     sorted_costs1(jj) = 0;
@@ -58,6 +66,9 @@ for jj = 1:N
     if sorted_costs3(jj)<0.001 || isnan(sorted_costs3(jj))
         sorted_costs3(jj) = 0;
     end
+    if sorted_costs4(jj)<0.001 || isnan(sorted_costs4(jj))
+        sorted_costs4(jj) = 0;
+    end
 end
 
 figure
@@ -65,8 +76,11 @@ semilogx(sorted_costs1,Pr)
 hold on
 semilogx(sorted_costs2,Pr)
 semilogx(sorted_costs3,Pr)
-title("Resilience 6 bus")
-legend("6 bus", "6 bus 5% PV", "6 bus 100% PV")
+semilogx(sorted_costs4,Pr)
+title("Resilience 39 bus")
+legend("39 bus", "39 bus 5% PV", "39 bus 20% PV", "39 bus 100% PV")%, "39 bus 100% PV")
+% legend("6 bus", "6 bus 5% PV", "6 bus 20% PV")
+% legend("6 bus", "6 bus 5% PV", "6 bus 20% PV", "6 bus 100% PV")
 % legend("6 bus", "6 bus 5% PV", "6 bus 5% RL");
 %legend("39 bus - bias sample 1 line out", "39 bus - allow 0 outages", "39 bus - fair sample");
 xlabel("C (MWh)"); ylabel("Prob(Cost \geq C)")

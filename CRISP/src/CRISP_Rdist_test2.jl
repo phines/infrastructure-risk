@@ -6,6 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
+    debug=1;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     ResilienceTri = Array{Float64}(undef,Num,1);
@@ -28,39 +29,50 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
         ps = deepcopy(ps0); # reset network to original state
         # step 1
         Lines_Init_State = line_state2!(ps,s_line,maxLinesOut,mu_line,sigma_line)
+        if debug==1
+            CSV.write("results\\$out_folder$iterat.csv", Lines_Init_State)
+        end
         state = Lines_Init_State[:,1];
         recovery_times = Lines_Init_State[:,2];
         failures = state;
-
-        #check for islands
-        subgraph = find_subgraphs(ps);
-        M = Int64(findmax(subgraph)[1]);
-        if M>1
-            ps_islands = build_islands(subgraph,ps);
-            for i in 1:M
-                psi = ps_subset(ps,ps_islands[i]);
-                # run the dcpf
-                crisp_dcpf1!(psi);
-                # run lsopf
-                crisp_lsopf1!(psi);
-                ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-                ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-                crisp_dcpf1!(psi);
-            end
-        else
-            crisp_dcpf1!(ps);
-            crisp_lsopf1!(ps);
-            crisp_dcpf1!(ps);
-        end
-
-        tolerance = 10^(-10);
-        if (abs(total-sum(ps.shunt.P)) <= tolerance)
+        if sum(failures.==0)==0
             ResilienceTri[iterat] = 0;
+            println(iterat)
         else
-        ## run step 3
-        Restore = RLSOPF1!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
-        ## run step 4
-        ResilienceTri[iterat] = crisp_res(Restore);
+            #check for islands
+            subgraph = find_subgraphs(ps);
+            M = Int64(findmax(subgraph)[1]);
+            if M>1
+                ps_islands = build_islands(subgraph,ps);
+                for i in 1:M
+                    psi = ps_subset(ps,ps_islands[i]);
+                    # run the dcpf
+                    crisp_dcpf1!(psi);
+                    # run lsopf
+                    crisp_lsopf1!(psi);
+                    ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
+                    ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
+                    crisp_dcpf1!(psi);
+                end
+                    @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
+                    @assert total>=sum(ps.shunt.P)
+            else
+                crisp_dcpf1!(ps);
+                crisp_lsopf1!(ps);
+                crisp_dcpf1!(ps);
+            end
+            println(iterat)
+            @assert total>=sum(ps.shunt.P)
+            @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
+            tolerance = 10^(-10);
+            if (abs(total-sum(ps.shunt.P)) <= tolerance)
+                ResilienceTri[iterat] = 0;
+            else
+                ## run step 3
+                Restore = RLSOPF1!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+                ## run step 4
+                ResilienceTri[iterat] = crisp_res(Restore);
+            end
         end
     end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
@@ -68,3 +80,10 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
     CSV.write("results\\$out_folder", case_res);
 
 end
+
+#for debugging
+#include("src\\CRISP_initiate.jl")
+#include("src\\CRISP_LSOPF_tests.jl")
+#include("src\\CRISP_RLSOPF_test.jl")
+#include("src\\CRISP_RT.jl")
+#include("src\\CRISP_network.jl")

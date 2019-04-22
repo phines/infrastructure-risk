@@ -1,0 +1,1 @@
+Original_case = CRISP\data\case6ww\ .Added solar to cover 1 fraction of demand.  To each PQ buses.  
