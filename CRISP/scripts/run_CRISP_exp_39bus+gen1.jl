@@ -4,16 +4,16 @@ include("..\\src\\CRISP_Rdist_test2.jl")
 case1 = "data\\case39\\"
 case2 = "data\\saved_ps\\case39+PV5\\"
 case3 = "data\\saved_ps\\case39+PV20\\"
-case4 = "data\\saved_ps\\case39+PV100\\"
+#case4 = "data\\saved_ps\\case39+PV100\\"
 
-out = "\\experiments\\4"
+out = "\\experiments\\5"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
 end
 
 # number of events
-N = 1000;
+N = 10000;
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
@@ -38,10 +38,10 @@ res = Res_dist_test2(N,case3,out_folder3)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename4 = "res_out_case39_100PV_A0O_2";
-out_folder4 = out*"\\$filename4.csv"
+#filename4 = "res_out_case39_100PV_A0O_2";
+#out_folder4 = out*"\\$filename4.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test2(N,case4,out_folder4)
+#res = Res_dist_test2(N,case4,out_folder4)
 #using CSV
 #using DataFrames
 
