@@ -45,9 +45,16 @@
 % costs4 = xlsread('results\experiments\4\res_out_case39_100PV_A0O_1.csv');
 
 costs1 = xlsread('results\experiments\5\res_out_case39_A0O_2.csv');
+% costs2 = xlsread('results\experiments\5\res_out_case39_A0O_3.csv');
 costs2 = xlsread('results\experiments\5\res_out_case39_05PV_A0O_2.csv');
 costs3 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_2.csv');
 costs4 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_2.csv');
+
+
+% costs1 = xlsread('results\experiments\5\res_out_case39_A0O_3.csv');
+% costs2 = xlsread('results\experiments\5\res_out_case39_05PV_A0O_3.csv');
+% costs3 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_3.csv');
+% costs4 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_3.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -76,13 +83,15 @@ for jj = 1:N
     end
 end
 
-figure
+figure(1)
+subplot(1,2,1)
 semilogx(sorted_costs1,Pr)
 hold on
 semilogx(sorted_costs2,Pr)
 semilogx(sorted_costs3,Pr)
 % semilogx(sorted_costs4,Pr)
-title("Resilience 39 bus")
+title("Resilience 39 bus - 1")
+% legend("original", "original2")
 legend("original", "+5% load in DG", "+20% load in DG")%, "39 bus +100% load in DG")
 % legend("39 bus", "39 bus 5% PV", "39 bus 20% PV", "39 bus 100% PV")%, "39 bus 100% PV")
 % legend("6 bus", "6 bus 5% PV", "6 bus 20% PV")
