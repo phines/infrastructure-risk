@@ -55,6 +55,24 @@ function crisp_dcpf_g!(ps)
             isref = (busID.==ps.bus.id)
             nonref = .~isref
         end
+    elseif !isempty(ps.bus.id[ps.bus.bus_type.==3]) && ps.gen.status[ps.gen.bus.==ps.bus.id[ps.bus.bus_type.==3]]!=1
+        if isempty(ps.gen[gst,:]) || isempty(ps.shunt)
+            ps.branch.Pf[brst] .= 0
+            ps.branch.Pt[brst] .= 0
+            ps.branch.Qf[brst] .= 0
+            ps.branch.Qt[brst] .= 0
+            if isempty(ps.shunt) && !isempty(ps.gen[gst,:])
+                ps.gen.Pg[gst] .= 0.0
+            elseif !isempty(ps.shunt) && isempty(ps.gen[gst,:])
+                ps.shunt.P .= 0.0
+            end
+            return ps #TODO
+        else
+            maxGen = findmax(ps.gen.Pg[gst])[2]
+            busID = ps.gen[maxGen,:bus];
+            isref = (busID.==ps.bus.id)
+            nonref = .~isref
+        end
     else
         isref = (ps.bus.bus_type.==3)
         nonref = .~isref
@@ -80,15 +98,18 @@ function crisp_dcpf_g!(ps)
     mismatch = sum(Pbus)
     if abs(mismatch)>tolerance
         refbusid = ps.bus[isref,:id]
-        is_refgen = (ps.gen[gst,:bus].==refbusid)
-        if sum(is_refgen) != 1
+        is_refgen = (ps.gen[:bus].==refbusid)
+        if sum(ps.gen.status[is_refgen].!=1) >=1
+            is_refgen[.!gst] .= false;
+        end
+        if sum(is_refgen) >= 1
             println("Multiple Gen on ref bus, splitting mismatch among them.")
-        #if sum(is_refgen) != 1
-        #    error("Must be exactly one ref generator")
-        #end
             ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)/sum(is_refgen)
-        else
+        elseif sum(is_refgen) == 1
             ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)
+        else
+            println(is_refgen)
+            error("No reference generator")
         end
     end
     # check the mismatch
@@ -124,10 +145,10 @@ function crisp_lsopf_g!(ps)
         # gen data
         gst = (ps.gen[:status].==1)
         ng = size(ps.gen[gst,:],1)
-        G = bi[ps.gen[:bus]]
+        G = bi[ps.gen[gst,:bus]]
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
-        Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
-        Pg_max = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
+        Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -144,7 +165,7 @@ function crisp_lsopf_g!(ps)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m = Model(with_optimizer(Clp.Optimizer))
+        m = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m,dPd[1:nd])
         @variable(m,dPg[1:ng])
@@ -168,15 +189,15 @@ function crisp_lsopf_g!(ps)
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = sol_dPg.*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
-        ps.gen.Pg += dPg_star; #changes ps structure
+        ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
-        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt)) || (isempty(ps.gen) && isempty(ps.shunt))
-            ps.gen.Pg  .= ps.gen.Pg.*0.0;
+        if (!isempty(ps.gen[gst,:]) && isempty(ps.shunt)) || (isempty(ps.gen[gst,:]) && !isempty(ps.shunt)) || (isempty(ps.gen[gst,:]) && isempty(ps.shunt))
+            ps.gen.Pg[gst]  .= ps.gen.Pg[gst,:].*0.0;
             ps.shunt.P .= ps.shunt.P.*0.0;
         elseif !isempty(ps.gen) && !isempty(ps.shunt)
             Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
-            Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
-            Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
+            Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+            Pg_cap = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
             if sum(Pg_cap) >= sum(Pd)
                 deltaPd = 0.0;
                 deltaPg = sum(Pd)-sum(Pg);
@@ -230,14 +251,14 @@ function crisp_lsopf_g!(ps)
                 deltaPg_star = deltaPg.*ps.baseMVA;
             end
             ps.shunt.P .+= deltaPd_star;
-            ps.gen.Pg  .+= deltaPg_star;
+            ps.gen.Pg[gst]  .+= deltaPg_star;
         else
             ps.shunt.P = ps.shunt.P.*0.0;
-            ps.gen.Pg  = ps.gen.Pg.*0.0;
+            ps.gen.Pg[gst]  = ps.gen.Pg.*0.0;
         end
     end
     #adding criteria that should produce errors if incorrect.
-    @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
+    @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg[gst]))<=2*tolerance
     #@assert 0.<=ps.shunt.P
     return ps
 end
