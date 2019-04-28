@@ -1,6 +1,6 @@
 #script that tests function find_subgraphs
 include("../src/CRISP_network.jl")
-include("../src/CRISP_LSOPF_tests.jl")
+include("../src/CRISP_LSOPF.jl")
 
 #test subgraph 1
 # load the case data

@@ -25,7 +25,7 @@ sigma_line = 2.43;#lines_dist[3];
 
 for iterat in 1:Num
     # step 1
-    Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
+    Lines_Init_State = line_state2!(ps,s_line,maxLinesOut,mu_line,sigma_line)
     state = Lines_Init_State[:,1];
     recovery_times = Lines_Init_State[:,2];
     failures = state;

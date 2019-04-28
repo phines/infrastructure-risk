@@ -1,7 +1,7 @@
 using CSV
 include("..\\src\\CRISP_initiate.jl")
-include("..\\src\\CRISP_LSOPF_tests.jl")
-include("..\\src\\CRISP_RLSOPF_test.jl")
+include("..\\src\\CRISP_LSOPF.jl")
+include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 
@@ -11,7 +11,7 @@ Num = 4;
 ## load the case data
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39\\") #case39\\")
 #ps = import_ps("../data/case6ww/")
-crisp_dcpf1!(ps)
+crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 
@@ -36,16 +36,16 @@ for iterat in 1:Num
     for i in 1:M
         psi = ps_subset(ps,ps_islands[i]);
         # run the dcpf
-        crisp_dcpf1!(psi);
+        crisp_dcpf!(psi);
         # run lsopf
-        crisp_lsopf1!(psi);
+        crisp_lsopf!(psi);
         add_changes!(ps,psi,ps_islands[i]);
-        crisp_dcpf1!(psi);
+        crisp_dcpf!(psi);
     end
     ## save initial outage ps file
     # make export routine, Pkg.JLD
     ## run step 3
-    Restore = RLSOPF1!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+    Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
 
     ## run step 4
     ResilienceTri = crisp_res(Restore);

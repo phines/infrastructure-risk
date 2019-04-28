@@ -32,7 +32,11 @@ function export_ps(ps,filename)
     if !isempty(ps.gen) CSV.write("$filename\\gen.csv",ps.gen) end
     if !isempty(ps.shunt) CSV.write("$filename\\shunt.csv",ps.shunt) end
     if !isempty(ps.baseMVA) CSV.write("$filename\\baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
-    if !isempty(ps.bi) CSV.write("$filename\\bi.csv",ps.bi) end
+    if !isempty(ps.bi)
+        #n = length(ps.bus.id);
+        #bi = sparse(ps.bus.id,fill(1,n),collect(1:n));
+        CSV.write("$filename\\bi.csv",ps.bi)
+    end
 end
 
 function find_subgraphs(ps)

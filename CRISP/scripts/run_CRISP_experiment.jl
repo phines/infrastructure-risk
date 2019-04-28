@@ -1,5 +1,5 @@
 #include("..\\src\\CRISP_Rdist.jl")
-include("..\\src\\CRISP_Rdist_test2.jl")
+include("..\\src\\CRISP_Rdist.jl")
 ## folder of case data
 case1 = "data\\case6ww\\"
 case2 = "data\\saved_ps\\case6ww_05PV_2\\"
@@ -13,21 +13,21 @@ rng = MersenneTwister(1000);
 filename1 = "res_out_case6ww_A0O";
 out_folder1 = "\\experiments\\3\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test2(N,case1,out_folder1)
+res = Res_dist(N,case1,out_folder1)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
 filename2 = "res_out_case6ww_05PV_v2_A0O";
 out_folder2 = "\\experiments\\3\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test2(N,case2,out_folder2)
+res = Res_dist(N,case2,out_folder2)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
 filename3 = "res_out_case6ww_100PV_A0O";
 out_folder3 = "\\experiments\\3\\$filename3.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
-res = Res_dist_test2(N,case3,out_folder3)
+res = Res_dist(N,case3,out_folder3)
 
 using CSV
 using DataFrames
