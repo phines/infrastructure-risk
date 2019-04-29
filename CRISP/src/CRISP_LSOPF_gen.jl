@@ -149,6 +149,7 @@ function crisp_lsopf_g!(ps)
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
         Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
         Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -168,24 +169,31 @@ function crisp_lsopf_g!(ps)
         m = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m,dPd[1:nd])
-        @variable(m,dPg[1:ng])
+        @variable(m,ndPg[1:ng])
+        @variable(m,pdPg[1:ng])
+        @variable(m,ug[1:ng],Bin)
         @variable(m,dTheta[1:n])
         # variable bounds
-        @constraint(m,-Pd.<=dPd.<=0)
-        @constraint(m,-Pg.<=dPg.<=Pg_max-Pg)
+        @constraint(m,-Pd .<= dPd .<= 0)
+        @constraint(m, ug.*(Pg_min-Pg) .<= ndPg)
+        @constraint(m, ug.*(Pg_min-Pg) .<= ndPg)
+        @constraint(m, pdPg .>= 0)
+        @constraint(m, ndPg .<= 0)
         @constraint(m,dTheta[1] == 0)
         # objective
-        @objective(m,Max,sum(dPd)) # serve as much load as possible
+        @objective(m,Max,sum(dPd)+0.01*(sum(ndPg)-sum(pdPg)+sum(ug))) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         # Power balance equality constraint
-        @constraint(m,B*dTheta .== G_bus*dPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+        @constraint(m,B*dTheta .== G_bus*ndPg-G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
         # Power flow constraints
         @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
         optimize!(m);
         # collect/return the outputs
         sol_dPd=value.(dPd)
-        sol_dPg=value.(dPg)
+        sol_ndPg=value.(ndPg)
+        sol_pdPg=value.(pdPg)
+        sol_dPg = sol_pdPg+sol_ndPg;
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = sol_dPg.*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
