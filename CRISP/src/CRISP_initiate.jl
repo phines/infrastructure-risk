@@ -10,7 +10,7 @@ using Random
 function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch[1]);
-Nlines = init_out_zipf(s_line,maxLinesOut,TotalLines);
+Nlines = init_out_zipf_p1(s_line,maxLinesOut,TotalLines);
 lines_state = initiate_state(TotalLines, Nlines);
 ps.branch[:status] = lines_state;
 RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
@@ -52,6 +52,26 @@ ps.gen.status = gens_state;
 RecovTimeG = RecoveryTimes(mu_gen,sigma_gen,Ngens);
 gens_outage_recovery = RecTime(RecovTimeG,gens_state)
 return gens_outage_recovery
+end
+
+function init_out_zipf_p1(s,k,TotalLines;OrigNumLines=TotalLines)
+ratioL = TotalLines/OrigNumLines;
+# the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
+# the cdf of a zipf distribution with
+H_k_s = zeros(k-1);
+for i = 1:k-1
+    for j = 1:i
+    H_k_s[i] = H_k_s[i] + 1/(j^s);
+    end
+end
+cdf_lines = H_k_s./zeta(s);
+P_leqNlinesOut = rand(rng,1);
+cdf_lines = H_k_s./zeta(s);
+P_leqNlinesOut = rand(1);
+Nlines = sum(P_leqNlinesOut.>=cdf_lines);
+Nlines += 1;
+Nlines = Int64(round(ratioL*Nlines)) #
+return Nlines
 end
 
 function init_out_zipf(s,k,TotalLines;OrigNumLines=TotalLines)
