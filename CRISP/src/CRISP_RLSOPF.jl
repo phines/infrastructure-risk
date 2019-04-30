@@ -26,12 +26,12 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
         #check for islands
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
-        if M==1
-            crisp_dcpf!(ps);
+        #if M==1
+            #crisp_dcpf!(ps);
             # run lsopf
-            crisp_rlopf!(ps,Pd_max);
-            crisp_dcpf!(ps);
-        else
+            #crisp_rlopf!(ps,Pd_max);
+            #crisp_dcpf!(ps);
+        #else
             ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
             ## for every island that changed (eventually)
 
@@ -45,7 +45,7 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
                     ps.gen[ps_islands[j].gen,:Pg]  = psi.gen.Pg;
                     ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P;
                     crisp_dcpf!(psi);
-            end
+            #end
         end
         @assert abs(sum(ps.gen.Pg)-sum(ps.shunt.P))<=tolerance
         # set load shed for this time step

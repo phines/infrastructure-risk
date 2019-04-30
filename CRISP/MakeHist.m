@@ -47,8 +47,6 @@
 % costs1 = xlsread('results\experiments\5\res_out_case39_A0O_2.csv');
 % % costs2 = xlsread('results\experiments\5\res_out_case39_A0O_3.csv');
 % costs2 = xlsread('results\experiments\5\res_out_case39_05PV_A0O_2.csv');
-costs1 = xlsread('results\experiments\0\res_out_case6ww_0_out.csv');
-costs2 = xlsread('results\experiments\0\res_out_case6ww_fair_sample_no_0_out.csv');
 costs3 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_2.csv');
 costs4 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_2.csv');
 
@@ -57,6 +55,14 @@ costs4 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_2.csv');
 % costs2 = xlsread('results\experiments\5\res_out_case39_05PV_A0O_3.csv');
 % costs3 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_3.csv');
 % costs4 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_3.csv');
+
+% costs1 = xlsread('results\experiments\0\res_out_case39_0_out.csv');
+% costs2 = xlsread('results\experiments\0\res_out_case39_fair_sample_no_0_out.csv');
+% costs3 = xlsread('results\experiments\0\res_out_case39_0_out_p1.csv');
+
+costs1 = xlsread('results\experiments\0\res_out_case6ww_0_out2.csv');
+costs2 = xlsread('results\experiments\0\res_out_case6ww_fair_sample_no_0_out2.csv');
+costs3 = xlsread('results\experiments\0\res_out_case6ww_0_out_p1.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -90,16 +96,17 @@ figure
 semilogx(sorted_costs1,Pr)
 hold on
 semilogx(sorted_costs2,Pr)
-% semilogx(sorted_costs3,Pr)
+semilogx(sorted_costs3,Pr)
 % semilogx(sorted_costs4,Pr)
-title("Resilience measures of 6 bus case")
+title("Resilience measures")
 % legend("original", "original2")
 % legend("original", "+5% load in DG", "+20% load in DG")%, "39 bus +100% load in DG")
 % legend("39 bus", "39 bus 5% PV", "39 bus 20% PV", "39 bus 100% PV")%, "39 bus 100% PV")
 % legend("6 bus", "6 bus 5% PV", "6 bus 20% PV")
 % legend("6 bus", "6 bus 5% PV", "6 bus 20% PV", "6 bus 100% PV")
 % legend("6 bus", "6 bus 5% PV", "6 bus 5% RL");
-legend("6 bus - allow 0 outages", "6 bus - fair sample"); %"39 bus - bias sample 1 line out", 
+legend("6 bus - allow 0 outages", "6 bus - fair sample", "6 bus - allow 0 outages and add 1");
+% legend("39 bus - allow 0 outages", "39 bus - fair sample", "39 bus - allow 0 outages and add 1"); %"39 bus - bias sample 1 line out", 
 xlabel("EENS (MWh)"); ylabel("Prob(Energy lost \geq EENS")
 set(gca, 'fontsize',13)
 hold off

@@ -118,7 +118,7 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
             #check for islands
             subgraph = find_subgraphs(ps);
             M = Int64(findmax(subgraph)[1]);
-            if M>1
+            #if M>1
                 ps_islands = build_islands(subgraph,ps);
                 for i in 1:M
                     psi = ps_subset(ps,ps_islands[i]);
@@ -132,11 +132,11 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
                 end
                     @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
                     @assert total>=sum(ps.shunt.P)
-            else
-                crisp_dcpf!(ps);
-                crisp_lsopf!(ps);
-                crisp_dcpf!(ps);
-            end
+            #else
+                #crisp_dcpf!(ps);
+                #crisp_lsopf!(ps);
+                #crisp_dcpf!(ps);
+            #end
             println(iterat)
             @assert total>=sum(ps.shunt.P)
             @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
