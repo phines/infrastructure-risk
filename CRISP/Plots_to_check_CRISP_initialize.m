@@ -19,13 +19,14 @@ subplot(1,2,1)
 % [lineRX,lineRY] = stairs(lineR(:,2),lineR(:,3));
 % semilogx(lineR(:,2),lineR(:,3),'r')
 % semilogx(lineRX,lineRY,'r')
-semilogx(LR_ao,P,'r')
+semilogx(LR_p1,P,'r')
 hold on
 % semilogx(LR_nao,P,'g')
 % semilogx(LR_p1,P,'k')
-% % [DX,DY] = stairs(lineD(:,1),lineD(:,3));
-semilogx(lineD(:,1),lineD(:,3),'b.')
-legend('empirical-allow 0 out','analytic')
+[DX,DY] = stairs(lineD(:,1),lineD(:,3));
+semilogx(DX,DY,'b')
+% semilogx(lineD(:,1),lineD(:,3),'b.')
+legend('empirical-allow 0 plus 1','analytic')
 title('No. Line Outages'); xlabel('k'); ylabel('Prob(no. lines \geq k)')
 set(gca, 'fontsize',13)
 hold off
