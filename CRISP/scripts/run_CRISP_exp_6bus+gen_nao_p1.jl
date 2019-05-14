@@ -17,7 +17,7 @@ N = 10000;
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename1 = "res_out_case6ww_p1sv"
+filename1 = "res_out_case6ww_p1"
 out_folder1 = out*"\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case1,out_folder1)

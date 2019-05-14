@@ -6,7 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist(Num,ps_folder,out_folder;param_file = "")
-    debug=0;
+    debug=1;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     ResilienceTri = Array{Float64}(undef,Num,1);
@@ -30,7 +30,8 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
         # step 1
         Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
         if debug==1
-            CSV.write("results\\$out_folder$iterat.csv", Lines_Init_State)
+            outnow = (out_folder[1:end-4]);
+            CSV.write("results$outnow IC$iterat.csv", Lines_Init_State)
         end
         state = Lines_Init_State[:,1];
         recovery_times = Lines_Init_State[:,2];

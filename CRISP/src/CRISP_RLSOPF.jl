@@ -102,7 +102,7 @@ function crisp_rlopf!(ps,Pd_max)
         @variable(m1,dPg[1:ng])
         @variable(m1,dTheta[1:n])
         # variable bounds
-        @constraint(m1,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
+        @constraint(m1,-Pd.<=dPd.<=((Pd_max./ ps.baseMVA .* ps.shunt[:status]) - Pd));
         @constraint(m1,-Pg.<=dPg.<=Pg_max-Pg);
         @constraint(m1,dTheta[1] == 0);
         # objective
