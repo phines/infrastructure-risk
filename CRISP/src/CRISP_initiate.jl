@@ -29,6 +29,8 @@ lines_outage_recovery = RecTime(RecovTimeL,lines_state);
 return lines_outage_recovery
 end
 
+#No longer using.
+# fair sample from distribution that allows 0 outages, but that only picks events with outages
 function line_state3!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch[1]);

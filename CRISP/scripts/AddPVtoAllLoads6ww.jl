@@ -1,18 +1,18 @@
 using CSV
 using Random
 include("..\\src\\CRISP_network.jl")
-include("..\\src\\CRISP_LSOPF_tests.jl")
-include("..\\src\\CRISP_RLSOPF_test.jl")
+include("..\\src\\CRISP_LSOPF.jl")
+include("..\\src\\CRISP_RLSOPF.jl")
 
 ## load the case data
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case6ww\\")
-crisp_dcpf1!(ps)
+crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd = deepcopy(ps.shunt[:P]);
 gen = deepcopy(ps.gen);
 nd = length(ps.shunt[:P]);
 ng = length(ps.gen.Pg);
-percent_solar = 1;
+percent_solar = .05;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #add generators
@@ -33,12 +33,12 @@ for s = 1:nd #N_panels
 end
 ps.gen = gen;
 println(ps.gen.Pg)
-crisp_dcpf1!(ps)
+crisp_dcpf!(ps)
 println(ps.gen.Pg)
-crisp_lsopf1!(ps)
+crisp_lsopf!(ps)
 println(ps.gen.Pg)
 #check
-crisp_dcpf1!(ps)
+crisp_dcpf!(ps)
 println(ps.gen.Pg)
 
 PS = Int64.(100*percent_solar)
