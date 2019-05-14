@@ -69,7 +69,6 @@ end
 cdf_lines = H_k_s./zeta(s);
 P_leqNlinesOut = rand(rng,1);
 cdf_lines = H_k_s./zeta(s);
-P_leqNlinesOut = rand(1);
 Nlines = sum(P_leqNlinesOut.>=cdf_lines);
 Nlines += 1;
 Nlines = Int64(round(ratioL*Nlines)) #
@@ -89,7 +88,6 @@ end
 cdf_lines = H_k_s./zeta(s);
 P_leqNlinesOut = rand(rng,1);
 cdf_lines = H_k_s./zeta(s);
-P_leqNlinesOut = rand(1);
 Nlines = sum(P_leqNlinesOut.>=cdf_lines);
 if Nlines==0
     Nlines=1;
@@ -109,7 +107,7 @@ for i = 1:k
     end
 end
 cdf_lines = H_k_s./zeta(s);
-P_leqNlinesOut = rand(1);
+P_leqNlinesOut = rand(rng,1);
 Nlines = sum(P_leqNlinesOut.>=cdf_lines);
 Nlines = Int64(round(ratioL*Nlines)) #
 return Nlines

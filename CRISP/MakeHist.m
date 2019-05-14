@@ -49,10 +49,15 @@
 % costs3 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_3.csv');
 % costs4 = xlsread('results\experiments\5\res_out_case39_20PV_A0O_3.csv');
 
-costs1 = xlsread('results\experiments\6\res_out_case39_p1.csv');
-costs2 = xlsread('results\experiments\6\res_out_case39_05PV_p1.csv');
-costs3 = xlsread('results\experiments\6\res_out_case39_20PV_p1.csv');
-costs4 = xlsread('results\experiments\6\res_out_case39_100PV_p1.csv');
+% costs1 = xlsread('results\experiments\6\res_out_case39_fair-sample.csv');
+% costs2 = xlsread('results\experiments\6\res_out_case39_05PV_fair-sample.csv');
+% costs3 = xlsread('results\experiments\6\res_out_case39_20PV_fair-sample.csv');
+% costs4 = xlsread('results\experiments\6\res_out_case39_100PV_fair-sample.csv');
+
+costs1 = xlsread('results\experiments\6\res_out_case39_p1_2.csv');
+costs2 = xlsread('results\experiments\6\res_out_case39_05PV_p1_2.csv');
+costs3 = xlsread('results\experiments\6\res_out_case39_20PV_p1_2.csv');
+costs4 = xlsread('results\experiments\6\res_out_case39_100PV_p1_2.csv');
 
 % costs1 = xlsread('results\experiments\0\res_out_case39_0_out.csv');
 % costs2 = xlsread('results\experiments\0\res_out_case39_fair_sample_no_0_out.csv');

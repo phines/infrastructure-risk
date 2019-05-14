@@ -11,11 +11,12 @@ crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 ps0 = deepcopy(ps);
+Flow0 = ps.branch.Pf;
 Lines_Init_State = CSV.read("C:\\Users\\mkellygo\\Documents\\GitHub\\infrastructure-risk\\CRISP\\results\\experiments\\7\\res_out_case6ww_p1 IC916.csv")
 state = Lines_Init_State[:,1];
 recovery_times = Lines_Init_State[:,2];
 failures = state;
-ps.branch.staus = failures;
+ps.branch.status = failures;
     #check for islands
     subgraph = find_subgraphs(ps);
     M = Int64(findmax(subgraph)[1]);
