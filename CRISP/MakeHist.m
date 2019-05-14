@@ -54,10 +54,15 @@
 % costs3 = xlsread('results\experiments\6\res_out_case39_20PV_fair-sample.csv');
 % costs4 = xlsread('results\experiments\6\res_out_case39_100PV_fair-sample.csv');
 
-costs1 = xlsread('results\experiments\6\res_out_case39_p1_2.csv');
-costs2 = xlsread('results\experiments\6\res_out_case39_05PV_p1_2.csv');
-costs3 = xlsread('results\experiments\6\res_out_case39_20PV_p1_2.csv');
+% costs1 = xlsread('results\experiments\6\res_out_case39_p1_2.csv');
+% costs2 = xlsread('results\experiments\6\res_out_case39_05PV_p1_2.csv');
+% costs3 = xlsread('results\experiments\6\res_out_case39_20PV_p1_2.csv');
 costs4 = xlsread('results\experiments\6\res_out_case39_100PV_p1_2.csv');
+
+costs1 = xlsread('results\experiments\6\res_out_case39_p1_3.csv');
+costs2 = xlsread('results\experiments\6\res_out_case39_05PV_p1_3.csv');
+costs3 = xlsread('results\experiments\6\res_out_case39_20PV_p1_3.csv');
+% costs4 = xlsread('results\experiments\6\res_out_case39_100PV_p1_3.csv');
 
 % costs1 = xlsread('results\experiments\0\res_out_case39_0_out.csv');
 % costs2 = xlsread('results\experiments\0\res_out_case39_fair_sample_no_0_out.csv');
@@ -94,10 +99,11 @@ for jj = 1:N
     end
 end
 
-figure
-% subplot(1,2,1)
-loglog(sorted_costs1,Pr)
+figure(1)
+subplot(1,2,1)
 hold on
+loglog(sorted_costs1,Pr)
+
 loglog(sorted_costs2,Pr)
 loglog(sorted_costs3,Pr)
 % semilogx(sorted_costs1,Pr)
