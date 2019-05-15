@@ -9,6 +9,8 @@ rtimeD = xlsread('results/checks/RecTimeDist_v2.csv');
 % rtimeR = xlsread('results/checks/RecTimeRealiz.csv');
 % rtimeD = xlsread('results/checks/RecTimeDist.csv');
 
+
+
 subplot(1,2,1)
 [lineRX,lineRY] = stairs(lineR(:,2),lineR(:,3));
 %semilogx(lineR(:,2),lineR(:,3),'r')
