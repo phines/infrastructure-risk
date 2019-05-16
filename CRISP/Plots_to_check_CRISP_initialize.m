@@ -11,10 +11,15 @@ rtimeD = xlsread('results/checks/RecTimeDist_v2.csv');
 % rtimeR = xlsread('results/checks/RecTimeRealiz.csv');
 % rtimeD = xlsread('results/checks/RecTimeDist.csv');
 
+<<<<<<< HEAD
+
+
+=======
 LR_ao = lineR(:,1);
 LR_nao = lineR(:,2);
 LR_p1 = lineR(:,3);
 P = lineR(:,4);
+>>>>>>> 6fb6c0a78fc33ab8faf127cffee2c4b0972bf6e2
 subplot(1,2,1)
 % [lineRX,lineRY] = stairs(lineR(:,2),lineR(:,3));
 % semilogx(lineR(:,2),lineR(:,3),'r')
