@@ -12,7 +12,7 @@ ps.branch[5,:status]=0;
 
 # run the dcpf
 crisp_dcpf!(ps)
-ps0 = deepcopy(ps)
+ps1 = deepcopy(ps)
 
 # run lsopf
 crisp_lsopf!(ps)
