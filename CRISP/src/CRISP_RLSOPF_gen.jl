@@ -1,4 +1,4 @@
-using CSV; using DataFrames; using SpecialFunctions;
+using CSV; using DataFrames; using SpecialFunctions; using JuMP; using Cbc;
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
@@ -80,6 +80,7 @@ function crisp_rlopf_g!(ps,Pd_max)
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
         Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
         Pg_max = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
+        Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -96,27 +97,34 @@ function crisp_rlopf_g!(ps,Pd_max)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m1 = Model(with_optimizer(Clp.Optimizer))
+        m1 = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m1,dPd[1:nd])
-        @variable(m1,dPg[1:ng])
+        @variable(m1,ndPg[1:ng])
+        @variable(m1,pdPg[1:ng])
+        @variable(m1,ug[1:ng],Bin)
         @variable(m1,dTheta[1:n])
         # variable bounds
         @constraint(m1,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
-        @constraint(m1,-Pg.<=dPg.<=Pg_max-Pg);
-        @constraint(m1,dTheta[1] == 0);
+        @constraint(m1, ug.*(Pg_min-Pg) .<= ndPg)
+        @constraint(m1, ug.*(Pg_max-Pg) .>= pdPg)
+        @constraint(m1, pdPg .>= 0)
+        @constraint(m1, ndPg .<= 0)
+        @constraint(m1,dTheta[1] == 0)
         # objective
-        @objective(m1,Max,sum(dPd)) # serve as much load as possible
+        @objective(m1,Max,sum(dPd)+0.01*(sum(ndPg)-sum(pdPg)+sum(ug))) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         # Power balance equality constraint
-        @constraint(m1,B*dTheta .== G_bus*dPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+        @constraint(m1,B*dTheta .== G_bus*ndPg-G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
         # Power flow constraints
         @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
         optimize!(m1);
         # collect/return the outputs
         sol_dPd=value.(dPd)
-        sol_dPg=value.(dPg)
+        sol_ndPg=value.(ndPg)
+        sol_pdPg=value.(pdPg)
+        sol_dPg = sol_pdPg+sol_ndPg;
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = sol_dPg.*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure

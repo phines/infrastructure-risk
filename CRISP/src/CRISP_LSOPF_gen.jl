@@ -176,7 +176,7 @@ function crisp_lsopf_g!(ps)
         # variable bounds
         @constraint(m,-Pd .<= dPd .<= 0)
         @constraint(m, ug.*(Pg_min-Pg) .<= ndPg)
-        @constraint(m, ug.*(Pg_min-Pg) .<= ndPg)
+        @constraint(m, ug.*(Pg_max-Pg) .>= pdPg)
         @constraint(m, pdPg .>= 0)
         @constraint(m, ndPg .<= 0)
         @constraint(m,dTheta[1] == 0)
