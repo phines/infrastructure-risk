@@ -13,32 +13,32 @@ else
 end
 
 # number of events
-N = 10000;
+N = 1000;
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename1 = "res_out_case39_p1_3"
+filename1 = "res_out_case39_p1_4"
 out_folder1 = out*"\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case1,out_folder1)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename2 = "res_out_case39_05PV_p1_3";
+filename2 = "res_out_case39_05PV_p1_4";
 out_folder2 = out*"\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case2,out_folder2)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename3 = "res_out_case39_20PV_p1_3";
+filename3 = "res_out_case39_20PV_p1_4";
 out_folder3 = out*"\\$filename3.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case3,out_folder3)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename4 = "res_out_case39_100PV_p1_3";
+filename4 = "res_out_case39_100PV_p1_4";
 out_folder4 = out*"\\$filename4.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case4,out_folder4)

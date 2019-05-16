@@ -1,4 +1,4 @@
-using CSV; using DataFrames; using SpecialFunctions; using Gurobi
+using CSV; using DataFrames; using SpecialFunctions; using JuMP; using Clp; using Gurobi
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
@@ -32,7 +32,7 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max ;t0 = 10, load_cost=0)
             #crisp_rlopf1!(ps,Pd_max,Flow0);
             crisp_rlopf!(ps,Pd_max);
             crisp_dcpf!(ps);
-        #else
+        else
             ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
             ## for every island that changed (eventually)
 
@@ -97,7 +97,7 @@ function crisp_rlopf!(ps,Pd_max)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m1 = Model(with_optimizer(Gurobi.Optimizer))
+        m1 = Model(with_optimizer(Clp.Optimizer))
         # variables
         @variable(m1,dPd[1:nd])
         @variable(m1,dPg[1:ng])
