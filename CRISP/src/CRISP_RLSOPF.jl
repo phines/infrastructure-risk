@@ -1,4 +1,4 @@
-using CSV; using DataFrames; using SpecialFunctions;
+using CSV; using DataFrames; using SpecialFunctions; using Gurobi
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
@@ -97,7 +97,7 @@ function crisp_rlopf!(ps,Pd_max)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m1 = Model(with_optimizer(Clp.Optimizer))
+        m1 = Model(with_optimizer(Gurobi.Optimizer))
         # variables
         @variable(m1,dPd[1:nd])
         @variable(m1,dPg[1:ng])
