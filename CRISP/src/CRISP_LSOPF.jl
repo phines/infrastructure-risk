@@ -167,7 +167,8 @@ function crisp_lsopf!(ps)
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg += dPg_star; #changes ps structure
     else
-        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt)) || (isempty(ps.gen) && isempty(ps.shunt))
+        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt)) ||
+            (isempty(ps.gen) && isempty(ps.shunt))
             ps.gen.Pg  .= ps.gen.Pg.*0.0;
             ps.shunt.P .= ps.shunt.P.*0.0;
         elseif !isempty(ps.gen) && !isempty(ps.shunt)

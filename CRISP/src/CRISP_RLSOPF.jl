@@ -2,7 +2,7 @@ using CSV; using DataFrames; using SpecialFunctions;
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
-function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
+function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max ;t0 = 10, load_cost=0)
     # constants
     tolerance = 1e-6
     if sum(load_cost)==0
@@ -29,9 +29,10 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
         if M==1
             crisp_dcpf!(ps);
             # run lsopf
+            #crisp_rlopf1!(ps,Pd_max,Flow0);
             crisp_rlopf!(ps,Pd_max);
             crisp_dcpf!(ps);
-        else
+        #else
             ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
             ## for every island that changed (eventually)
 
@@ -102,7 +103,7 @@ function crisp_rlopf!(ps,Pd_max)
         @variable(m1,dPg[1:ng])
         @variable(m1,dTheta[1:n])
         # variable bounds
-        @constraint(m1,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
+        @constraint(m1,-Pd.<=dPd.<=((Pd_max./ ps.baseMVA .* ps.shunt[:status]) - Pd));
         @constraint(m1,-Pg.<=dPg.<=Pg_max-Pg);
         @constraint(m1,dTheta[1] == 0);
         # objective
@@ -188,6 +189,75 @@ function crisp_rlopf!(ps,Pd_max)
             ps.gen.Pg  = ps.gen.Pg.*0.0;
         end
     end
+    #adding criteria that should produce errors if incorrect.
+    @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
+    #@assert 0.<=ps.shunt.P
+    return ps
+end
+function crisp_rlopf1!(ps,Pd_max,Flow0)
+    # constants
+    tolerance = 1e-6
+    ### collect the data that we will need ###
+    # bus data
+    n = size(ps.bus,1) # the number of buses
+        bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
+        # load data
+        nd = size(ps.shunt,1)
+        D = bi[ps.shunt[:bus]]
+        D_bus = sparse(D,collect(1:nd),1.,n,nd);
+        Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+        if any(D.<1) || any(D.>n)
+            error("Bad indices in shunt matrix")
+        end
+        #Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
+        # gen data
+        ng = size(ps.gen,1)
+        G = bi[ps.gen[:bus]]
+        G_bus = sparse(G,collect(1:ng),1.,n,ng);
+        Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
+        Pg_max = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
+        if any(G.<1) || any(G.>n)
+            error("Bad indices in gen matrix")
+        end
+        #Pg_bus = Array(sparse(G,ones(size(G)),Pg,n,1))
+        # branch data
+        brst = (ps.branch.status.==1)
+        F = bi[ps.branch.f[brst]]
+        T = bi[ps.branch.t[brst]]
+        flow0 = Flow0[brst]./ps.baseMVA
+        flow_max = ps.branch.rateA[brst]./ps.baseMVA # this could also be rateB
+        Xinv = (1 ./ ps.branch.X[brst])
+        B = sparse(F,T,-Xinv,n,n) +
+            sparse(T,F,-Xinv,n,n) +
+            sparse(T,T,+Xinv,n,n) +
+            sparse(F,F,+Xinv,n,n)
+        ### Build the optimization model ###
+        m2 = Model(with_optimizer(Clp.Optimizer))
+        # variables
+        @variable(m2,dPd[1:nd])
+        @variable(m2,dPg[1:ng])
+        @variable(m2,Theta[1:n])
+        # variable bounds
+        @constraint(m2,0 .<=dPd.<=(Pd_max./ ps.baseMVA .* ps.shunt[:status]));
+        @constraint(m2,0 .<=dPg.<=Pg_max);
+        @constraint(m2,Theta[1] == 0);
+        # objective
+        @objective(m2,Max,sum(dPd)) # serve as much load as possible
+        # mapping matrix to map loads/gens to buses
+        # Power balance equality constraint
+        @constraint(m2,B*Theta .== G_bus*dPg-D_bus*dPd);
+        # Power flow constraints
+        @constraint(m2,-flow_max .<= Xinv.*(Theta[F] - Theta[T]) .<= flow_max)
+        ### solve the model ###
+        optimize!(m2);
+        # collect/return the outputs
+        sol_dPd=value.(dPd)
+        sol_dPg=value.(dPg)
+        dPd_star = sol_dPd.*ps.baseMVA
+        dPg_star = sol_dPg.*ps.baseMVA
+        ps.shunt.P += dPd_star; #changes ps structure
+        ps.gen.Pg += dPg_star; #changes ps structure
+
     #adding criteria that should produce errors if incorrect.
     @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
     #@assert 0.<=ps.shunt.P
