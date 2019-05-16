@@ -1,0 +1,32 @@
+%load data
+costs1 = xlsread('..\results\experiments\6\res_out_case39_p1_2.csv');
+costs2 = xlsread('..\results\experiments\6\res_out_case39_05PV_p1_2.csv');
+costs3 = xlsread('..\results\experiments\6\res_out_case39_20PV_p1_2.csv');
+
+%remove any NaN
+costs1(isnan(costs1))=0;
+costs2(isnan(costs2))=0;
+costs3(isnan(costs3))=0;
+
+%find the pdf
+[x1,pdf1] = emperical_pdf(costs1,40);
+[x2,pdf2] = emperical_pdf(costs2,40);
+[x3,pdf3] = emperical_pdf(costs3,40);
+
+figure(1); clf;
+plot(x1,pdf1)
+hold on
+plot(x2,pdf2)
+plot(x3,pdf3)
+legend('original', '5% load added in DG', '20% load added in DG')
+title('39 bus Reilience PDF')
+xlabel('ENS'); ylabel('PDF(ENS)');
+set(gca,'xscale','log');
+set(gca,'yscale','log');
+
+area = trapz(x1,pdf1)
+% 
+% figure(2); clf;
+% [yvalues,xvalues] = histc(x,20)
+% p = histcounts(yvalues,xvalues,'Normalization','pdf')
+% plot(xvalues,p);

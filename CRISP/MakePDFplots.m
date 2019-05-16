@@ -1,4 +1,4 @@
-% simple script to plot histograms when in a hurry
+% not accurate! use code in Matlab folder
 clear all
 close all
 
