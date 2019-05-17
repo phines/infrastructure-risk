@@ -3,16 +3,18 @@ using Random
 include("..\\src\\CRISP_network.jl")
 include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
-
+## name base for new case
+new_case = "data\\saved_ps\\case39_n-1+PV";
 ## load the case data
-ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\saved_ps\\case39_n-1\\")
+old_case = "data\\saved_ps\\case39_n-1\\";
+ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\$old_case")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd = deepcopy(ps.shunt[:P]);
 gen = deepcopy(ps.gen);
 nd = length(ps.shunt[:P]);
 ng = length(ps.gen.Pg);
-percent_solar = 0.05;
+percent_solar = 1;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #add generators
@@ -43,17 +45,17 @@ println(ps.gen.Pg)
 
 PS = Int64.(100*percent_solar)
 # save ps structure
-if isdir("data\\saved_ps\\case39+PV$PS")
+if isdir(new_case*"$PS")
 else
-    mkdir("data\\saved_ps\\case39+PV$PS")
+    mkdir(new_case*"$PS")
 end
-export_ps(ps,"data\\saved_ps\\case39+PV$PS")
+export_ps(ps,new_case*"$PS")
 #save case info
-line1 = "Original_case = CRISP\\data\\case39\\ ."
+line1 = "Original_case = CRISP\\$old_case ."
 line2 = "Added solar to cover $percent_solar fraction of demand.  "
 line3 = "To each PQ buses.  "
 
-write("data\\saved_ps\\case39+PV$PS\\case_info.txt",line1*line2*line3)
+write(new_case*"$PS\\case_info.txt",line1*line2*line3)
 
 #include("..\\src\\CRISP_Rdist.jl")
 #res = Res_dist(1000,"data\\saved_ps\\case39_05PV\\","results\\case39_05PV\\resilience_costs.csv")

@@ -1,5 +1,6 @@
 using JuMP
 using Clp
+using Gurobi
 using SparseArrays
 using LinearAlgebra
 
@@ -141,7 +142,7 @@ function crisp_lsopf!(ps)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m = Model(with_optimizer(Clp.Optimizer))
+        m = Model(with_optimizer(Gurobi.Optimizer))
         # variables
         @variable(m,dPd[1:nd])
         @variable(m,dPg[1:ng])
