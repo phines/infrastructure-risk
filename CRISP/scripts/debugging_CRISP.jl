@@ -41,7 +41,9 @@ end
 
 ## run step 3
 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
-#make_plots(Restore,filename)
+CSV.write("results\\Restoration$filename.csv",Restore)
+
+#=#make_plots(Restore,filename)
 using Plots; using StatsPlots
 #theme(:sand)
 plot1 = @df Restore plot(:time, :perc_load_served,
@@ -53,6 +55,6 @@ plot2 = @df Restore plot(:time, :num_lines_out,
 #putting 2 plots together
 P = plot(plot1,plot2,layout = (2,1),legend=false,grid=false)
 # save a png
-png(P,"results\\$filename")
+png(P,"results\\$filename")=#
 ## run step 4
 ResilienceTri = crisp_res(Restore);
