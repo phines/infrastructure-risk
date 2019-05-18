@@ -1,28 +1,49 @@
-using CSV; using DataFrames; using SpecialFunctions; using JuMP; using Cbc;
+using DataFrames;
+using SpecialFunctions;
+using JuMP;
+using Clp;
+using Gurobi;
+using Cbc;
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
-function RLSOPF_g!(totalp,ps,failures,recovery_times,Pd_max;t0 = 10, load_cost=0)
+function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,gen_startup,Pd_max;t0 = 10, load_cost=0)
     # constants
+    deltaT = 15; # time step in minutes;
     tolerance = 1e-6
     if sum(load_cost)==0
         load_cost = ones(length(ps.shunt.P));
     end
-    rec_t = recovery_times[recovery_times.!=0];
-    times = sort(rec_t);
-    load_shed = zeros(length(times)+2);
+    l_rec_t = l_recovery_times[l_recovery_times.!=0];
+    g_rec_t = g_recovery_times[g_recovery_times.!=0];
+    g_rec = zeros(length(ps.gen.bus));
+    g_rec[g_recovery_times.!=0] = g_recovery_times[g_recovery_times.!=0] + gen_startup[g_recovery_times!=0];
+    l_times = sort(l_rec_t);
+    g_times = sort(g_rec[g_rec.!=0]);
+    all_times = sort([l_times; g_rec]);
+    max_time = maximum([all_times]);
+    load_shed = zeros(Int64(round.(max_time[1]/deltaT)+2));
     load_shed[1] = 0;
-    lines_out = zeros(length(times)+2);
-    lines_out[2] = length(failures) - sum(failures);
+    lines_out = zeros(length(l_times)+2);
+    lines_out[2] = length(l_failures) - sum(l_failures);
+    gens_out = zeros(length(l_times)+2);
+    lines_out[2] = length(l_failures) - sum(l_failures);
     # set load shed for the step just before restoration process
     load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
-    for i = 1:length(times)
-        T = times[i];
+    Time = 0:deltaT:max_time[1];
+    for i = 1:length(Time)
+        T = Time[i];
         # set failed branches to status 0
-        failures[T.>=recovery_times] .= 1;
-        lines_out[i+2] = length(failures) - sum(failures);
+        l_failures[T.>=l_recovery_times] .= 1;
+        lines_out[i+2] = length(l_failures) - sum(l_failures);
         # apply to network
-        ps.branch[:,:status] = failures;
+        ps.branch[:,:status] = l_failures;
+        # set newly available generators to status 1;
+        current_gen_out = ps.gen.status;
+        # update generators operational
+        g_failures[T.>=g_rec] .= 1;
+        ps.gen.status = g_failures;
+        gens_out[i+2] = length(g_failures) - sum(g_failures);
         #check for islands
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
@@ -75,11 +96,12 @@ function crisp_rlopf_g!(ps,Pd_max)
         end
         #Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
         # gen data
-        ng = size(ps.gen,1)
-        G = bi[ps.gen[:bus]]
+        gst = (ps.gen.status .== 1);
+        ng = size(ps.gen[gst,:Pg],1)
+        G = bi[ps.gen[gst,:bus]]
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
-        Pg = ps.gen[:Pg] ./ ps.baseMVA .* ps.gen[:status]
-        Pg_max = ps.gen[:Pmax] ./ ps.baseMVA .* ps.gen[:status]
+        Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
         Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
@@ -128,15 +150,17 @@ function crisp_rlopf_g!(ps,Pd_max)
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = sol_dPg.*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
-        ps.gen.Pg += dPg_star; #changes ps structure
+        ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
-        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt)) || (isempty(ps.gen) && isempty(ps.shunt))
+        if ((!isempty(ps.gen.status.==1) && isempty(ps.shunt)) || (isempty(ps.gen.status.==1) && !isempty(ps.shunt))
+             || (isempty(ps.gen.status.==1) && isempty(ps.shunt)))
             ps.gen.Pg  .= ps.gen.Pg.*0.0;
             ps.shunt.P .= ps.shunt.P.*0.0;
-        elseif !isempty(ps.gen) && !isempty(ps.shunt)
+        elseif !isempty(ps.gen.status.==1) && !isempty(ps.shunt)
+            gst = (ps.gen.status .== 1)
             Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
-            Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
-            Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
+            Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+            Pg_cap = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
             if sum(Pg_cap) >= sum(Pd)
                 deltaPd = 0.0;
                 deltaPg = sum(Pd)-sum(Pg);
@@ -190,7 +214,7 @@ function crisp_rlopf_g!(ps,Pd_max)
                 deltaPg_star = deltaPg.*ps.baseMVA;
             end
             ps.shunt.P .+= deltaPd_star;
-            ps.gen.Pg  .+= deltaPg_star;
+            ps.gen.Pg[gst]  .+= deltaPg_star;
         else
             ps.shunt.P = ps.shunt.P.*0.0;
             ps.gen.Pg  = ps.gen.Pg.*0.0;

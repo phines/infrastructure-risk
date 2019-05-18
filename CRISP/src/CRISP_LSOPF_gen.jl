@@ -1,6 +1,7 @@
 using JuMP
 using Clp
 using Cbc
+using Gurobi
 using SparseArrays
 using LinearAlgebra
 
@@ -199,10 +200,12 @@ function crisp_lsopf_g!(ps)
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
-        if (!isempty(ps.gen[gst,:]) && isempty(ps.shunt)) || (isempty(ps.gen[gst,:]) && !isempty(ps.shunt)) || (isempty(ps.gen[gst,:]) && isempty(ps.shunt))
-            ps.gen.Pg[gst]  .= ps.gen.Pg[gst,:].*0.0;
+        if ((!isempty(ps.gen.status.==1) && isempty(ps.shunt)) || (isempty(ps.gen.status.==1) && !isempty(ps.shunt))
+             || (isempty(ps.gen.status.==1) && isempty(ps.shunt)))
+            ps.gen.Pg  .= ps.gen.Pg.*0.0;
             ps.shunt.P .= ps.shunt.P.*0.0;
-        elseif !isempty(ps.gen) && !isempty(ps.shunt)
+        elseif !isempty(ps.gen.status.==1) && !isempty(ps.shunt)
+            gst = (ps.gen.status .== 1)
             Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
             Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
             Pg_cap = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
@@ -262,7 +265,7 @@ function crisp_lsopf_g!(ps)
             ps.gen.Pg[gst]  .+= deltaPg_star;
         else
             ps.shunt.P = ps.shunt.P.*0.0;
-            ps.gen.Pg[gst]  = ps.gen.Pg.*0.0;
+            ps.gen.Pg  = ps.gen.Pg.*0.0;
         end
     end
     #adding criteria that should produce errors if incorrect.
