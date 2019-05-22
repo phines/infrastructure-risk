@@ -167,7 +167,7 @@ function crisp_lsopf_g!(ps)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m = Model(with_optimizer(Cbc.Optimizer))
+        m = Model(with_optimizer(Gurobi.Optimizer))
         # variables
         @variable(m,dPd[1:nd])
         @variable(m,ndPg[1:ng])
@@ -176,8 +176,8 @@ function crisp_lsopf_g!(ps)
         @variable(m,dTheta[1:n])
         # variable bounds
         @constraint(m,-Pd .<= dPd .<= 0)
-        @constraint(m, ug.*(Pg_min-Pg) .<= ndPg)
-        @constraint(m, ug.*(Pg_max-Pg) .>= pdPg)
+        @constraint(m, ug.*(Pg_min) .<= Pg+ndPg)
+        @constraint(m, ug.*(Pg_max) .>= Pg+pdPg)
         @constraint(m, pdPg .>= 0)
         @constraint(m, ndPg .<= 0)
         @constraint(m,dTheta[1] == 0)
@@ -185,7 +185,7 @@ function crisp_lsopf_g!(ps)
         @objective(m,Max,sum(dPd)+0.01*(sum(ndPg)-sum(pdPg)+sum(ug))) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         # Power balance equality constraint
-        @constraint(m,B*dTheta .== G_bus*ndPg-G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+        @constraint(m,B*dTheta .== G_bus*ndPg+G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
         # Power flow constraints
         @constraint(m,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
@@ -194,9 +194,8 @@ function crisp_lsopf_g!(ps)
         sol_dPd=value.(dPd)
         sol_ndPg=value.(ndPg)
         sol_pdPg=value.(pdPg)
-        sol_dPg = sol_pdPg+sol_ndPg;
         dPd_star = sol_dPd.*ps.baseMVA
-        dPg_star = sol_dPg.*ps.baseMVA
+        dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else

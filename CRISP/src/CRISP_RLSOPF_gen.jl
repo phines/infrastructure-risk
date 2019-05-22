@@ -9,28 +9,26 @@ include("CRISP_network.jl")
 
 function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,gen_startup,Pd_max;t0 = 10, load_cost=0)
     # constants
-    deltaT = 15; # time step in minutes;
+    deltaT = 5; # time step in minutes;
     tolerance = 1e-6
     if sum(load_cost)==0
         load_cost = ones(length(ps.shunt.P));
     end
     l_rec_t = l_recovery_times[l_recovery_times.!=0];
-    g_rec_t = g_recovery_times[g_recovery_times.!=0];
-    g_rec = zeros(length(ps.gen.bus));
-    g_rec[g_recovery_times.!=0] = g_recovery_times[g_recovery_times.!=0] + gen_startup[g_recovery_times!=0];
-    l_times = sort(l_rec_t);
-    g_times = sort(g_rec[g_rec.!=0]);
-    all_times = sort([l_times; g_rec]);
-    max_time = maximum([all_times]);
-    load_shed = zeros(Int64(round.(max_time[1]/deltaT)+2));
+    g_rec_t = g_recovery_times[g_failures.==0] + gen_startup[g_failures.==0];
+    g_rec = zeros(length(g_failures));
+    g_rec[g_failures.==0] = g_rec_t;
+    Time = sort([l_rec_t; g_rec_t])
+    total_i = length(Time);
+    load_shed = zeros(total_i+2);
     load_shed[1] = 0;
-    lines_out = zeros(length(l_times)+2);
+    lines_out = zeros(total_i+2);#zeros(length(l_times)+2);
     lines_out[2] = length(l_failures) - sum(l_failures);
-    gens_out = zeros(length(l_times)+2);
-    lines_out[2] = length(l_failures) - sum(l_failures);
+    gens_out = zeros(total_i+2);#zeros(length(l_times)+2);
+    gens_out[2] = length(g_failures) - sum(g_failures);
     # set load shed for the step just before restoration process
     load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
-    Time = 0:deltaT:max_time[1];
+
     for i = 1:length(Time)
         T = Time[i];
         # set failed branches to status 0
@@ -72,9 +70,9 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,ge
         # set load shed for this time step
         load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     end
-    times = [0.0;t0*1.0;times.+t0*1.0];
+    times = [0.0;t0*1.0;Time.+t0*1.0];
     perc_load_served = (sum(load_cost.*Pd_max) .- load_shed)./sum(load_cost.*Pd_max);
-    Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served, num_lines_out = lines_out);
+    Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served, num_lines_out = lines_out, num_gens_out = gens_out);
     return Restore
 end
 
@@ -119,7 +117,7 @@ function crisp_rlopf_g!(ps,Pd_max)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        m1 = Model(with_optimizer(Cbc.Optimizer))
+        m1 = Model(with_optimizer(Gurobi.Optimizer))
         # variables
         @variable(m1,dPd[1:nd])
         @variable(m1,ndPg[1:ng])
@@ -128,16 +126,16 @@ function crisp_rlopf_g!(ps,Pd_max)
         @variable(m1,dTheta[1:n])
         # variable bounds
         @constraint(m1,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
-        @constraint(m1, ug.*(Pg_min-Pg) .<= ndPg)
-        @constraint(m1, ug.*(Pg_max-Pg) .>= pdPg)
+        @constraint(m1, ug.*(Pg_min) .<= Pg+ndPg)
+        @constraint(m1, ug.*(Pg_max) .>= Pg+pdPg)
         @constraint(m1, pdPg .>= 0)
         @constraint(m1, ndPg .<= 0)
         @constraint(m1,dTheta[1] == 0)
         # objective
-        @objective(m1,Max,sum(dPd)+0.01*(sum(ndPg)-sum(pdPg)+sum(ug))) # serve as much load as possible
+        @objective(m1,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         # Power balance equality constraint
-        @constraint(m1,B*dTheta .== G_bus*ndPg-G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+        @constraint(m1,B*dTheta .== G_bus*ndPg+G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
         # Power flow constraints
         @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
@@ -146,9 +144,8 @@ function crisp_rlopf_g!(ps,Pd_max)
         sol_dPd=value.(dPd)
         sol_ndPg=value.(ndPg)
         sol_pdPg=value.(pdPg)
-        sol_dPg = sol_pdPg+sol_ndPg;
         dPd_star = sol_dPd.*ps.baseMVA
-        dPg_star = sol_dPg.*ps.baseMVA
+        dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
