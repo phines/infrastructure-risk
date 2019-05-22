@@ -1,69 +1,75 @@
-% Resilience bar charts for MEPS conference paper
-% Molly Kelly-Gorham 5/21/2019
-
-clear
-
-% Original 39 bus p1 sampling.
-% data1 = xlsread('..\results\experiments\9\res_out_case39_p1_4_lines.csv');
-% data2 = xlsread('..\results\experiments\9\res_out_case39_05PV_p1_4_lines.csv');
-% data3 = xlsread('..\results\experiments\9\res_out_case39_20PV_p1_4_lines.csv');
-
-% costs1 = xlsread('..\results\experiments\9\res_out_case39_p1_4.csv');
-% costs2 = xlsread('..\results\experiments\9\res_out_case39_05PV_p1_4.csv');
-% costs3 = xlsread('..\results\experiments\9\res_out_case39_20PV_p1_4.csv');
-
-% N-1 Secure 39 bus p1 sampling.
-data1 = xlsread('..\results\experiments\9\res_out_case39_n-1_p1_4_lines.csv');
-data2 = xlsread('..\results\experiments\9\res_out_case39_n-1_05PV_p1_4_lines.csv');
-data3 = xlsread('..\results\experiments\9\res_out_case39_n-1_20PV_p1_4_lines.csv');
-
-lines1 = data1(:,1);
-lines2 = data2(:,1);
-lines3 = data3(:,1);
-
-
-time1 = data1(:,2);
-time2 = data2(:,2);
-time3 = data3(:,2);
-
-costs1 = xlsread('..\results\experiments\9\res_out_case39_n-1_p1_4.csv');
-costs2 = xlsread('..\results\experiments\9\res_out_case39_n-1_05PV_p1_4.csv');
-costs3 = xlsread('..\results\experiments\9\res_out_case39_n-1_20PV_p1_4.csv');
-
-costs1(isnan(costs1))=0;
-costs2(isnan(costs2))=0;
-costs3(isnan(costs3))=0;
-
-% find eens for different sized events
-short = [0,10];
-long =  [10,max([time1; time2; time3])];
-small = [0 10];
-large = [10:max([costs1; costs2; costs3]);
-
-d(1,1)= sort_data(short,time1,small,ls1,costs1));
-d(1,2)= mean(sort_data(medium,lines1,costs1));
-d(1,3)= mean(sort_data(large,lines1,costs1));
-d(1,4)= mean(sort_data(large,lines1,costs1));
-
-d(2,1)= mean(sort_data(small,lines2,costs2));
-d(2,2)= mean(sort_data(medium,lines2,costs2));
-d(2,3)= mean(sort_data(large,lines2,costs2));
-
-d(3,1)= mean(sort_data(small,lines3,costs3));
-d(3,2)= mean(sort_data(medium,lines3,costs3));
-d(3,3)= mean(sort_data(large,lines3,costs3));
-
-figure
-bar(d')
-hold on
-legend("original", "+5% load in DG", "+20% load in DG")
-xlabel(['small                  ' 'medium                 ' 'large'])
-set(gca,'xticklabels',[])
-ylabel('EENS (MWh)')
-set(gca, 'fontsize',13)
-legend boxoff
-box off
-hold off
+% % Resilience bar charts for MEPS conference paper
+% % Molly Kelly-Gorham 5/21/2019
+% 
+% clear
+% 
+% % Original 39 bus p1 sampling.
+% % data1 = xlsread('..\results\experiments\9\res_out_case39_p1_4_lines.csv');
+% % data2 = xlsread('..\results\experiments\9\res_out_case39_05PV_p1_4_lines.csv');
+% % data3 = xlsread('..\results\experiments\9\res_out_case39_20PV_p1_4_lines.csv');
+% 
+% % costs1 = xlsread('..\results\experiments\9\res_out_case39_p1_4.csv');
+% % costs2 = xlsread('..\results\experiments\9\res_out_case39_05PV_p1_4.csv');
+% % costs3 = xlsread('..\results\experiments\9\res_out_case39_20PV_p1_4.csv');
+% 
+% % N-1 Secure 39 bus p1 sampling.
+% data1 = xlsread('..\results\experiments\9\res_out_case39_n-1_p1_4_lines.csv');
+% data2 = xlsread('..\results\experiments\9\res_out_case39_n-1_05PV_p1_4_lines.csv');
+% data3 = xlsread('..\results\experiments\9\res_out_case39_n-1_20PV_p1_4_lines.csv');
+% 
+% lines1 = data1(:,1);
+% lines2 = data2(:,1);
+% lines3 = data3(:,1);
+% 
+% 
+% time1 = data1(:,2);
+% time2 = data2(:,2);
+% time3 = data3(:,2);
+% 
+% ls1 = data1(:,3);
+% ls2 = data2(:,3);
+% ls3 = data3(:,3);
+% 
+% costs1 = xlsread('..\results\experiments\9\res_out_case39_n-1_p1_4.csv');
+% costs2 = xlsread('..\results\experiments\9\res_out_case39_n-1_05PV_p1_4.csv');
+% costs3 = xlsread('..\results\experiments\9\res_out_case39_n-1_20PV_p1_4.csv');
+% 
+% costs1(isnan(costs1))=0;
+% costs2(isnan(costs2))=0;
+% costs3(isnan(costs3))=0;
+% 
+% % find eens for different sized events
+% short = [0,10];
+% long =  [10,max([time1; time2; time3])];
+% smallMW = [0 10];
+% largeMW = [10:max([costs1; costs2; costs3]);
+% 
+% d(1,1) = sort_data2(short,time1,smallMW,ls1,costs1);
+% d(1,2) = sort_data2(short,time1,largeMW,ls1,costs1);
+% d(1,3) = sort_data2(long,time1,smallMW,ls1,costs1);
+% d(1,4) = sort_data2(long,time1,largeMW,ls1,costs1);
+% 
+% d(2,1) = sort_data2(short, time2, smallMW,ls2, costs2);
+% d(2,2) = sort_data2(short,time2,largeMW,ls2,costs2);
+% d(2,3) = sort_data2(long,time2,smallMW,ls2,costs2);
+% d(2,4) = sort_data2(long,time2,largeMW,ls2,costs2);
+% 
+% d(3,1) = sort_data2(short, time3, smallMW, ls3, costs3);
+% d(3,2) = sort_data2(short,time3,largeMW,ls3,costs3);
+% d(3,3) = sort_data2(long,time3,smallMW,ls3,costs3);
+% d(3,4) = sort_data2(long,time3,largeMW,ls3,costs3);
+% 
+% figure
+% bar(d')
+% hold on
+% legend("original", "+5% load in DG", "+20% load in DG")
+% xlabel(['small                  ' 'medium                 ' 'large'])
+% set(gca,'xticklabels',[])
+% ylabel('EENS (MWh)')
+% set(gca, 'fontsize',13)
+% legend boxoff
+% box off
+% hold off
 
 data2D = rand(10,6);
 H=bar(data2D, 'stack');

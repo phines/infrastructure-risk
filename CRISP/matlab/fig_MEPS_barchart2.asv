@@ -37,13 +37,13 @@ costs3(isnan(costs3))=0;
 % find eens for different sized events
 short = [0,10];
 long =  [10,max([time1; time2; time3])];
-small = [0 10];
-large = [10:max([costs1; costs2; costs3]);
+smallMW = [0 10];
+largeMW = [10:max([costs1; costs2; costs3]);
 
-d(1,1)= length(sort_data2(short,small,lines1,costs1));
-d(1,2)= mean(sort_data(medium,lines1,costs1));
-d(1,3)= mean(sort_data(large,lines1,costs1));
-d(1,4)= mean(sort_data(large,lines1,costs1));
+d(1,1) = sort_data(short,time1,ls1,smallMW,costs1);
+d(1,2) = sort_data(short,time1,ls1,largeMW,ls1,costs1);
+d(1,3) = sort_data(long,time1,ls1,smallMW,ls1,costs1);
+d(1,4) = sort_data(long,time1,ls1,largeMW,costs1);
 
 d(2,1)= mean(sort_data(small,lines2,costs2));
 d(2,2)= mean(sort_data(medium,lines2,costs2));
@@ -64,6 +64,22 @@ set(gca, 'fontsize',13)
 legend boxoff
 box off
 hold off
+
+data2D = rand(10,6);
+H=bar(data2D, 'stack');
+P=findobj(gca,'type','patch');
+myC= [0 0 1
+    1 0 0
+    1 0.4 0
+    0 0.8 1
+    0.6 0 1
+    0 1 0 ];
+for n= 1 : length(P) 
+    set(P(n),'facecolor',myC(n,:));
+end
+AX=legend(H, {'a','b','c','d','e','f'}, 'Location','Best');
+LEG = findobj(AX,'type','text');
+set(LEG,'FontSize',8);
 
 
 
