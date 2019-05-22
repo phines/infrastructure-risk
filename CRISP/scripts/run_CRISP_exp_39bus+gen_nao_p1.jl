@@ -6,14 +6,14 @@ case2 = "data\\saved_ps\\case39+PV5\\"
 case3 = "data\\saved_ps\\case39+PV20\\"
 case4 = "data\\saved_ps\\case39+PV100\\"
 
-out = "\\experiments\\6"
+out = "\\experiments\\9"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
 end
 
 # number of events
-N = 1000;
+N = 10000;
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:

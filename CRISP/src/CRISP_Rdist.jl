@@ -9,6 +9,9 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     debug=0;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
+    NumLinesOut = Array{Float64}(undef,Num,1);
+    MaxRestorationTime = Array{Float64}(undef,Num,1);
+    LoadServedTime = Array{Float64}(undef,Num,1);
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
     ps = import_ps("$ps_folder")
@@ -34,10 +37,13 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             CSV.write("results$outnow IC$iterat.csv", Lines_Init_State)
         end
         state = Lines_Init_State[:,1];
+        NumLinesOut[iterat] = length(state) - sum(state)
         recovery_times = Lines_Init_State[:,2];
+        MaxRestorationTime[iterat] = maximum(recovery_times);
         failures = state;
         if sum(failures.==0)==0
             ResilienceTri[iterat] = 0;
+            LoadServedTime[iterat] = 0;
             println(iterat)
         else
             #check for islands
@@ -68,18 +74,25 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             tolerance = 10^(-10);
             if (abs(total-sum(ps.shunt.P)) <= tolerance)
                 ResilienceTri[iterat] = 0;
+                LoadServedTime[iterat] = 0;
             else
                 ## run step 3
                 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+                K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
+                K[1] = false;
+                R = Restore.time[K];
+                LoadServedTime[iterat] = R[1] - Restore.time[2];
                 ## run step 4
                 ResilienceTri[iterat] = crisp_res(Restore);
             end
         end
     end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
+    case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], full_rest_time = MaxRestorationTime[:,1]);
+
     ## save data
     CSV.write("results\\$out_folder", case_res);
-
+    CSV.write("results\\$(out_folder[1:end-4])_lines.csv", case_lines);
 end
 
 function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
@@ -155,7 +168,6 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
     ## save data
     CSV.write("results\\$out_folder", case_res);
-
 end
 
 #for debugging
