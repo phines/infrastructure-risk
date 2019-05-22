@@ -10,6 +10,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
+    LoadShed0 =  Array{Float64}(undef,Num,1);
     MaxRestorationTime = Array{Float64}(undef,Num,1);
     LoadServedTime = Array{Float64}(undef,Num,1);
     ResilienceTri = Array{Float64}(undef,Num,1);
@@ -44,6 +45,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
         if sum(failures.==0)==0
             ResilienceTri[iterat] = 0;
             LoadServedTime[iterat] = 0;
+            LoadShed0[iterat] = 0;
             println(iterat)
         else
             #check for islands
@@ -75,7 +77,9 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             if (abs(total-sum(ps.shunt.P)) <= tolerance)
                 ResilienceTri[iterat] = 0;
                 LoadServedTime[iterat] = 0;
+                LoadShed0[iterat] = 0;
             else
+                LoadShed0[iterat] = total-sum(ps.shunt.P);
                 ## run step 3
                 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
                 K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
@@ -88,7 +92,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
         end
     end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
-    case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], full_rest_time = MaxRestorationTime[:,1]);
+    case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], initial_load_shed = LoadShed0[:,1], full_rest_time = MaxRestorationTime[:,1]);
 
     ## save data
     CSV.write("results\\$out_folder", case_res);
