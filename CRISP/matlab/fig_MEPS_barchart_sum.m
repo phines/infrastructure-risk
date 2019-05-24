@@ -3,11 +3,11 @@
 
 %clear
 
-% Original 39 bus p1 sampling.
+% % Original 39 bus p1 sampling.
 % data1 = xlsread('..\results\experiments\9\res_out_case39_p1_lines.csv');
 % data2 = xlsread('..\results\experiments\9\res_out_case39_05PV_p1_lines.csv');
 % data3 = xlsread('..\results\experiments\9\res_out_case39_20PV_p1_lines.csv');
-
+% 
 % costs1 = xlsread('..\results\experiments\9\res_out_case39_p1.csv');
 % costs2 = xlsread('..\results\experiments\9\res_out_case39_05PV_p1.csv');
 % costs3 = xlsread('..\results\experiments\9\res_out_case39_20PV_p1.csv');
@@ -39,27 +39,27 @@ costs2(isnan(costs2))=0;
 costs3(isnan(costs3))=0;
 
 % find eens for different sized events
-short = [0,50];
-long =  [50,max([time1; time2; time3])];
-smallMW = [0,9];
-largeMW = [9,max([costs1; costs2; costs3])];
+short = [0,1000];
+long =  [1000,max([time1; time2; time3])];
+smallMW = [0,100];
+largeMW = [100,max([costs1; costs2; costs3])];
 
-d = sort_data2(short,time1,smallMW,ls1,costs1);
-d1(1,1) = max(d);
-d1(1,2) = max(sort_data2(short,time1,largeMW,ls1,costs1));
-d1(1,3) = max(sort_data2(long,time1,smallMW,ls1,costs1));
-d1(1,4) = max(sort_data2(long,time1,largeMW,ls1,costs1));
+d1(1,1) = sort_and_sum_data(short,time1,smallMW,ls1,costs1);
+d1(1,2) = sort_and_sum_data(short,time1,largeMW,ls1,costs1);
+d1(1,3) = sort_and_sum_data(long,time1,smallMW,ls1,costs1);
+d1(1,4) = sort_and_sum_data(long,time1,largeMW,ls1,costs1);
 
-d1(2,1) = max(sort_data2(short, time2, smallMW,ls2, costs2));
-d1(2,2) = max(sort_data2(short,time2,largeMW,ls2,costs2));
-d1(2,3) = max(sort_data2(long,time2,smallMW,ls2,costs2));
-d1(2,4) = max(sort_data2(long,time2,largeMW,ls2,costs2));
+d1(2,1) = sort_and_sum_data(short, time2, smallMW,ls2, costs2);
+d1(2,2) = sort_and_sum_data(short,time2,largeMW,ls2,costs2);
+d1(2,3) = sort_and_sum_data(long,time2,smallMW,ls2,costs2);
+d1(2,4) = sort_and_sum_data(long,time2,largeMW,ls2,costs2);
 
-d1(3,1) = max(sort_data2(short, time3, smallMW, ls3, costs3));
-d1(3,2) = max(sort_data2(short,time3,largeMW,ls3,costs3));
-d1(3,3) = max(sort_data2(long,time3,smallMW,ls3,costs3));
-d1(3,4) = max(sort_data2(long,time3,largeMW,ls3,costs3));
+d1(3,1) = sort_and_sum_data(short, time3, smallMW, ls3, costs3);
+d1(3,2) = sort_and_sum_data(short,time3,largeMW,ls3,costs3);
+d1(3,3) = sort_and_sum_data(long,time3,smallMW,ls3,costs3);
+d1(3,4) = sort_and_sum_data(long,time3,largeMW,ls3,costs3);
 
+figure
 data2D = d1;
 H=bar(data2D, 'stack');
 P=findobj(gca,'type','patch');
@@ -83,12 +83,11 @@ set(gca,'xticklabels',["+0% "; "+5% "; "+20%"])
 %AX=legend(a,b,c,e);
 %LEG = findobj(AX,'type','text');
 %set(LEG,'FontSize',8);
-set(gca,'yscale','log');
-ylabel('ENS (MWh)')
+%set(gca,'yscale','log');
+ylabel('1/n \Sigma ENS (MWh)')
 set(gca, 'fontsize',13)
 legend boxoff
 box off
-
 
 
 % % find the pdf

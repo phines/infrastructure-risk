@@ -2,14 +2,14 @@
 % Molly Kelly-Gorham 5/21/2019
 
 % Original 39 bus p1 sampling.
-% costs1 = xlsread('..\results\experiments\6\res_out_case39_p1_2.csv');
-% costs2 = xlsread('..\results\experiments\6\res_out_case39_05PV_p1_2.csv');
-% costs3 = xlsread('..\results\experiments\6\res_out_case39_20PV_p1_2.csv');
+costs1 = xlsread('..\results\experiments\6\res_out_case39_p1_2.csv');
+costs2 = xlsread('..\results\experiments\6\res_out_case39_05PV_p1_2.csv');
+costs3 = xlsread('..\results\experiments\6\res_out_case39_20PV_p1_2.csv');
 
-% N-1 Secure 39 bus p1 sampling.
-costs1 = xlsread('..\results\experiments\8\res_out_case39_n-1.csv');
-costs2 = xlsread('..\results\experiments\8\res_out_case39_n-1_05PV.csv');
-costs3 = xlsread('..\results\experiments\8\res_out_case39_n-1_20PV.csv');
+% % N-1 Secure 39 bus p1 sampling.
+% costs1 = xlsread('..\results\experiments\8\res_out_case39_n-1.csv');
+% costs2 = xlsread('..\results\experiments\8\res_out_case39_n-1_05PV.csv');
+% costs3 = xlsread('..\results\experiments\8\res_out_case39_n-1_20PV.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -39,21 +39,23 @@ for jj = 1:N
 end
 
 figure(2)
-subplot(3,1,1)
-semilogx(sorted_costs1,Pr)
-hold on
-% title("CCDF of Resilience of N-1 secure 39 bus cases")
-semilogx(sorted_costs2,Pr)
-semilogx(sorted_costs3,Pr)
-legend("original", "+5% load in DG", "+20% load in DG")
-ylabel("Prob(Energy lost \geq ENS)")
-set(gca, 'fontsize',13)
-xlim([1 10^7.5])
-box off
-legend boxoff
-set(gca,'xticklabels',[])
-hold off
-subplot(3,1,2)
+% % make ccdf with log scale on x axis and linear scale on y axis
+% subplot(3,1,1)
+% semilogx(sorted_costs1,Pr)
+% hold on
+% % title("CCDF of Resilience of N-1 secure 39 bus cases")
+% semilogx(sorted_costs2,Pr)
+% semilogx(sorted_costs3,Pr)
+% legend("original", "+5% load in DG", "+20% load in DG")
+% ylabel("Prob(Energy lost \geq ENS)")
+% set(gca, 'fontsize',13)
+% xlim([1 10^7.5])
+% box off
+% legend boxoff
+% set(gca,'xticklabels',[])
+% hold off
+% %make ccdf plot in log-log space
+% subplot(3,1,2)
 loglog(sorted_costs1,Pr)
 hold on
 loglog(sorted_costs2,Pr)
@@ -64,21 +66,22 @@ set(gca, 'fontsize',13)
 xlim([1 10^7.5])
 box off
 legend boxoff
-set(gca,'xticklabels',[])
+% set(gca,'xticklabels',[])
 hold off
-% make plots
-subplot(3,1,3)
-plot(x1,pdf1)
-hold on
-plot(x2,pdf2)
-plot(x3,pdf3)
-legend('original', '5% load added in DG', '20% load added in DG')
-%title('Resilience 39 bus PDF')
-xlabel("ENS (MWh)"); ylabel('PDF(ENS)');
-set(gca,'xscale','log');
-set(gca,'yscale','log');
-set(gca, 'fontsize',13)
-xlim([1 10^7.5])
-box off
-legend boxoff
-hold off
+% make pdf plots
+% subplot(3,1,3)
+% plot(x1,pdf1)
+% hold on
+% plot(x2,pdf2)
+% plot(x3,pdf3)
+% legend('original', '5% load added in DG', '20% load added in DG')
+% %title('Resilience 39 bus PDF')
+xlabel("ENS (MWh)"); 
+% ylabel('PDF(ENS)');
+% set(gca,'xscale','log');
+% set(gca,'yscale','log');
+% set(gca, 'fontsize',13)
+% xlim([1 10^7.5])
+% box off
+% legend boxoff
+% hold off
