@@ -118,7 +118,7 @@ set(gca,'xticklabels',["+0% "; "+5% "; "+20%"])
 %LEG = findobj(AX,'type','text');
 %set(LEG,'FontSize',8);
 %set(gca,'yscale','log');
-xlabel('original    n-1 secure')
+xlabel('original                   n-1 secure')
 ylabel('1/n \Sigma ENS (MWh)')
 set(gca, 'fontsize',13)
 legend boxoff
