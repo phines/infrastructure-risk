@@ -2,14 +2,14 @@
 % Molly Kelly-Gorham 5/21/2019
 
 % Original 39 bus p1 sampling.
-% costs1 = xlsread('..\results\experiments\6\res_out_case39_p1_2.csv');
-% costs2 = xlsread('..\results\experiments\6\res_out_case39_05PV_p1_2.csv');
-% costs3 = xlsread('..\results\experiments\6\res_out_case39_20PV_p1_2.csv');
+costs1 = xlsread('..\results\experiments\6\res_out_case39_p1_2.csv');
+costs2 = xlsread('..\results\experiments\6\res_out_case39_05PV_p1_2.csv');
+costs3 = xlsread('..\results\experiments\6\res_out_case39_20PV_p1_2.csv');
 
-% N-1 Secure 39 bus p1 sampling.
-costs1 = xlsread('..\results\experiments\8\res_out_case39_n-1.csv');
-costs2 = xlsread('..\results\experiments\8\res_out_case39_n-1_05PV.csv');
-costs3 = xlsread('..\results\experiments\8\res_out_case39_n-1_20PV.csv');
+% % N-1 Secure 39 bus p1 sampling.
+% costs1n = xlsread('..\results\experiments\8\res_out_case39_n-1.csv');
+% costs2n = xlsread('..\results\experiments\8\res_out_case39_n-1_05PV.csv');
+% costs3n = xlsread('..\results\experiments\8\res_out_case39_n-1_20PV.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -39,7 +39,6 @@ for jj = 1:N
 end
 
 figure(2)
-hold on
 % % make ccdf with log scale on x axis and linear scale on y axis
 % subplot(3,1,1)
 % semilogx(sorted_costs1,Pr)
@@ -57,12 +56,11 @@ hold on
 % hold off
 % %make ccdf plot in log-log space
 % subplot(3,1,2)
-loglog(sorted_costs1,Pr,'b--')
+loglog(sorted_costs1,Pr,'b')
 hold on
-loglog(sorted_costs2,Pr,'r--')
-loglog(sorted_costs3,Pr,'--', 'color',[1.000    0.7000    0.0000])
-% legend("original", "+5% load in DG", "+20% load in DG")
-legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
+loglog(sorted_costs2,Pr,'r')
+loglog(sorted_costs3,Pr, 'color',[1.000    1.7000    0.0000])
+legend("original", "+5% load in DG", "+20% load in DG")
 ylabel("Prob(Energy lost \geq ENS)")
 set(gca, 'fontsize',13)
 xlim([1 10^7.5])
