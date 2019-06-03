@@ -1,7 +1,7 @@
 using CSV
 include("CRISP_initiate.jl")
-include("CRISP_LSOPF.jl")
-include("CRISP_RLSOPF.jl")
+include("CRISP_LSOPF_gen.jl")
+include("CRISP_RLSOPF_gen.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
@@ -56,19 +56,19 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
                 for i in 1:M
                     psi = ps_subset(ps,ps_islands[i]);
                     # run the dcpf
-                    crisp_dcpf!(psi);
+                    crisp_dcpf_g!(psi);
                     # run lsopf
-                    crisp_lsopf!(psi);
+                    crisp_lsopf_g!(psi);
                     ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
                     ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-                    crisp_dcpf!(psi);
+                    crisp_dcpf_g!(psi);
                 end
                     @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
                     @assert total>=sum(ps.shunt.P)
             else
-                crisp_dcpf!(ps);
-                crisp_lsopf!(ps);
-                crisp_dcpf!(ps);
+                crisp_dcpf_g!(ps);
+                crisp_lsopf_g!(ps);
+                crisp_dcpf_g!(ps);
             end
             println(iterat)
             @assert total>=sum(ps.shunt.P)
@@ -81,7 +81,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             else
                 LoadShed0[iterat] = total-sum(ps.shunt.P);
                 ## run step 3
-                Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+                Restore = RLSOPF_g!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
                 K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
                 K[1] = false;
                 R = Restore.time[K];

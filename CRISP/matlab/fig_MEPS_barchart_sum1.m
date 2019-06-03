@@ -45,8 +45,6 @@ costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
 costs3(isnan(costs3))=0;
 
-
-
 % find eens for different sized events
 short = [0,24*60];
 long =  [24*60,max([time1; time2; time3])];
