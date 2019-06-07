@@ -176,8 +176,8 @@ function crisp_lsopf_g!(ps)
         @variable(m,dTheta[1:n])
         # variable bounds
         @constraint(m,-Pd .<= dPd .<= 0)
-        @constraint(m, ug.*(Pg_min) .<= Pg+ndPg)
-        @constraint(m, ug.*(Pg_max) .>= Pg+pdPg)
+        @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
+        @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
         @constraint(m, pdPg .>= 0)
         @constraint(m, ndPg .<= 0)
         @constraint(m,dTheta[1] == 0)
@@ -199,6 +199,7 @@ function crisp_lsopf_g!(ps)
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
+        gst = (ps.gen[:status].==1)
         if ((!isempty(ps.gen.status.==1) && isempty(ps.shunt)) || (isempty(ps.gen.status.==1) && !isempty(ps.shunt))
              || (isempty(ps.gen.status.==1) && isempty(ps.shunt)))
             ps.gen.Pg  .= ps.gen.Pg.*0.0;

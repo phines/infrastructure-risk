@@ -28,7 +28,8 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,ge
     gens_out[2] = length(g_failures) - sum(g_failures);
     # set load shed for the step just before restoration process
     load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
-
+    time_gen_off = ones(length(ps.gen.Pg));
+    time_gen_off[ps.gen.PG!=0] .=0;
     for i = 1:length(Time)
         T = Time[i];
         # set failed branches to status 0

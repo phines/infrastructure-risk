@@ -51,6 +51,7 @@ TotalGens =length(ps.gen[1]);
 Ngens = init_out_exp(lambda_gen,TotalGens);
 gens_state = initiate_state(TotalGens, Ngens);
 ps.gen.status = gens_state;
+ps.gen.Pg = ps.gen.Pg .*gens_state;
 RecovTimeG = RecoveryTimes(mu_gen,sigma_gen,Ngens);
 gens_outage_recovery = RecTime(RecovTimeG,gens_state)
 return gens_outage_recovery
@@ -119,7 +120,7 @@ function init_out_exp(lambda,TotalGens;OriginalGens=TotalGens)
 # generators that experience outages (not caused by grid dynamics) will be steeper than the
 # lines, which is why I am not using the zipf distribution
 ratioG = TotalGens/OriginalGens;
-Ngens1 = -round.(log.(1- rand(rng,1)));
+Ngens1 = -round.(log.(1 .-rand(rng,1)));
 Ngens = Int64(Ngens1[1]);
 Ngens = Int64(round(ratioG*Ngens));
 return Ngens
