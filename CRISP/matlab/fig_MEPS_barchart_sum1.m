@@ -46,8 +46,8 @@ costs2(isnan(costs2))=0;
 costs3(isnan(costs3))=0;
 
 % find eens for different sized events
-short = [0,1000];
-long =  [1000,max([time1; time2; time3])];
+short = [0,24*60];
+long =  [24*60,max([time1; time2; time3])];
 smallMW = [0,100];
 largeMW = [100,max([costs1; costs2; costs3])];
 
@@ -104,10 +104,10 @@ myC= [colors;
 %     set(P(n),'facecolor',myC(n,:));
 % end
 %set(gcf,'Colormap','myC')
-a = ['< ' num2str(long(1)) ' min, <'  num2str(smallMW(2)) 'MW'];
-b = ['< ' num2str(long(1)) ' min, >'  num2str(smallMW(2)) 'MW'];
-c = ['> ' num2str(long(1)) ' min, <' num2str(smallMW(2)) 'MW'];
-e = ['> ' num2str(long(1)) ' min, >'  num2str(smallMW(2)) 'MW'];
+a = ['< ' num2str(long(1)./(24*60)) ' day, <'  num2str(smallMW(2)) 'MW'];
+b = ['< ' num2str(long(1)./(24*60)) ' day, >'  num2str(smallMW(2)) 'MW'];
+c = ['> ' num2str(long(1)./(24*60)) ' day, <' num2str(smallMW(2)) 'MW'];
+e = ['> ' num2str(long(1)./(24*60)) ' day, >'  num2str(smallMW(2)) 'MW'];
 legend(a,b,c,e,'Location','eastoutside')
 set(gca,'xticklabels',["+0% "; "+5% "; "+20%"])
 %xlabel(['small                  ' 'medium                 ' 'large'])
@@ -117,7 +117,7 @@ set(gca,'xticklabels',["+0% "; "+5% "; "+20%"])
 %set(LEG,'FontSize',8);
 %set(gca,'yscale','log');
 xlabel('original                   n-1 secure')
-ylabel('1/n \Sigma ENS (MWh)')
+ylabel('Average ENS (MWh)')
 set(gca, 'fontsize',13)
 legend boxoff
 box off
