@@ -1,4 +1,4 @@
-id,bus_type,Pd,Pq,Gs,Bs,area,Vm,Va,baseKV,zone,Vmax,Vmin,LAM_P,LAM_Q,MU_VMAX,MU_VMIN,Vsp,lat,lng,Bus Name,Sub Area
+id,bus_type,Pd,Pq,Gs,Bs,area,Vm,Va,baseKV,zone,Vmax,Vmin,LAM_P,LAM_Q,MU_VMAX,MU_VMIN,Vsp,lat,lng,BusName,SubArea
 101,1,108,22,0,0,1,1.04777,-7.74152,138,11,1.06,0.94,0,0,0,0,0,33.39610326,-113.835642,Abel,11
 102,1,97,20,0,0,1,1.04783,-7.81784,138,12,1.06,0.94,0,0,0,0,0,33.35767844,-113.8259335,Adams,11
 103,2,180,37,0,0,1,1.01085,-7.2109,138,11,1.06,0.94,0,0,0,0,1.01085,33.53683282,-114.6703991,Adler,11

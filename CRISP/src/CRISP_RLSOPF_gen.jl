@@ -8,6 +8,13 @@ include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
 function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,gen_startup,Pd_max;t0 = 10, load_cost=0)
+    #add columns to keep track of the time each generator is on or off
+    if sum(names(ps.gen).==:time_on) == 0
+        ps.gen.time_on = zeros(length(ps.gen.Pg));
+    end
+    if sum(names(ps.gen).==:time_off) == 0
+        ps.gen.time_off = zeros(length(ps.gen.Pg));
+    end
     # constants
     deltaT = 5; # time step in minutes;
     tolerance = 1e-6
