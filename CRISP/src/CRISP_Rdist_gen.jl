@@ -6,7 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
-    debug=0;
+    debug=1;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -39,7 +39,8 @@ function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
         Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
         if debug==1
             outnow = (out_folder[1:end-4]);
-            CSV.write("results$outnow IC$iterat.csv", Lines_Init_State)
+            CSV.write("results$outnow IC$iterat lines.csv", Lines_Init_State)
+            CSV.write("results$outnow IC$iterat gens.csv", Gens_Init_State)
         end
         state = Lines_Init_State[:,1];
         NumLinesOut[iterat] = length(state) - sum(state)

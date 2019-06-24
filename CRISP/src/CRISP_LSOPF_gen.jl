@@ -51,12 +51,12 @@ function crisp_dcpf_g!(ps)
             end
             return ps #TODO
         else
-            maxGen = findmax(ps.gen.Pg[gst])[2]
+            maxGen = findmax(ps.gen.Pg)[2]
             busID = ps.gen[maxGen,:bus];
             isref = (busID.==ps.bus.id)
             nonref = .~isref
         end
-    elseif !isempty(ps.bus.id[ps.bus.bus_type.==3]) && ps.gen.status[ps.gen.bus.==ps.bus.id[ps.bus.bus_type.==3]]!=1
+    elseif sum(ps.gen.status[ps.gen.bus.==ps.bus.id[ps.bus.bus_type.==3]])==0
         if isempty(ps.gen[gst,:]) || isempty(ps.shunt)
             ps.branch.Pf[brst] .= 0
             ps.branch.Pt[brst] .= 0
@@ -69,14 +69,27 @@ function crisp_dcpf_g!(ps)
             end
             return ps #TODO
         else
-            maxGen = findmax(ps.gen.Pg[gst])[2]
+            maxGen = findmax(ps.gen.Pg)[2]
             busID = ps.gen[maxGen,:bus];
             isref = (busID.==ps.bus.id)
             nonref = .~isref
         end
     else
-        isref = (ps.bus.bus_type.==3)
-        nonref = .~isref
+        if isempty(ps.gen[gst,:]) || isempty(ps.shunt)
+            ps.branch.Pf[brst] .= 0
+            ps.branch.Pt[brst] .= 0
+            ps.branch.Qf[brst] .= 0
+            ps.branch.Qt[brst] .= 0
+            if isempty(ps.shunt) && !isempty(ps.gen[gst,:])
+                ps.gen.Pg[gst] .= 0.0
+            elseif !isempty(ps.shunt) && isempty(ps.gen[gst,:])
+                ps.shunt.P .= 0.0
+            end
+            return ps #TODO
+        else
+            isref = (ps.bus.bus_type.==3)
+            nonref = .~isref
+        end
     end
     # bus injection
     Pbus = Pg_bus-Pd_bus;#Array(sparse(G,fill(1,ng),Pg,n,1) - sparse(D,fill(1,nd),Pd,n,1))
@@ -109,6 +122,7 @@ function crisp_dcpf_g!(ps)
         elseif sum(is_refgen) == 1
             ps.gen.Pg[is_refgen] .-= (mismatch.*ps.baseMVA)
         else
+            println(ps.gen)
             println(is_refgen)
             error("No reference generator")
         end

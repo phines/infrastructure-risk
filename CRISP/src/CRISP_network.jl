@@ -46,8 +46,10 @@ function find_subgraphs(ps)
     # The return value is a n x 1 vector of sub-graph numbers
     subgraphs = zeros(length(ps.bus[:id]))
 
+    n = size(ps.bus,1) # the number of buses
+    bi = sparse(ps.bus.id,fill(1,n),collect(1:n))
     stats = (ps.branch[:status].==1);
-    links = [ps.branch[stats,:f] ps.branch[stats,:t]]
+    links = [bi[ps.branch[stats,:f]] bi[ps.branch[stats,:t]]]
 
     n = length(ps.bus[:id]);
     m = length(ps.branch[stats,:f]);
