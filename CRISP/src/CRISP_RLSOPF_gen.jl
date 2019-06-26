@@ -7,7 +7,7 @@ using Cbc;
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
-function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,gen_startup,Pd_max;t0 = 10, load_cost=0)
+function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,gen_startup,Pd_max;t_step = 0.1;t0 = 10, load_cost=0)#time is in minutes
     #add columns to keep track of the time each generator is on or off
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_on = zeros(length(ps.gen.Pg));
@@ -27,6 +27,7 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,ge
     g_rec[g_failures.==0] = g_rec_t;
     Time = sort([l_rec_t; g_rec_t])
     total_i = length(Time);
+    T = 0:t_step:maximum(Time);
     load_shed = zeros(total_i+2);
     load_shed[1] = 0;
     lines_out = zeros(total_i+2);#zeros(length(l_times)+2);
@@ -37,19 +38,22 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,ge
     load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     time_gen_off = ones(length(ps.gen.Pg));
     time_gen_off[ps.gen.Pg .!=0] .=0;
-    for i = 1:length(Time)
-        T = Time[i];
+    for i = 1:length(T)
+        time = T[i];
         # set failed branches to status 0
-        l_failures[T.>=l_recovery_times] .= 1;
+        l_failures[time.>=l_recovery_times] .= 1;
         lines_out[i+2] = length(l_failures) - sum(l_failures);
         # apply to network
         ps.branch[:,:status] = l_failures;
         # set newly available generators to status 1;
         current_gen_out = ps.gen.status;
         # update generators operational
-        g_failures[T.>=g_rec] .= 1;
+        g_failures[time.>=g_rec] .= 1;
         ps.gen.status = g_failures;
         gens_out[i+2] = length(g_failures) - sum(g_failures);
+        # update time on and time off
+        ps.gen.time_off[ps.gen.Pg.==0 && ps.gen.timeon.==0] .+= t_step;
+        ps.gen.time_on[ps.gen.timeon.!=0] += t_step;
         #check for islands
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
@@ -78,7 +82,7 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,ge
         # set load shed for this time step
         load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
     end
-    times = [0.0;t0*1.0;Time.+t0*1.0];
+    times = [0.0;t0*1.0;T.+t0*1.0];
     perc_load_served = (sum(load_cost.*Pd_max) .- load_shed)./sum(load_cost.*Pd_max);
     Restore = DataFrame(time = times, load_shed = load_shed, perc_load_served = perc_load_served, num_lines_out = lines_out, num_gens_out = gens_out);
     return Restore

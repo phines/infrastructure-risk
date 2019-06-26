@@ -84,6 +84,7 @@ function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
             LoadShed0[iterat] = total-sum(ps.shunt.P);
             ## run step 3
             Restore = RLSOPF_g!(ps,state,gens_state,recovery_times,gens_recovery_time,gen_startup,Pd_max)# data frame [times, load shed in cost per hour]
+            ###find the time to restore the grid to 99.9% load served
             K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
             K[1] = false;
             R = Restore.time[K];
