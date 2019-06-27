@@ -17,7 +17,9 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd
     end
     if sum(names(ps.gen).==:off) == 0
         ps.gen.off = zeros(length(ps.gen.Pg));
+        ps.gen.off[ps.gen.Pg .== 0] = 1;
     end
+    ps.gen.time_on[ps.gen.off.==0] = 5000;
     # constants
     deltaT = 5; # time step in minutes;
     tolerance = 1e-6
@@ -157,14 +159,14 @@ function crisp_rlopf_g!(ps,Pd_max)
         ### solve the model ###
         optimize!(m1);
         # collect/return the outputs of first optimization to find which generators to turn on
-        sol_dPd1=value.(dPd)
-        sol_ndPg1=value.(ndPg)
-        sol_pdPg1=value.(pdPg)
-        sol_ug1=value.(ug)
+        sol_dPd=value.(dPd)
+        sol_ndPg=value.(ndPg)
+        sol_pdPg=value.(pdPg)
+        sol_ug=value.(ug)
         gen_used = Pg[ug.==1];
         if sum(gen_used.==0)!=0
-            pg.gen.time_off
-            tst = ps.gen.Pg!=0
+            pg.gen.off[gst][ug] .= 0;
+            tst = ps.gen.time_on.*60 .>= ps.gen.StartTimeColdHr;
             gest = (gst .& tst);
             ng = size(ps.gen[gest,:Pg],1)
             G = bi[ps.gen[gest,:bus]]
@@ -199,12 +201,11 @@ function crisp_rlopf_g!(ps,Pd_max)
             ### solve the model ###
             optimize!(m2);
             # collect/return the outputs
-            sol_dPd2=value.(dPd)
-            sol_ndPg2=value.(ndPg)
-            sol_pdPg2=value.(pdPg)
-            sol_ug2=value.(ug)
-
-
+            sol_dPd=value.(dPd)
+            sol_ndPg=value.(ndPg)
+            sol_pdPg=value.(pdPg)
+            sol_ug=value.(ug)
+        end
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
