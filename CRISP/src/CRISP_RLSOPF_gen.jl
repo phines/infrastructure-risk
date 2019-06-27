@@ -15,6 +15,9 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd
     if sum(names(ps.gen).==:time_off) == 0
         ps.gen.time_off = zeros(length(ps.gen.Pg));
     end
+    if sum(names(ps.gen).==:off) == 0
+        ps.gen.off = zeros(length(ps.gen.Pg));
+    end
     # constants
     deltaT = 5; # time step in minutes;
     tolerance = 1e-6
@@ -52,8 +55,9 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd
         ps.gen.status = g_failures;
         gens_out[i+2] = length(g_failures) - sum(g_failures);
         # update time on and time off
-        ps.gen.time_off[ps.gen.Pg.==0 && ps.gen.timeon.==0] .+= t_step;
-        ps.gen.time_on[ps.gen.timeon.!=0] += t_step;
+        u = ps.gen.off.==0
+        ps.gen.time_off[!u] .+= t_step;
+        ps.gen.time_on[u] += t_step;
         #check for islands
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
@@ -157,38 +161,48 @@ function crisp_rlopf_g!(ps,Pd_max)
         sol_ndPg1=value.(ndPg)
         sol_pdPg1=value.(pdPg)
         sol_ug1=value.(ug)
-        gen_used = pg.gen.Pg[ug.==1];
+        gen_used = Pg[ug.==1];
         if sum(gen_used.==0)!=0
-            
-
-        m2 = Model(with_optimizer(Gurobi.Optimizer))
-        # variables
-        @variable(m2,dPd[1:nd])
-        @variable(m2,ndPg[1:ng])
-        @variable(m2,pdPg[1:ng])
-        @variable(m2,ug[1:ng],Bin)
-        @variable(m2,dTheta[1:n])
-        # variable bounds
-        @constraint(m2,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
-        @constraint(m2, ug.*(Pg_min) .<= Pg+ndPg)
-        @constraint(m2, ug.*(Pg_max) .>= Pg+pdPg)
-        @constraint(m2, pdPg .>= 0)
-        @constraint(m2, ndPg .<= 0)
-        @constraint(m2,dTheta[1] == 0)
-        # objective
-        @objective(m2,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
-        # mapping matrix to map loads/gens to buses
-        # Power balance equality constraint
-        @constraint(m2,B*dTheta .== G_bus*ndPg+G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
-        # Power flow constraints
-        @constraint(m2,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
-        ### solve the model ###
-        optimize!(m2);
-        # collect/return the outputs
-        sol_dPd1=value.(dPd)
-        sol_ndPg1=value.(ndPg)
-        sol_pdPg1=value.(pdPg)
-        sol_ug1=value.(ug)
+            pg.gen.time_off
+            tst = ps.gen.Pg!=0
+            gest = (gst .& tst);
+            ng = size(ps.gen[gest,:Pg],1)
+            G = bi[ps.gen[gest,:bus]]
+            G_bus = sparse(G,collect(1:ng),1.,n,ng);
+            Pg = ps.gen[gest,:Pg] ./ ps.baseMVA .* ps.gen[gest,:status]
+            Pg_max = ps.gen[gest,:Pmax] ./ ps.baseMVA .* ps.gen[gest,:status]
+            Pg_min = ps.gen[gest,:Pmin] ./ ps.baseMVA .* ps.gen[gest,:status]
+            if any(G.<1) || any(G.>n)
+                error("Bad indices in gen matrix")
+            end
+            m2 = Model(with_optimizer(Gurobi.Optimizer))
+            # variables
+            @variable(m2,dPd[1:nd])
+            @variable(m2,ndPg[1:ng])
+            @variable(m2,pdPg[1:ng])
+            @variable(m2,ug[1:ng],Bin)
+            @variable(m2,dTheta[1:n])
+            # variable bounds
+            @constraint(m2,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
+            @constraint(m2, ug.*(Pg_min) .<= Pg+ndPg)
+            @constraint(m2, ug.*(Pg_max) .>= Pg+pdPg)
+            @constraint(m2, pdPg .>= 0)
+            @constraint(m2, ndPg .<= 0)
+            @constraint(m2,dTheta[1] == 0)
+            # objective
+            @objective(m2,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
+            # mapping matrix to map loads/gens to buses
+            # Power balance equality constraint
+            @constraint(m2,B*dTheta .== G_bus*ndPg+G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+            # Power flow constraints
+            @constraint(m2,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
+            ### solve the model ###
+            optimize!(m2);
+            # collect/return the outputs
+            sol_dPd2=value.(dPd)
+            sol_ndPg2=value.(ndPg)
+            sol_pdPg2=value.(pdPg)
+            sol_ug2=value.(ug)
 
 
         dPd_star = sol_dPd.*ps.baseMVA
