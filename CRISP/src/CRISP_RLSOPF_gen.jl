@@ -7,7 +7,7 @@ using Cbc;
 include("CRISP_LSOPF.jl")
 include("CRISP_network.jl")
 
-function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,gen_startup,Pd_max;t_step = 0.1;t0 = 10, load_cost=0)#time is in minutes
+function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max;t_step = 0.1;t0 = 10, load_cost=0)#time is in minutes
     #add columns to keep track of the time each generator is on or off
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_on = zeros(length(ps.gen.Pg));
@@ -152,10 +152,45 @@ function crisp_rlopf_g!(ps,Pd_max)
         @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
         optimize!(m1);
+        # collect/return the outputs of first optimization to find which generators to turn on
+        sol_dPd1=value.(dPd)
+        sol_ndPg1=value.(ndPg)
+        sol_pdPg1=value.(pdPg)
+        sol_ug1=value.(ug)
+        gen_used = pg.gen.Pg[ug.==1];
+        if sum(gen_used.==0)!=0
+            
+
+        m2 = Model(with_optimizer(Gurobi.Optimizer))
+        # variables
+        @variable(m2,dPd[1:nd])
+        @variable(m2,ndPg[1:ng])
+        @variable(m2,pdPg[1:ng])
+        @variable(m2,ug[1:ng],Bin)
+        @variable(m2,dTheta[1:n])
+        # variable bounds
+        @constraint(m2,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
+        @constraint(m2, ug.*(Pg_min) .<= Pg+ndPg)
+        @constraint(m2, ug.*(Pg_max) .>= Pg+pdPg)
+        @constraint(m2, pdPg .>= 0)
+        @constraint(m2, ndPg .<= 0)
+        @constraint(m2,dTheta[1] == 0)
+        # objective
+        @objective(m2,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
+        # mapping matrix to map loads/gens to buses
+        # Power balance equality constraint
+        @constraint(m2,B*dTheta .== G_bus*ndPg+G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+        # Power flow constraints
+        @constraint(m2,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
+        ### solve the model ###
+        optimize!(m2);
         # collect/return the outputs
-        sol_dPd=value.(dPd)
-        sol_ndPg=value.(ndPg)
-        sol_pdPg=value.(pdPg)
+        sol_dPd1=value.(dPd)
+        sol_ndPg1=value.(ndPg)
+        sol_pdPg1=value.(pdPg)
+        sol_ug1=value.(ug)
+
+
         dPd_star = sol_dPd.*ps.baseMVA
         dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
         ps.shunt.P += dPd_star; #changes ps structure
