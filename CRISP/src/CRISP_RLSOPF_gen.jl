@@ -4,10 +4,10 @@ using JuMP;
 using Clp;
 using Gurobi;
 using Cbc;
-include("CRISP_LSOPF.jl")
-include("CRISP_network.jl")
+include("CRISP_LSOPF_gen.jl")
+include("CRISP_network_gen.jl")
 
-function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max;t_step = 0.1;t0 = 10, load_cost=0)#time is in minutes
+function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max;t_step = 0.1, t0 = 10, load_cost=0)#time is in minutes
     #add columns to keep track of the time each generator is on or off
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_on = zeros(length(ps.gen.Pg));

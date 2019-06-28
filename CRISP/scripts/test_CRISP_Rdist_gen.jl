@@ -1,12 +1,9 @@
 #include("..\\src\\CRISP_Rdist.jl")
 include("..\\src\\CRISP_Rdist_gen.jl")
 ## folder of case data
-case1 = "data\\case39\\"
-case2 = "data\\saved_ps\\case39+PV5\\"
-case3 = "data\\saved_ps\\case39+PV20\\"
-case4 = "data\\case73_gendata\\"
+case1 = "data\\case73_gendata\\"
 
-out = "\\experiments_gen\\2\\1"
+out = "\\experiments_gen\\3"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
@@ -17,12 +14,13 @@ N = 100;
 #set randomized seed
 rng = MersenneTwister(100);
 #save restoration data to folder within results folder:
-filename1 = "res_out_case39";
+filename1 = "res_out_case73_gendata";
 out_folder1 = out*"\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist_gen(N,case1,out_folder1)
 #set randomized seed
 rng = MersenneTwister(100);
+#=
 #save restoration data to folder within results folder:
 filename2 = "res_out_case39_05PV";
 out_folder2 = out*"\\$filename2.csv"
@@ -44,7 +42,7 @@ out_folder4 = out*"\\$filename4.csv"
 res = Res_dist_gen(N,case4,out_folder4)
 #using CSV
 #using DataFrames
-
+=#
 #=
 out1 = CSV.read("results\\"*out_folder1, allowmissing=:none)
 out2 = CSV.read("results\\"*out*"\\res_out_case39_A0O_2.csv", allowmissing=:none)

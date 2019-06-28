@@ -3,7 +3,7 @@ include("CRISP_initiate.jl")
 include("CRISP_LSOPF_gen.jl")
 include("CRISP_RLSOPF_gen.jl")
 include("CRISP_RT.jl")
-include("CRISP_network.jl")
+include("CRISP_network_gen.jl")
 
 function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
     debug=1;
@@ -16,7 +16,7 @@ function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
     ps = import_ps("$ps_folder")
-    crisp_dcpf!(ps)
+    crisp_dcpf_g!(ps)
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
     ps0 = deepcopy(ps);
@@ -83,7 +83,7 @@ function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
         else
             LoadShed0[iterat] = total-sum(ps.shunt.P);
             ## run step 3
-            Restore = RLSOPF_g!(ps,state,gens_state,recovery_times,gens_recovery_time,gen_startup,Pd_max)# data frame [times, load shed in cost per hour]
+            Restore = RLSOPF_g!(ps,state,gens_state,recovery_times,gens_recovery_time,Pd_max)# data frame [times, load shed in cost per hour]
             ###find the time to restore the grid to 99.9% load served
             K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
             K[1] = false;
@@ -108,5 +108,5 @@ include("src\\CRISP_initiate.jl")
 include("src\\CRISP_LSOPF_gen.jl")
 include("src\\CRISP_RLSOPF_gen.jl")
 include("src\\CRISP_RT.jl")
-include("src\\CRISP_network.jl")
+include("src\\CRISP_network_gen.jl")
 =#
