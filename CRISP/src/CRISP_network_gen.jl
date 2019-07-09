@@ -13,6 +13,8 @@ function import_ps(filename)
     psBranchData = CSV.read("$filename\\branch.csv",allowmissing=:none);
     psGenData = CSV.read("$filename\\gen.csv",allowmissing=:none);
     psShuntData = CSV.read("$filename\\shunt.csv",allowmissing=:none);
+    if isfile("$filename\\storage.csv") psStorageData = CSV.read("$filename\\storage.csv",allowmissing=:none);
+    else psStorageData = DataFrame(bus = [], E = [], Ps = [], Emax = [], Emin = [], Psmax = [], Psmin = [], status = []); end
     mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
@@ -23,7 +25,7 @@ function import_ps(filename)
     psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
     psGenData[:,:Pmax] = psGenData[:,:Pmax].*1.0;
     psShuntData[:,:P] = psShuntData[:,:P].*1.0;
-    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
+    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
     return ps
 end
 
@@ -34,6 +36,7 @@ function export_ps(ps,filename)
     if !isempty(ps.gen) CSV.write("$filename\\gen.csv",ps.gen) end
     if !isempty(ps.shunt) CSV.write("$filename\\shunt.csv",ps.shunt) end
     if !isempty(ps.baseMVA) CSV.write("$filename\\baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
+    if !isempty(ps.storage) CSV.write("$filename\\storage.csv",ps.storage) end
     #if !isempty(ps.bi)
         #n = length(ps.bus.id);
         #bi = sparse(ps.bus.id,fill(1,n),collect(1:n));
@@ -98,6 +101,7 @@ struct Island_ps
     branch::Array
     shunt::Array
     gen::Array
+    storage::Array
 end
 
 function build_islands(subgraph,ps)
@@ -108,6 +112,7 @@ function build_islands(subgraph,ps)
         buses = ps.bus[nodes,:id];
         gen = falses(length(ps.gen[:bus]));
         shunt = falses(length(ps.shunt[:bus]));
+        storage = falses(length(ps.storage[:bus]));
         branch = falses(length(ps.branch[:f]));
         for g = 1:length(ps.gen[:bus])
             if sum(ps.gen[g,:bus].==buses)!=0
@@ -117,6 +122,11 @@ function build_islands(subgraph,ps)
         for s = 1:length(ps.shunt[:bus])
             if sum(ps.shunt[s,:bus].==buses)!=0
                 shunt[s] = true;
+            end
+        end
+        for st = 1:length(ps.storage[:bus])
+            if sum(ps.storage[st,:bus].==buses)!=0
+                storage[st] = true;
             end
         end
         for l = 1:length(ps.branch[:f])
@@ -137,6 +147,7 @@ mutable struct PSCase
     branch::DataFrame
     gen::DataFrame
     shunt::DataFrame
+    storage::DataFrame
     bi::SparseMatrixCSC{Int64,Int64} # TODO: figure out how to make this the same as Pavan's PSCase
 end
 
@@ -146,15 +157,18 @@ function ps_subset(ps,ps_island)
     psBranchData = ps.branch[ps_island.branch,:];
     psGenData = ps.gen[ps_island.gen,:];
     psShuntData = ps.shunt[ps_island.shunt,:];
+    psStorageData = ps.storage[ps_island.storage,:];
     n = length(psBusData.id);
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));#DataFrame(bi=ps.bi.bi[ps_island.bus]);
-    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
+    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
     return psi
 end
 
 function add_changes!(ps,psi,ps_island);
     ps.gen[ps_island.gen,:Pg] = psi.gen.Pg
     ps.shunt[ps_island.shunt,:P] = psi.shunt.P
+    ps.storage[ps_island.storage,:P] = psi.storage.P
+    ps.storage[ps_island.storage,:E] = psi.storage.E
 end
 
 function ps_visualize(ps,filename)

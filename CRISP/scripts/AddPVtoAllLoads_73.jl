@@ -15,7 +15,7 @@ Pd = deepcopy(ps.shunt[:P]);
 gen = deepcopy(ps.gen);
 nd = length(ps.shunt[:P]);
 ng = length(ps.gen.Pg);
-percent_solar = 1;
+percent_solar = 0.05;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #add generators
