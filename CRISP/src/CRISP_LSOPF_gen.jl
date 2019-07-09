@@ -196,7 +196,7 @@ function crisp_lsopf_g!(ps)
         @constraint(m, ndPg .<= 0)
         @constraint(m,dTheta[1] == 0)
         # objective
-        @objective(m,Max,sum(dPd)+0.01*(sum(ndPg)-sum(pdPg)+sum(ug))) # serve as much load as possible
+        @objective(m,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         # Power balance equality constraint
         @constraint(m,B*dTheta .== G_bus*ndPg+G_bus*pdPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
@@ -214,69 +214,39 @@ function crisp_lsopf_g!(ps)
         ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
         gst = (ps.gen[:status].==1)
-        if ((!isempty(ps.gen.status.==1) && isempty(ps.shunt)) || (isempty(ps.gen.status.==1) && !isempty(ps.shunt))
-             || (isempty(ps.gen.status.==1) && isempty(ps.shunt)))
-            ps.gen.Pg  .= ps.gen.Pg.*0.0;
-            ps.shunt.P .= ps.shunt.P.*0.0;
-        elseif !isempty(ps.gen.status.==1) && !isempty(ps.shunt)
-            gst = (ps.gen.status .== 1)
-            Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
-            Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
-            Pg_cap = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
-            if sum(Pg_cap) >= sum(Pd)
-                deltaPd = 0.0;
-                deltaPg = sum(Pd)-sum(Pg);
-            else
-                deltaPd = sum(Pg_cap)-sum(Pd);
-                deltaPg = sum(Pg_cap)-sum(Pg);
-            end
-            if length(Pd)  > 1
-                deltaPd_star = zeros(length(Pd))
-                deltaPd_used = 0;
-                for load = 1:length(Pd)
-                    if abs(deltaPd) >= abs(deltaPd_used)
-                        dload = 0;
-                    else
-                        if abs(Pd[load]) < abs(deltaPd_used - deltaPd)
-                            dload = -Pd[load]
-                        else
-                            dload = -abs(deltaPd_used - deltaPd)
-                        end
-                    end
-                    deltaPd_star[load] = dload.*ps.baseMVA;
-                    deltaPd_used = deltaPd_used + dload;
-                end
-            else
-                deltaPd_star = deltaPd.*ps.baseMVA;
-            end
-            if length(Pg) > 1
-                deltaPg_star = zeros(length(Pg))
-                deltaPg_used = 0;
-                for gen = 1:length(Pg)
-                    deltaPg_star[gen] = deltaPg.*ps.baseMVA;
-                    if abs(deltaPg) >= abs(deltaPg_used)
-                        dgen = 0;
-                    else
-                        if abs(Pg[gen]) < abs(deltaPg_used - deltaPg)
-                            if deltaPg < 0
-                                dgen = -Pg[gen]
-                            else
-                                dgen = Pg[gen]
-                            end
-                        elseif deltaPg < 0
-                            dgen = -abs(deltaPg_used - deltaPg)
-                        else
-                            dgen = abs(deltaPg_used - deltaPg)
-                        end
-                    end
-                    deltaPg_star[gen] = dgen.*ps.baseMVA;
-                    deltaPg_used = deltaPg_used + dgen;
-                end
-            else
-                deltaPg_star = deltaPg.*ps.baseMVA;
-            end
-            ps.shunt.P .+= deltaPd_star;
-            ps.gen.Pg[gst]  .+= deltaPg_star;
+        Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
+        nd = length(Pd)
+        Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        ng = length(Pg)
+        Pg_min = ps.gen.Pmin[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        Pg_max = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        if !isempty(Pd) && !isempty(Pg)
+            m = Model(with_optimizer(Gurobi.Optimizer))
+            # variables
+            @variable(m,dPd[1:nd])
+            @variable(m,ndPg[1:ng])
+            @variable(m,pdPg[1:ng])
+            @variable(m,ug[1:ng],Bin)
+            # variable bounds
+            @constraint(m,-Pd .<= dPd .<= 0)
+            @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
+            @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
+            @constraint(m, pdPg .>= 0)
+            @constraint(m, ndPg .<= 0)
+            # objective
+            @objective(m,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
+            # mapping matrix to map loads/gens to buses
+            # Power balance equality constraint
+            @constraint(m,sum(Pg+ndPg+pdPg)-sum(Pd+dPd) == 0);
+            ### solve the model ###
+            optimize!(m);
+            sol_dPd=value.(dPd)
+            sol_ndPg=value.(ndPg)
+            sol_pdPg=value.(pdPg)
+            dPd_star = sol_dPd.*ps.baseMVA
+            dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
+            ps.shunt.P .+= dPd_star;
+            ps.gen.Pg[gst]  .+= dPg_star;
         else
             ps.shunt.P = ps.shunt.P.*0.0;
             ps.gen.Pg  = ps.gen.Pg.*0.0;

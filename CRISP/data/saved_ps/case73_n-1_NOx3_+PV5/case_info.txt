@@ -1,0 +1,1 @@
+Original_case = CRISP\data\saved_ps\case73_n-1_noPV_noWind_noStorage\ .Added solar to cover 0.05 fraction of demand.  To each PQ buses.  

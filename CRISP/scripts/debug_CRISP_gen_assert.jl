@@ -28,7 +28,8 @@ gens_recovery_time = Gens_Init_State[:,2];
 #check for islands
 subgraph = find_subgraphs(ps);
 M = Int64(findmax(subgraph)[1]);
-ps_islands = build_islands(subgraph,ps);
+ps_islands = build_islands(subgraph,ps) #=;
+
 for i in 1:M
     psi = ps_subset(ps,ps_islands[i]);
     # run the dcpf
@@ -41,3 +42,4 @@ for i in 1:M
 end
 @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
 Restore = RLSOPF_g!(ps,state,gens_state,recovery_times,gens_recovery_time,Pd_max)
+=#

@@ -7,7 +7,7 @@ using Cbc;
 include("CRISP_LSOPF_gen.jl")
 include("CRISP_network_gen.jl")
 
-function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max;t_step = 0.1, t0 = 10, load_cost=0)#time is in minutes
+function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max;t_step = 10, t0 = 10, load_cost=0)#time is in minutes
     #add columns to keep track of the time each generator is on or off
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_on = zeros(length(ps.gen.Pg));
@@ -17,9 +17,9 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd
     end
     if sum(names(ps.gen).==:off) == 0
         ps.gen.off = zeros(length(ps.gen.Pg));
-        ps.gen.off[ps.gen.Pg .== 0] = 1;
+        ps.gen.off[ps.gen.Pg .== 0] .= 1;
     end
-    ps.gen.time_on[ps.gen.off.==0] = 5000;
+    ps.gen.time_on[ps.gen.off .== 0] .= 5000;
     # constants
     deltaT = 5; # time step in minutes;
     tolerance = 1e-6
@@ -27,12 +27,12 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd
         load_cost = ones(length(ps.shunt.P));
     end
     l_rec_t = l_recovery_times[l_recovery_times.!=0];
-    g_rec_t = g_recovery_times[g_failures.==0] + gen_startup[g_failures.==0];
+    g_rec_t = g_recovery_times[g_failures.==0];
     g_rec = zeros(length(g_failures));
     g_rec[g_failures.==0] = g_rec_t;
     Time = sort([l_rec_t; g_rec_t])
-    total_i = length(Time);
-    T = 0:t_step:maximum(Time);
+    T = 0:t_step:maximum(Time)+1000;
+    total_i = length(T);
     load_shed = zeros(total_i+2);
     load_shed[1] = 0;
     lines_out = zeros(total_i+2);#zeros(length(l_times)+2);
@@ -57,9 +57,10 @@ function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd
         ps.gen.status = g_failures;
         gens_out[i+2] = length(g_failures) - sum(g_failures);
         # update time on and time off
-        u = ps.gen.off.==0
-        ps.gen.time_off[!u] .+= t_step;
-        ps.gen.time_on[u] += t_step;
+        off = ps.gen.off .!= 0;
+        on = ps.gen.off .== 0;
+        ps.gen.time_off[off] .+= t_step;
+        ps.gen.time_on[on] .+= t_step;
         #check for islands
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
@@ -163,9 +164,9 @@ function crisp_rlopf_g!(ps,Pd_max)
         sol_ndPg=value.(ndPg)
         sol_pdPg=value.(pdPg)
         sol_ug=value.(ug)
-        gen_used = Pg[ug.==1];
+        gen_used = Pg[sol_ug.==1];
         if sum(gen_used.==0)!=0
-            pg.gen.off[gst][ug] .= 0;
+            ps.gen.off[gst][sol_ug.==1] .= 0;
             tst = ps.gen.time_on.*60 .>= ps.gen.StartTimeColdHr;
             gest = (gst .& tst);
             ng = size(ps.gen[gest,:Pg],1)
@@ -186,8 +187,8 @@ function crisp_rlopf_g!(ps,Pd_max)
             @variable(m2,dTheta[1:n])
             # variable bounds
             @constraint(m2,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
-            @constraint(m2, ug.*(Pg_min) .<= Pg+ndPg)
-            @constraint(m2, ug.*(Pg_max) .>= Pg+pdPg)
+            @constraint(m2, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
+            @constraint(m2, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
             @constraint(m2, pdPg .>= 0)
             @constraint(m2, ndPg .<= 0)
             @constraint(m2,dTheta[1] == 0)
@@ -205,78 +206,87 @@ function crisp_rlopf_g!(ps,Pd_max)
             sol_ndPg=value.(ndPg)
             sol_pdPg=value.(pdPg)
             sol_ug=value.(ug)
+            dPd_star = sol_dPd.*ps.baseMVA
+            dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
+            ps.shunt.P += dPd_star; #changes ps structure
+            ps.gen.Pg[gest] += dPg_star; #changes ps structure
+        else
+            dPd_star = sol_dPd.*ps.baseMVA
+            dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
+            ps.shunt.P += dPd_star; #changes ps structure
+            ps.gen.Pg[gst] += dPg_star; #changes ps structure
         end
-        dPd_star = sol_dPd.*ps.baseMVA
-        dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
-        ps.shunt.P += dPd_star; #changes ps structure
-        ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
-        if ((!isempty(ps.gen.status.==1) && isempty(ps.shunt)) || (isempty(ps.gen.status.==1) && !isempty(ps.shunt))
-             || (isempty(ps.gen.status.==1) && isempty(ps.shunt)))
+        gst = (ps.gen[:status].==1)
+        Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
+        nd = length(Pd)
+        Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        ng = length(Pg)
+        Pg_min = ps.gen.Pmin[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        Pg_max = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        if !isempty(Pd) && !isempty(Pg)
+            m = Model(with_optimizer(Gurobi.Optimizer))
+            # variables
+            @variable(m,dPd[1:nd])
+            @variable(m,ndPg[1:ng])
+            @variable(m,pdPg[1:ng])
+            @variable(m,ug[1:ng],Bin)
+            # variable bounds
+            @constraint(m,-Pd .<= dPd .<= 0)
+            @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
+            @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
+            @constraint(m, pdPg .>= 0)
+            @constraint(m, ndPg .<= 0)
+            # objective
+            @objective(m,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
+            # mapping matrix to map loads/gens to buses
+            # Power balance equality constraint
+            @constraint(m,sum(Pg+ndPg+pdPg)-sum(Pd+dPd) == 0);
+            ### solve the model ###
+            optimize!(m);
+            sol_dPd=value.(dPd)
+            sol_ndPg=value.(ndPg)
+            sol_pdPg=value.(pdPg)
+            sol_ug=value.(ug)
+            gen_used = Pg[sol_ug.==1];
+            if sum(gen_used.==0)!=0
+                ps.gen.off[gst][sol_ug.==1] .= 0;
+                tst = ps.gen.time_on.*60 .>= ps.gen.StartTimeColdHr;
+                gest = (gst .& tst);
+                ng = size(ps.gen[gest,:Pg],1)
+                Pg = ps.gen[gest,:Pg] ./ ps.baseMVA .* ps.gen[gest,:status]
+                Pg_max = ps.gen[gest,:Pmax] ./ ps.baseMVA .* ps.gen[gest,:status]
+                Pg_min = ps.gen[gest,:Pmin] ./ ps.baseMVA .* ps.gen[gest,:status]
+                m = Model(with_optimizer(Gurobi.Optimizer))
+                # variables
+                @variable(m,dPd[1:nd])
+                @variable(m,ndPg[1:ng])
+                @variable(m,pdPg[1:ng])
+                @variable(m,ug[1:ng],Bin)
+                # variable bounds
+                @constraint(m,-Pd .<= dPd .<= 0)
+                @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
+                @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
+                @constraint(m, pdPg .>= 0)
+                @constraint(m, ndPg .<= 0)
+                # objective
+                @objective(m,Max,sum(dPd)+0.01*(0.1*sum(ndPg)-0.1*sum(pdPg)+sum(ug))) # serve as much load as possible
+                # mapping matrix to map loads/gens to buses
+                # Power balance equality constraint
+                @constraint(m,sum(Pg+ndPg+pdPg)-sum(Pd+dPd) == 0);
+                ### solve the model ###
+                optimize!(m);
+                sol_dPd=value.(dPd)
+                sol_ndPg=value.(ndPg)
+                sol_pdPg=value.(pdPg)
+            end
+            dPd_star = sol_dPd.*ps.baseMVA
+            dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
+            ps.shunt.P .+= dPd_star;
+            ps.gen.Pg[gst]  .+= dPg_star;
+        else
             ps.gen.Pg  .= ps.gen.Pg.*0.0;
             ps.shunt.P .= ps.shunt.P.*0.0;
-        elseif !isempty(ps.gen.status.==1) && !isempty(ps.shunt)
-            gst = (ps.gen.status .== 1)
-            Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
-            Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
-            Pg_cap = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
-            if sum(Pg_cap) >= sum(Pd)
-                deltaPd = 0.0;
-                deltaPg = sum(Pd)-sum(Pg);
-            else
-                deltaPd = sum(Pg_cap)-sum(Pd);
-                deltaPg = sum(Pg_cap)-sum(Pg);
-            end
-            if length(Pd)  > 1
-                deltaPd_star = zeros(length(Pd))
-                deltaPd_used = 0;
-                for load = 1:length(Pd)
-                    if abs(deltaPd) >= abs(deltaPd_used)
-                        dload = 0;
-                    else
-                        if abs(Pd[load]) < abs(deltaPd_used - deltaPd)
-                            dload = -Pd[load]
-                        else
-                            dload = -abs(deltaPd_used - deltaPd)
-                        end
-                    end
-                    deltaPd_star[load] = dload.*ps.baseMVA;
-                    deltaPd_used = deltaPd_used + dload;
-                end
-            else
-                deltaPd_star = deltaPd.*ps.baseMVA;
-            end
-            if length(Pg) > 1
-                deltaPg_star = zeros(length(Pg))
-                deltaPg_used = 0;
-                for gen = 1:length(Pg)
-                    deltaPg_star[gen] = deltaPg.*ps.baseMVA;
-                    if abs(deltaPg) >= abs(deltaPg_used)
-                        dgen = 0;
-                    else
-                        if abs(Pg[gen]) < abs(deltaPg_used - deltaPg)
-                            if deltaPg < 0
-                                dgen = -Pg[gen]
-                            else
-                                dgen = Pg[gen]
-                            end
-                        elseif deltaPg < 0
-                            dgen = -abs(deltaPg_used - deltaPg)
-                        else
-                            dgen = abs(deltaPg_used - deltaPg)
-                        end
-                    end
-                    deltaPg_star[gen] = dgen.*ps.baseMVA;
-                    deltaPg_used = deltaPg_used + dgen;
-                end
-            else
-                deltaPg_star = deltaPg.*ps.baseMVA;
-            end
-            ps.shunt.P .+= deltaPd_star;
-            ps.gen.Pg[gst]  .+= deltaPg_star;
-        else
-            ps.shunt.P = ps.shunt.P.*0.0;
-            ps.gen.Pg  = ps.gen.Pg.*0.0;
         end
     end
     #adding criteria that should produce errors if incorrect.

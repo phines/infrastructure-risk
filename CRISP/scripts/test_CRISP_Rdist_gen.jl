@@ -3,14 +3,14 @@ include("..\\src\\CRISP_Rdist_gen.jl")
 ## folder of case data
 case1 = "data\\case73_gendata\\"
 
-out = "\\experiments_gen\\3"
+out = "\\experiments_gen\\5"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
 end
 
 # number of events
-N = 100;
+N = 1000;
 #set randomized seed
 rng = MersenneTwister(100);
 #save restoration data to folder within results folder:

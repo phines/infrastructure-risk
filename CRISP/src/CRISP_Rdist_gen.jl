@@ -6,7 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
 function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
-    debug=1;
+    debug=0;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -87,10 +87,14 @@ function Res_dist_gen(Num,ps_folder,out_folder;param_file = "")
             ###find the time to restore the grid to 99.9% load served
             K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
             K[1] = false;
-            R = Restore.time[K];
-            LoadServedTime[iterat] = R[1] - Restore.time[2];
-            ## run step 4
-            ResilienceTri[iterat] = crisp_res(Restore);
+            if isempty( Restore.time[K])
+                error("Never solved to full restoration.")
+            else
+                R = Restore.time[K];
+                LoadServedTime[iterat] = R[1] - Restore.time[2];
+                ## run step 4
+                ResilienceTri[iterat] = crisp_res(Restore);
+            end
         end
     end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
