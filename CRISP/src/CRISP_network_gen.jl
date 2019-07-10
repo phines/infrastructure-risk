@@ -136,7 +136,7 @@ function build_islands(subgraph,ps)
                 end
             end
         end
-        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen);
+        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen,storage);
     end
     return ps_islands
 end

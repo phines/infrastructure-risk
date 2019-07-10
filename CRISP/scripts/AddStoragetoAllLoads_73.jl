@@ -20,7 +20,7 @@ refbus = ps.bus.id[ps.bus.bus_type.==3];
 for s = 1:nd #N_panels
     #Params = randperm(length(gen.Pg))[1];
     Bat = deepcopy(ps1.storage);
-    Bat.bus = ps.shunt.bus[s];
+    Bat.bus = Int64(ps.shunt.bus[s]);
     Bat.Psmax = percent_batP.*ps.shunt.P[s]; #could also just reduce the load...
     Bat.Psmin = -percent_batP.*ps.shunt.P[s]; #charging
     Bat.E = 12 .*percent_batP.*ps.shunt.P[s];
