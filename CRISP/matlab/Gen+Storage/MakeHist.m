@@ -44,14 +44,8 @@ semilogx(sorted_costs2,Pr)
 % semilogx(sorted_costs3,Pr)
 % semilogx(sorted_costs4,Pr)
 title("CCDF of Resilience of N-1 secure 73 bus cases")
-% legend("original", "original2")
+legend("original", "no S,W,PV")
 % legend("original", "+5% load in DG", "+20% load in DG")%, "39 bus +100% load in DG")
-% legend("39 bus", "39 bus 5% PV", "39 bus 20% PV", "39 bus 100% PV")%, "39 bus 100% PV")
-% legend("6 bus", "6 bus 5% PV", "6 bus 20% PV")
-% legend("6 bus", "6 bus 5% PV", "6 bus 20% PV", "6 bus 100% PV")
-% legend("6 bus", "6 bus 5% PV", "6 bus 5% RL");
-% legend("6 bus - allow 0 outages", "6 bus - fair sample", "6 bus - allow 0 outages and add 1");
-% legend("39 bus - allow 0 outages", "39 bus - fair sample", "39 bus - allow 0 outages and add 1"); %"39 bus - bias sample 1 line out", 
 xlabel("ENS (MWh)"); ylabel("Prob(Energy lost \geq ENS")
 set(gca, 'fontsize',13)
 hold off

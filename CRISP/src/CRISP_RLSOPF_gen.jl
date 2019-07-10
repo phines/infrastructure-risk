@@ -419,8 +419,8 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
         Ps = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
         E = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
         E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_max = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_min = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
+        Ps_max = ps.storage[:Psmax] ./ ps.baseMVA .* ps.storage[:status]
+        Ps_min = ps.storage[:Psmin] ./ ps.baseMVA .* ps.storage[:status]
         # branch data
         brst = (ps.branch.status.==1)
         F = bi[ps.branch.f[brst]]
