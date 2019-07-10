@@ -21,15 +21,13 @@ Lines_Init_State = CSV.read("results\\experiments_gen\\7\\res_out_se73_noPWS+S I
 Gens_Init_State = CSV.read("results\\experiments_gen\\7\\res_out_se73_noPWS+S IC48 gens.csv", allowmissing=:none)
 
 l_failures = Lines_Init_State[:,1];
-ps.branch.status[state .==0] .= 0;
-NumLinesOut = length(state) - sum(state)
+ps.branch.status[l_failures .==0] .= 0;
+NumLinesOut = length(l_failures) - sum(l_failures)
 l_recovery_times = Lines_Init_State[:,2];
-MaxRestorationTime = maximum(recovery_times);
-failures = state;
 # generator states and recovery times
 g_failures = Gens_Init_State[:,1];
-ps.gen.status[gens_state.==0] .= 0;
-ps.gen.Pg[gens_state.==0] .= 0;
+ps.gen.status[g_failures.==0] .= 0;
+ps.gen.Pg[g_failures.==0] .= 0;
 g_recovery_times = Gens_Init_State[:,2];
 #check for islands
 subgraph = find_subgraphs(ps);
@@ -54,23 +52,6 @@ for i in 1:M
     ps.branch[ps_islands[i].branch,:Qt] = psi.branch.Qt
 end
 @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
-for i in 1:M
-    psi = ps_subset(ps,ps_islands[i]);
-    # run the dcpf
-    crisp_dcpf_g_s!(psi);
-    # run lsopf
-    dt = 10;
-    crisp_lsopf_g_s!(psi,dt);
-    ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-    ps.storage[ps_islands[i].storage,:Ps] = psi.storage.Ps
-    ps.storage[ps_islands[i].storage,:E] = psi.storage.E
-    ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-    crisp_dcpf_g_s!(psi);
-    ps.branch[ps_islands[i].branch,:Pf] = psi.branch.Pf
-    ps.branch[ps_islands[i].branch,:Pt] = psi.branch.Pt
-    ps.branch[ps_islands[i].branch,:Qf] = psi.branch.Qf
-    ps.branch[ps_islands[i].branch,:Qt] = psi.branch.Qt
-end
 #Restore = RLSOPF_g_s!(ps,dt,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max)
 t0 = 10; load_cost=0;
 if sum(names(ps.gen).==:time_on) == 0
@@ -93,6 +74,7 @@ g_rec_t = g_recovery_times[g_failures.==0];
 g_rec = zeros(length(g_failures));
 g_rec[g_failures.==0] = g_rec_t;
 Time = sort([l_rec_t; g_rec_t])
+dt = 10;
 T = 0:dt:maximum(Time)+1000;
 total_i = length(T);
 load_shed = zeros(total_i+2);
@@ -127,10 +109,10 @@ i=1#for i = 1:length(T)
     subgraph = find_subgraphs(ps);# add Int64 here hide info here
     M = Int64(findmax(subgraph)[1]);
     if M==1
-        crisp_dcpf_g_s!(ps);
+        crisp_dcpf_g!(ps);
         # run lsopf
-        crisp_rlopf_g_s!(ps,Pd_max,dt);
-        crisp_dcpf_g_s!(ps);
+        crisp_rlopf_g!(ps,Pd_max);
+        crisp_dcpf_g!(ps);
     else
         ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
         ## for every island that changed (eventually)
@@ -139,7 +121,7 @@ i=1#for i = 1:length(T)
         j=1;
             psi = ps_subset(ps,ps_islands[j]);
             # run the dcpf
-            crisp_dcpf_g_s!(psi);
+            crisp_dcpf_g!(psi);
             ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
             ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P
             ps.storage[ps_islands[j].storage,:E] = psi.storage.E
@@ -149,9 +131,9 @@ i=1#for i = 1:length(T)
             ps.branch[ps_islands[j].branch,:Qf] = psi.branch.Qf
             ps.branch[ps_islands[j].branch,:Qt] = psi.branch.Qt
             # run lsopf
-            crisp_rlopf_g_s!(psi,Pd_max[ps_islands[j].shunt],dt);
+            crisp_rlopf_g!(psi,Pd_max[ps_islands[j].shunt]);
             # apply the results
-            crisp_dcpf_g_s!(psi);
+            crisp_dcpf_g!(psi);
             ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
             ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P
             ps.storage[ps_islands[j].storage,:E] = psi.storage.E

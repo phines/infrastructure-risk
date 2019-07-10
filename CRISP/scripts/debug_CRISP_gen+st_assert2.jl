@@ -22,7 +22,7 @@ Gens_Init_State = CSV.read("results\\experiments_gen\\7\\res_out_se73_noPWS+S IC
 
 l_failures = Lines_Init_State[:,1];
 ps.branch.status[l_failures .==0] .= 0;
-NumLinesOut = length(l_failures) - sum(l_failures)
+NumLinesOut = length(l_failures) - sum(l_failures);
 l_recovery_times = Lines_Init_State[:,2];
 # generator states and recovery times
 g_failures = Gens_Init_State[:,1];
@@ -137,7 +137,7 @@ i=1#for i = 1:length(T)
         j=1;
             psi = ps_subset(ps,ps_islands[j]);
             # run the dcpf
-            crisp_dcpf_g_s!(psi);
+            crisp_dcpf_g!(psi);
             ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
             ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P
             ps.storage[ps_islands[j].storage,:E] = psi.storage.E
@@ -147,9 +147,9 @@ i=1#for i = 1:length(T)
             ps.branch[ps_islands[j].branch,:Qf] = psi.branch.Qf
             ps.branch[ps_islands[j].branch,:Qt] = psi.branch.Qt
             # run lsopf
-            crisp_rlopf_g_s!(psi,Pd_max[ps_islands[j].shunt],dt);
+            crisp_rlopf_g!(psi,Pd_max[ps_islands[j].shunt],dt);
             # apply the results
-            crisp_dcpf_g_s!(psi);
+            crisp_dcpf_g!(psi);
             ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
             ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P
             ps.storage[ps_islands[j].storage,:E] = psi.storage.E
