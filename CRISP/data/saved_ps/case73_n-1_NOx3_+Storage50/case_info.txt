@@ -1,1 +1,0 @@
-Original_case = CRISP\data\saved_ps\case73_n-1_noPV_noWind_noStorage\ .Added battery to cover 50 fraction of demand when discharging.  To each PQ buses.  

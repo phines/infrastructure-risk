@@ -444,7 +444,7 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
         # variable bounds
         @constraint(m1,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
         @constraint(m1, Ps_min .<= Ps+dPs .<= Ps_max)
-        @constraint(m1, 0 .<= E + (Ps+dPs).*dt .<= E_max)
+        @constraint(m1, 0.01 .<= E + (Ps+dPs).*dt .<= E_max)
         @constraint(m1, ug.*(Pg_min) .<= Pg+ndPg)
         @constraint(m1, ug.*(Pg_max) .>= Pg+pdPg)
         @constraint(m1, pdPg .>= 0)
@@ -498,7 +498,7 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
             # variable bounds
             @constraint(m2,-Pd.<=dPd.<=(Pd_max./ps.baseMVA - Pd));
             @constraint(m2, Ps_min .<= Ps+dPs .<= Ps_max)
-            @constraint(m2, 0 .<= E + (Ps+dPs).*dt .<= E_max)
+            @constraint(m2, 0.01 .<= E + (Ps+dPs).*dt .<= E_max)
             @constraint(m2, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
             @constraint(m2, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
             @constraint(m2, pdPg .>= 0)
@@ -560,7 +560,7 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
             # variable bounds
             @constraint(m,-Pd .<= dPd .<= 0)
             @constraint(m, Ps_min .<= Ps+dPs .<= Ps_max)
-            @constraint(m, 0 .<= E + (Ps+dPs).*dt .<= E_max)
+            @constraint(m, 0.01 .<= E + (Ps+dPs).*dt .<= E_max)
             @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
             @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
             @constraint(m, pdPg .>= 0)
@@ -602,7 +602,7 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
                 # variable bounds
                 @constraint(m,-Pd .<= dPd .<= 0)
                 @constraint(m, Ps_min .<= Ps+dPs .<= Ps_max)
-                @constraint(m, 0 .<= E + (Ps+dPs).*dt .<= E_max)
+                @constraint(m, 0.01 .<= E + (Ps+dPs).*dt .<= E_max)
                 @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
                 @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
                 @constraint(m, pdPg .>= 0)
@@ -623,8 +623,8 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
             dPs_star = sol_dPs.*ps.baseMVA
             dPg_star = (sol_pdPg+sol_ndPg).*ps.baseMVA
             ps.shunt.P .+= dPd_star;
-            ps.storage.Ps += dPs_star;
-            ps.storage.E += ps.storage.Ps.*dt;
+            ps.storage.Ps .+= dPs_star;
+            ps.storage.E .+= ps.storage.Ps.*dt;
             ps.gen.Pg[gst]  .+= dPg_star;
         else
             ps.storage.Ps = ps.storage.Ps.*0.0;
@@ -633,7 +633,7 @@ function crisp_rlopf_g_s!(ps,Pd_max,dt)
         end
     end
     #adding criteria that should produce errors if incorrect.
-    @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
+    @assert abs(sum(ps.shunt.P)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
     @assert sum(ps.storage.E .<=0)==0
     #@assert 0.<=ps.shunt.P
     return ps

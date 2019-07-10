@@ -298,7 +298,7 @@ function crisp_dcpf_g_s!(ps)
     if any(S.<1) || any(S.>n)
         error("Bad indices in sstorage matrix")
     end
-    Ps_bus = Array(sparse(S,ones(size(S)),Ps,n,1))
+        Ps_bus = Array(sparse(S,ones(size(S)),Ps,n,1))
     # branch data
     brst = (ps.branch[:status].==1)
     F = bi[ps.branch[brst,:f]]
@@ -457,8 +457,8 @@ function crisp_lsopf_g_s!(ps,dt)
         Ps = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
         E = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
         E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_max = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_min = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
+        Ps_max = ps.storage[:Psmax] ./ ps.baseMVA .* ps.storage[:status]
+        Ps_min = ps.storage[:Psmin] ./ ps.baseMVA .* ps.storage[:status]
         if any(S.<1) || any(S.>n)
             error("Bad indices in sstorage matrix")
         end

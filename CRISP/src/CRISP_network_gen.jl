@@ -13,8 +13,6 @@ function import_ps(filename)
     psBranchData = CSV.read("$filename\\branch.csv",allowmissing=:none);
     psGenData = CSV.read("$filename\\gen.csv",allowmissing=:none);
     psShuntData = CSV.read("$filename\\shunt.csv",allowmissing=:none);
-    if isfile("$filename\\storage.csv") psStorageData = CSV.read("$filename\\storage.csv",allowmissing=:none);
-    else psStorageData = DataFrame(bus = [], E = [], Ps = [], Emax = [], Emin = [], Psmax = [], Psmin = [], status = []); end
     mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
@@ -25,6 +23,8 @@ function import_ps(filename)
     psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
     psGenData[:,:Pmax] = psGenData[:,:Pmax].*1.0;
     psShuntData[:,:P] = psShuntData[:,:P].*1.0;
+    if isfile("$filename\\storage.csv") psStorageData = CSV.read("$filename\\storage.csv",allowmissing=:none);
+    else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], status = Int64[]); end
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
     return ps
 end

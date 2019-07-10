@@ -1,9 +1,11 @@
 #include("..\\src\\CRISP_Rdist.jl")
 include("..\\src\\CRISP_Rdist_gen_stor.jl")
 ## folder of case data
-case1 = "data\\case73\\"
+case1 = "data\\saved_ps\\case73_noPWS+S5\\"
+case2 = "data\\saved_ps\\case73_noPWS+S20\\"
+case3 = "data\\saved_ps\\case73_noPWS+S50\\"
 
-out = "\\experiments_gen\\6"
+out = "\\experiments_gen\\7"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
@@ -16,25 +18,25 @@ dt = 10 #minutes
 #set randomized seed
 rng = MersenneTwister(100);
 #save restoration data to folder within results folder:
-filename1 = "res_out_case73_storage";
+filename1 = "res_out_$(case1[15:end-1])";
 out_folder1 = out*"\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist_gen_stor(N,case1,out_folder1,dt)
 #set randomized seed
 rng = MersenneTwister(100);
-#=
 #save restoration data to folder within results folder:
-filename2 = "res_out_case39_05PV";
+filename2 = "res_out_$(case2[15:end-1])";
 out_folder2 = out*"\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 #res = Res_dist(N,case2,out_folder2)
 #set randomized seed
 rng = MersenneTwister(100);
 #save restoration data to folder within results folder:
-filename3 = "res_out_case39_20PV";
+filename3 = "res_out_$(case3[15:end-1])";
 out_folder3 = out*"\\$filename3.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist_gen(N,case3,out_folder3)
+#=
 #set randomized seed
 rng = MersenneTwister(100);
 #save restoration data to folder within results folder:

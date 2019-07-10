@@ -4,16 +4,16 @@ include("..\\src\\CRISP_network_gen.jl")
 include("..\\src\\CRISP_LSOPF_gen.jl")
 include("..\\src\\CRISP_RLSOPF_gen.jl")
 ## name base for new case
-new_case = "data\\saved_ps\\case73_n-1_NOx3_+Storage";
+new_case = "data\\saved_ps\\case73_noPWS_n-1+S";
 ## load the case data
-old_case = "data\\saved_ps\\case73_n-1_noPV_noWind_noStorage\\";
+old_case = "data\\saved_ps\\case73_noPWS_n-1\\";
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\$old_case")
 ps1 = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\saved_ps\\case73_n-1")
-crisp_dcpf_g!(ps)
+crisp_dcpf_g_s!(ps)
 total = sum(ps.shunt[:P]);
 storage = deepcopy(ps.storage);
 nd = length(ps.shunt[:P]);
-percent_batP = 0.2;
+percent_batP = 0.5;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #add generators
@@ -32,21 +32,22 @@ for s = 1:nd #N_panels
 end
 ps.storage = storage;
 println(ps.gen.Pg)
-crisp_dcpf_g!(ps)
+crisp_dcpf_g_s!(ps)
 println(ps.gen.Pg)
-crisp_lsopf_g!(ps)
+dt = 1;
+crisp_lsopf_g_s!(ps,dt)
 println(ps.gen.Pg)
 #check
-crisp_dcpf_g!(ps)
+crisp_dcpf_g_s!(ps)
 println(ps.gen.Pg)
 
 PB = Int64.(100*percent_batP)
 # save ps structure
-if isdir(new_case*"$PS")
+if isdir(new_case*"$PB")
 else
-    mkdir(new_case*"$PS")
+    mkdir(new_case*"$PB")
 end
-export_ps(ps,new_case*"$PS")
+export_ps(ps,new_case*"$PB")
 #save case info
 line1 = "Original_case = CRISP\\$old_case ."
 line2 = "Added battery to cover $PB fraction of demand when discharging.  "
