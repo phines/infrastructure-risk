@@ -656,6 +656,8 @@ function crisp_rl_dcopf_g_s!(ps,Pd_max,dt)
     G = bi[ps.gen[gst,:bus]]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
     Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+    Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
+    Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
@@ -664,10 +666,14 @@ function crisp_rl_dcopf_g_s!(ps,Pd_max,dt)
     S = bi[ps.storage[:bus]];
     S_bus = sparse(S,collect(1:ns),1.,n,ns);
     Ps = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
+    E = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
+    E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
+    Ps_max = ps.storage[:Psmax] ./ ps.baseMVA .* ps.storage[:status]
+    Ps_min = ps.storage[:Psmin] ./ ps.baseMVA .* ps.storage[:status]
     if any(S.<1) || any(S.>n)
         error("Bad indices in sstorage matrix")
     end
-        Ps_bus = Array(sparse(S,ones(size(S)),Ps,n,1))
+    Ps_bus = Array(sparse(S,ones(size(S)),Ps,n,1))
     # branch data
     brst = (ps.branch[:status].==1)
     F = bi[ps.branch[brst,:f]]
