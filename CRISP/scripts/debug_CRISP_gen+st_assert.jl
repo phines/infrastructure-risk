@@ -52,6 +52,24 @@ for i in 1:M
     ps.branch[ps_islands[i].branch,:Qt] = psi.branch.Qt
 end
 @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
+for i in 1:M
+    psi = ps_subset(ps,ps_islands[i]);
+    # run the dcpf
+    crisp_dcpf_g_s!(psi);
+    # run lsopf
+    dt = 10;
+    crisp_rlopf_g_s!(psi,Pd_max[ps_islands[i].shunt],dt);
+    ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
+    ps.storage[ps_islands[i].storage,:Ps] = psi.storage.Ps
+    ps.storage[ps_islands[i].storage,:E] = psi.storage.E
+    ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
+    crisp_dcpf_g_s!(psi);
+    ps.branch[ps_islands[i].branch,:Pf] = psi.branch.Pf
+    ps.branch[ps_islands[i].branch,:Pt] = psi.branch.Pt
+    ps.branch[ps_islands[i].branch,:Qf] = psi.branch.Qf
+    ps.branch[ps_islands[i].branch,:Qt] = psi.branch.Qt
+end
+@assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
 #Restore = RLSOPF_g_s!(ps,dt,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max)
 t0 = 10; load_cost=0;
 if sum(names(ps.gen).==:time_on) == 0

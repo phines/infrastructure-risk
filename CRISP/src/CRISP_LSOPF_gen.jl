@@ -485,7 +485,7 @@ function crisp_lsopf_g_s!(ps,dt)
         # variable bounds
         @constraint(m,-Pd .<= dPd .<= 0)
         @constraint(m, Ps_min .<= Ps+dPs .<= Ps_max)
-        @constraint(m, 0 .<= E + (Ps+dPs).*dt .<= E_max)
+        @constraint(m, 0.01 .<= E + (Ps+dPs).*dt .<= E_max)
         @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
         @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
         @constraint(m, pdPg .>= 0)
@@ -568,7 +568,7 @@ function crisp_lsopf_g_s!(ps,dt)
     end
     #adding criteria that should produce errors if incorrect.
     @assert abs(sum(ps.shunt.P)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
-    @assert sum(ps.storage.E .< 0)==0
+    #@assert sum(ps.storage.E .< 0)==0
     #@assert 0.<=ps.shunt.P
     return ps
 end
