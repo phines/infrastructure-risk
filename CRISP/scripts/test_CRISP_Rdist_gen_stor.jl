@@ -1,11 +1,12 @@
-#include("..\\src\\CRISP_Rdist.jl")
-include("..\\src\\CRISP_Rdist_gen_stor.jl")
+include("..\\src\\CRISP_network_gen.jl")
+include("..\\src\\CRISP_Rdist_gen_movh.jl")
 ## folder of case data
+case = "data\\saved_ps\\case73_noPWS\\"
 case1 = "data\\saved_ps\\case73_noPWS+S5\\"
 case2 = "data\\saved_ps\\case73_noPWS+S20\\"
 case3 = "data\\saved_ps\\case73_noPWS+S50\\"
 
-out = "\\experiments_gen\\7"
+out = "\\experiments_gen_mvh"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
@@ -15,6 +16,13 @@ end
 N = 1000;
 #time steps
 dt = 10 #minutes
+#set randomized seed
+rng = MersenneTwister(100);
+#save restoration data to folder within results folder:
+filename = "res_out_$(case[15:end-1])";
+out_folder = out*"\\$filename.csv"
+# run to save csv of resilience cost distribution to the specified out_folder
+res = Res_dist_gen_stor(N,case,out_folder,dt)
 #set randomized seed
 rng = MersenneTwister(100);
 #save restoration data to folder within results folder:

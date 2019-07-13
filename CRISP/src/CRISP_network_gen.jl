@@ -23,6 +23,7 @@ function import_ps(filename)
     psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
     psGenData[:,:Pmax] = psGenData[:,:Pmax].*1.0;
     psShuntData[:,:P] = psShuntData[:,:P].*1.0;
+    psShuntData[:,:status] = psShuntData[:,:status].*1.0;
     if isfile("$filename\\storage.csv") psStorageData = CSV.read("$filename\\storage.csv",allowmissing=:none);
     else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], status = Int64[]); end
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
@@ -166,8 +167,8 @@ end
 
 function add_changes!(ps,psi,ps_island);
     ps.gen[ps_island.gen,:Pg] = psi.gen.Pg
-    ps.shunt[ps_island.shunt,:P] = psi.shunt.P
-    ps.storage[ps_island.storage,:P] = psi.storage.P
+    ps.shunt[ps_island.shunt,:status] = psi.shunt.status
+    ps.storage[ps_island.storage,:Ps] = psi.storage.Ps
     ps.storage[ps_island.storage,:E] = psi.storage.E
 end
 
