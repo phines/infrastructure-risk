@@ -96,8 +96,8 @@ function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_
         cv.time = ti;
         cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
         cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
-        cv.lines_out = length(failures[:,1]) - sum(failures[:,1]);
-        cv.gens_out = length(failures[:,2]) - sum(failures[:,2]);
+        cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
     end
     return Restore
