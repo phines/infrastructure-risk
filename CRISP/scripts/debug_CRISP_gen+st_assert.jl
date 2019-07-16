@@ -6,8 +6,8 @@ include("src\\CRISP_RT.jl")
 include("src\\CRISP_network_gen.jl")=#
 
 include("..\\src\\CRISP_initiate.jl")
-include("..\\src\\CRISP_LSOPF_gen.jl")
-include("..\\src\\CRISP_RLSOPF_gen.jl")
+include("..\\src\\CRISP_LSOPF_gen1.jl")
+include("..\\src\\CRISP_RSOPF_movh.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network_gen.jl")
 case1 = "data\\saved_ps\\case73_noPWS+S5\\"
@@ -17,8 +17,8 @@ total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 ps0 = deepcopy(ps);
 
-Lines_Init_State = CSV.read("results\\experiments_gen\\7\\res_out_se73_noPWS+S IC48 lines.csv", allowmissing=:none)
-Gens_Init_State = CSV.read("results\\experiments_gen\\7\\res_out_se73_noPWS+S IC48 gens.csv", allowmissing=:none)
+Lines_Init_State = CSV.read("results\\experiments_gen_mvh\\res_out_se73_noPWS+S IC48 lines.csv", allowmissing=:none)
+Gens_Init_State = CSV.read("results\\experiments_gen_mvh\\res_out_se73_noPWS+S IC48 gens.csv", allowmissing=:none)
 
 l_failures = Lines_Init_State[:,1];
 ps.branch.status[l_failures .==0] .= 0;

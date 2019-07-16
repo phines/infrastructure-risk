@@ -7,6 +7,7 @@ include("CRISP_network_gen.jl")
 
 function Res_dist_gen_stor(Num,ps_folder,out_folder,dt;param_file = "")
     debug=1;
+    tolerance1 = 10^(-6);
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -58,57 +59,44 @@ function Res_dist_gen_stor(Num,ps_folder,out_folder,dt;param_file = "")
         ps_islands = build_islands(subgraph,ps)
         for i in 1:M
             psi = ps_subset(ps,ps_islands[i]);
-            # run the dcpf
-            crisp_dcpf_g_s!(psi);
             # run lsopf
             dt = 10;
             crisp_lsopf_g_s!(psi,dt);
             ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
             ps.storage[ps_islands[i].storage,:Ps] = psi.storage.Ps
             ps.storage[ps_islands[i].storage,:E] = psi.storage.E
-            ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-            crisp_dcpf_g_s!(psi);
-            ps.branch[ps_islands[i].branch,:Pf] = psi.branch.Pf
-            ps.branch[ps_islands[i].branch,:Pt] = psi.branch.Pt
-            ps.branch[ps_islands[i].branch,:Qf] = psi.branch.Qf
-            ps.branch[ps_islands[i].branch,:Qt] = psi.branch.Qt
+            ps.shunt[ps_islands[i].shunt,:status] = psi.shunt.status
         end
         println(iterat)
-        @assert total>=sum(ps.shunt.P)
-        @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
+        @assert total>=sum(ps.shunt.P .* ps.shunt.status)
+        @assert 2M*tolerance1 >= abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.gen.Pg)-sum(ps.storage.Ps))
         tolerance = 10^(-10);
-        if (abs(total-sum(ps.shunt.P)) <= tolerance)
-            ResilienceTri[iterat] = 0;
-            LoadServedTime[iterat] = 0;
-            LoadShed0[iterat] = 0;
+        LoadShed0[iterat] = total-sum(ps.shunt.P .* ps.shunt.status);
+        ## run step 3
+        dt = 1
+        ti = dt;#10
+        t0 = 10
+        #crisp_mh_rlopf!(ps,dt,time)
+        Restore = crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,ti,t0)
+        #Restore = RLSOPF_g_s!(ps,dt,state,gens_state,recovery_times,gens_recovery_time,Pd_max)# data frame [times, load shed in cost per hour]
+        ###find the time to restore the grid to 99.9% load served
+        K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
+        K[1] = false;
+        if isempty( Restore.time[K])
+            error("Never solved to full restoration.")
         else
-            LoadShed0[iterat] = total-sum(ps.shunt.P);
-            ## run step 3
-            dt = 1
-            time = 10
-            t0 = 10
-            #crisp_mh_rlopf!(ps,dt,time)
-            Restore = crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,time,t0)
-            #Restore = RLSOPF_g_s!(ps,dt,state,gens_state,recovery_times,gens_recovery_time,Pd_max)# data frame [times, load shed in cost per hour]
-            ###find the time to restore the grid to 99.9% load served
-            K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
-            K[1] = false;
-            if isempty( Restore.time[K])
-                error("Never solved to full restoration.")
-            else
-                R = Restore.time[K];
-                LoadServedTime[iterat] = R[1] - Restore.time[2];
-                ## run step 4
-                ResilienceTri[iterat] = crisp_res(Restore);
-            end
+            R = Restore.time[K];
+            LoadServedTime[iterat] = R[1] - Restore.time[2];
+            ## run step 4
+            ResilienceTri[iterat] = crisp_res(Restore);
         end
     end
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
-    case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], initial_load_shed = LoadShed0[:,1], full_rest_time = MaxRestorationTime[:,1]);
+    #case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], initial_load_shed = LoadShed0[:,1]);#, full_rest_time = MaxRestorationTime[:,1]);
 
     ## save data
     CSV.write("results\\$out_folder", case_res);
-    CSV.write("results\\$(out_folder[1:end-4])_lines.csv", case_lines);
+    #CSV.write("results\\$(out_folder[1:end-4])_lines.csv", case_lines);
 end
 
 
