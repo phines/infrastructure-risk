@@ -7,7 +7,7 @@ using Gurobi
 using Cbc;
 include("CRISP_network_gen.jl")
 
-function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_cost=0)
+function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_cost=0)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
@@ -29,27 +29,8 @@ function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_
         t_window = 12*60;
     end
     # set time line
-    Time = t0+dt:dt:recTime
+    Time = t0+dt:dt:t0+recTime+dt
     for i = 1:length(Time)
-        # save current values
-        cv.time = ti;
-        cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
-        cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
-        cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
-        append!(Restore,cv)
-        println(i)
-        println(cv.load_shed)
-        println(ps.shunt.status)
-        println(ps.shunt.P)
-        println(ps.storage.E)
-        println("Pg = ")
-        println(sum(ps.gen.Pg))
-        println("P = ")
-        println(sum(ps.shunt.P .* ps.shunt.status))
-        println("Ps = ")
-        println(sum(ps.storage.Ps))
-        @assert 10^(-4)>=abs(sum(ps.shunt.P .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
         # update time
         ti = Time[i];
         # remove failures as the recovery time is reached
@@ -68,19 +49,34 @@ function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_
             ps.shunt[ps_islands[j].shunt,:status] = psi.shunt.status
             #add_changes!(ps,psi,ps_islands[j]);
         end
+        # save current values
+        cv.time = ti;
+        cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
+        cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
+        cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
+        append!(Restore,cv)
+        println(i)
+        println(cv.load_shed)
+        println(ps.shunt.status)
+        println(ps.shunt.P)
+        println(ps.storage.E)
+        println("Pg = ")
+        println(sum(ps.gen.Pg))
+        println("P = ")
+        println(sum(ps.shunt.P .* ps.shunt.status))
+        println("Ps = ")
+        println(sum(ps.storage.Ps))
+        @assert 10^(-4)>=abs(sum(ps.shunt.P .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
-    # save current values
-    cv.time = ti;
-    cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
-    cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
-    cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
-    cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
-    append!(Restore,cv)
 
     # make sure that a full recovery has occued or keep iterating:
-    while sum(cv.load_shed .>= tolerance) > 0
+    while cv.load_shed[1] >= tolerance[1]
         # update time
         ti = ti+dt;
+        # remove failures as the recovery time is reached
+        ps.branch.status[ti .>= l_recovery_times] .= 1;
+        ps.gen.status[ti .>= g_recovery_times] .= 1;
         # find the number of islands in ps
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
@@ -95,7 +91,7 @@ function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_
         # save current values
         cv.time = ti;
         cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
-        cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
+        cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
         cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
         cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
@@ -275,7 +271,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
 t = 0:dt:t_win;
 Ti = size(t,1);
 # constants
-tolerance = 1e-4
+tolerance = 1e-6
 ### collect the data that we will need ###
 # bus data
 n = size(ps.bus,1) # the number of buses

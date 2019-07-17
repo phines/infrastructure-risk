@@ -77,13 +77,19 @@ function Res_dist_gen_stor(Num,ps_folder,out_folder,dt;param_file = "")
         ti = dt;#10
         t0 = 10
         #crisp_mh_rlopf!(ps,dt,time)
-        Restore = crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,ti,t0)
+        Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0)
+        if debug==1
+            outnow = (out_folder[1:end-4]);
+            CSV.write("results$outnow IC$iterat restore.csv", Restore)
+        end
         #Restore = RLSOPF_g_s!(ps,dt,state,gens_state,recovery_times,gens_recovery_time,Pd_max)# data frame [times, load shed in cost per hour]
         ###find the time to restore the grid to 99.9% load served
         K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
         K[1] = false;
-        if isempty( Restore.time[K])
+        if isempty( Restore.time[K]) && (size(Restore)[1] > 1)
             error("Never solved to full restoration.")
+        elseif isempty( Restore.time[K]) && (size(Restore)[1] == 1)
+            LoadServedTime = t0;
         else
             R = Restore.time[K];
             LoadServedTime[iterat] = R[1] - Restore.time[2];
