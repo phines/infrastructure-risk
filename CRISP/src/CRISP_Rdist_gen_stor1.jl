@@ -6,7 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
 function Res_dist_gen_stor(Num,ps_folder,out_folder,dt;param_file = "")
-    debug=1;
+    debug=0;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num);

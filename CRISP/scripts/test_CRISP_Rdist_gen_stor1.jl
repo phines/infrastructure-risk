@@ -6,14 +6,14 @@ case1 = "data\\saved_ps\\case73_noPWS+S5\\"
 case2 = "data\\saved_ps\\case73_noPWS+S20\\"
 case3 = "data\\saved_ps\\case73_noPWS+S50\\"
 
-out = "\\experiments_gen_stor"
+out = "\\experiments_gen_stor\\case73"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
 end
 
 # number of events
-N = 1000;
+N = 10000;
 #time steps
 dt = 10 #minutes
 #set randomized seed
