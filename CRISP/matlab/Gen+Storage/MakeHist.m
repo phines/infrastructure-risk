@@ -4,7 +4,8 @@ costs1 = xlsread('..\..\results\experiments_gen_stor\res_out_case73_noPWS.csv');
 costs2 = xlsread('..\..\results\experiments_gen_stor\res_out_case73_noPWS+S5.csv');
 costs3 = xlsread('..\..\results\experiments_gen_stor\res_out_case73_noPWS+S20.csv');
 costs4 = xlsread('..\..\results\experiments_gen_stor\res_out_case73_noPWS+S50.csv');
-costs5 = xlsread('..\..\results\experiments_gen_stor\case39\res_out_case39_n-1_gen.csv');
+costs1 = xlsread('..\..\results\experiments_gen_stor\case39\res_out_case39_n-1_gen.csv');
+costs2 = xlsread('..\..\results\experiments\9\res_out_case39_n-1_p1.csv');
 
 
 costs1(isnan(costs1))=0;
@@ -33,22 +34,24 @@ for jj = 1:N
         sorted_costs4(jj) = 0;
     end
 end
-
+n2 = length(costs2); Pr2 = (n2:-1:1)/n2;
 figure(1)
 % subplot(1,2,1)
 % hold on
-loglog(sorted_costs1,Pr)
+loglog(sorted_costs2,Pr2)
 hold on
-loglog(sorted_costs2,Pr)
-loglog(sorted_costs3,Pr)
-loglog(sorted_costs4,Pr)
+loglog(sorted_costs1,Pr)
+% loglog(sorted_costs3,Pr)
+% loglog(sorted_costs4,Pr)
 % semilogx(sorted_costs1,Pr)
 % hold on
 % semilogx(sorted_costs2,Pr)
 % semilogx(sorted_costs3,Pr)
 % semilogx(sorted_costs4,Pr)
-title("CCDF of Resilience of N-1 secure 73 bus cases")
-legend("no S,W,PV", "5% storage", "20% storage", "50% storage")
+% title("CCDF of Resilience of N-1 secure 73 bus cases")
+% legend("no S,W,PV", "5% storage", "20% storage", "50% storage")
+title("CCDF of Resilience of N-1 secure 39 bus cases")
+legend("line outages only", "line and gen outages - start up and shut down time constraints")
 % legend("original", "+5% load in DG", "+20% load in DG")%, "39 bus +100% load in DG")
 xlabel("ENS (MWh)"); ylabel("Prob(Energy lost \geq ENS")
 set(gca, 'fontsize',13)

@@ -123,6 +123,9 @@ ratioG = TotalGens/OriginalGens;
 Ngens1 = -round.(log.(1 .-rand(rng,1)));
 Ngens = Int64(Ngens1[1]);
 Ngens = Int64(round(ratioG*Ngens));
+if Ngens > TotalGens
+    Ngens = TotalGens
+end
 return Ngens
 end
 

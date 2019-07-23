@@ -13,7 +13,7 @@ else
 end
 
 # number of events
-N = 10000;
+N = 1000;
 #time steps
 dt = 10 #minutes
 #set randomized seed
