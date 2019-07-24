@@ -177,8 +177,9 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         @constraint(m, [k=1:Ti], B*Theta[:,k] .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
         # power flow limits
         #@constraint(m, [k=1:Ti], -flow_max .<= Xinv.*(Theta[F,k] - Theta[T,k]) .<= flow_max)
+        C_time = exp.(1:Ti); # depreciates value of
         # objective
-        @objective(m, Max, 100*sum(sum(Pd)) + sum(sum(ug)));
+        @objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time);
         ## SOLVE! ##
         optimize!(m)
         sol_Pd=value.(Pd)[:,2]
