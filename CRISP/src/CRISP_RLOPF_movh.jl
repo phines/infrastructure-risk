@@ -313,9 +313,6 @@ if n>1
     Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
     Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
     RR = ps.gen[gst,:RampRateMWMin] .* dt ./ ps.baseMVA .* ps.gen[gst,:status]
-    T_SU =  ps.gen[gst,:minUpTimeHr] ./ ps.baseMVA .* ps.gen[gst,:status]
-    T_SD =  ps.gen[gst,:minDownTimeHr] ./ ps.baseMVA .* ps.gen[gst,:status]
-
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
@@ -346,8 +343,6 @@ if n>1
     @variable(m, Pd[1:nd,1:Ti]) # demand
     @variable(m, Pg[1:ng,1:Ti]) # generation
     @variable(m, ug[1:ng,1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-    @variable(m, SU[1:ng,1:Ti], Bin)
-    @variable(m, SD[1:ng,1:Ti], Bin)
     @variable(m, Ps[1:ns,1:Ti]) # power flow into or out of storage (negative flow = charging)
     @variable(m, E[1:ns,1:Ti]) # energy level in battery
     @variable(m, Theta[1:n,1:Ti])
@@ -356,8 +351,6 @@ if n>1
     @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
     @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
     @constraint(m, [k=2:Ti], -ug[:,k].*ug[:,k-1].*RR .<= Pg[:,k]-Pg[:,k-1] .<= ug[:,k].*ug[:,k-1].*RR) # generator ramp rate lower
-    @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator start up
-    @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator shut down
     @constraint(m, [k=1:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
     @constraint(m, [j=1:Ti-1], E[:,j+1] .== (E[:,j] + ((dt/60) .*Ps[:,j+1]))) # storage energy at next time step
     @constraint(m, [i=2:Ti], 0 .<= E[:,i] .<= E_max) # storage energy
