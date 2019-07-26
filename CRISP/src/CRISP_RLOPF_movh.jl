@@ -30,7 +30,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
     end
     # set time line
     Time = t0+dt:dt:t0+recTime+dt
-    for i = 1:length(Time)
+    for i in 1:length(Time)
         # update time
         ti = Time[i];
         # remove failures as the recovery time is reached
@@ -40,7 +40,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps);
-        for j = 1:M
+        for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
             crisp_mh_rlopf!(psi,dt,t_window);
             ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
@@ -82,7 +82,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps);
         out =
-        for j = 1:M
+        for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
             crisp_mh_rlopf!(psi,dt,t_window);
             add_changes!(ps,psi,ps_islands[j]);
@@ -169,10 +169,9 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         @constraint(m, [k=1:Ti], 0.0 .<= Pd[:,k] .<= (ps.shunt.P./ps.baseMVA)) # load served limits
         @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
-        @constraint(m, [k=1:ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
-        @constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
-        @constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SU[g].*goff[g,k]) # generator power shut down
-        @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power shut down
+        #@constraint(m, [k=1:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
+        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
+        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SU[g].*goff[g,k]) # generator power shut down
         @constraint(m, [k=1:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
         @constraint(m, [j=2:Ti], E[:,j] .== (E[:,j-1] + ((dt/60) .*(Ps[:,j])))) # storage energy at next time step
         @constraint(m, [i=1:Ti], 0 .<= (E[:,i]) .<= E_max) # storage energy
@@ -197,11 +196,14 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         sol_Pd=value.(Pd)[:,2]
         sol_Ps=value.(Ps)[:,2]
         sol_Pg=value.(Pg)[:,2]
+        sol_E=value.(E)[:,2]
+        sol_ug=value.(ug)[:,2]
         @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
         @assert sum(ps.storage.E .< 0)==0
         dPd_star = (sol_Pd.*ps.baseMVA)./ps.shunt.P # % load served
         dPs_star = sol_Ps.*ps.baseMVA
         dPg_star = sol_Pg.*ps.baseMVA
+        dE_star = sol_E.*ps.baseMVA
     else
         bi = ps.bi;
         # load data
@@ -270,16 +272,20 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         sol_Pd=value.(Pd)[:,2]
         sol_Ps=value.(Ps)[:,2]
         sol_Pg=value.(Pg)[:,2]
+        sol_E=value.(E)[:,2]
+        sol_ug=value.(ug)[:,2]
         @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
         @assert sum(ps.storage.E .< 0)==0
         dPd_star = (sol_Pd.*ps.baseMVA)./ps.shunt.P # % load served
         dPs_star = sol_Ps.*ps.baseMVA
         dPg_star = sol_Pg.*ps.baseMVA
+        dE_star = sol_E.*ps.baseMVA
     end
-    ps.shunt.status = dPd_star; #changes ps structure
+    # add changes ps/psi structure
+    ps.shunt.status = dPd_star;
     ps.storage.Ps = dPs_star;
-    ps.storage.E = ps.storage.Ps.*(dt/60);
-    ps.gen.Pg[gst] = dPg_star; #changes ps structure
+    ps.storage.E = dE_star;
+    ps.gen.Pg[gst] = dPg_star;
     return ps
 end
 
