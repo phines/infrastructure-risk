@@ -170,12 +170,12 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         @constraint(m, [k=1:Ti], 0.0 .<= Pd[:,k] .<= (ps.shunt.P./ps.baseMVA)) # load served limits
         @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
-        #@constraint(m, [k=1:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
-        # Shutdown time constraint
+        @constraint(m, [k=1:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
+        # Start-up time constraint
         for g in 1:ng
             for k in 1:Ti
-                #Summation term in the shutdown time constraint:
-                if sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g])
+                #Summation term in the start-up time constraint:
+                if sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g]
                 else
                     @constraint(m, gon[g,k] == 0)
                 end
@@ -197,9 +197,20 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
                     @constraint(uc, us[k,g]<=1/counter*gen_state_exp)
                 end =#
             end
+            #Shut-down time constraint
+            #if isempty(-Tp:Ti-T_SD[g])
+            #else
+                for l in -Tp:Ti-T_SD[g]
+                    #Summation term in the shutdown time constraint
+                    if sum(1 .- ug[g,l:l+T_SD[g]]) .>= T_SD[g]
+                    else
+                        @constraint(m, goff[g,l] == 0)
+                    end
+                end
+            #end
         end
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
-        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SU[g].*goff[g,k]) # generator power shut down
+        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
         @constraint(m, [k=1:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
         @constraint(m, [j=2:Ti], E[:,j] .== (E[:,j-1] + ((dt/60) .*(Ps[:,j])))) # storage energy at next time step
         @constraint(m, [i=1:Ti], 0 .<= (E[:,i]) .<= E_max) # storage energy
