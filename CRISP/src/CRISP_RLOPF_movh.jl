@@ -130,6 +130,7 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         RR = ps.gen[gst,:RampRateMWMin] .* dt ./ ps.baseMVA .* ps.gen[gst,:status]
         T_SU =  ps.gen[gst,:minUpTimeHr] .*60 ./dt .* ps.gen[gst,:status] # number of time steps to turn on
         T_SD =  ps.gen[gst,:minDownTimeHr] .*60 ./dt ./ ps.baseMVA .* ps.gen[gst,:status] # number of time steps to turn off
+        Tp = maximum(T_SU);
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -170,6 +171,33 @@ function crisp_mh_rlopf1!(ps,dt,t_win)
         @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
         #@constraint(m, [k=1:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
+        # Shutdown time constraint
+        for g in 1:ng
+            for k in 1:Ti
+                #Summation term in the shutdown time constraint:
+                if sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g])
+                else
+                    @constraint(m, gon[g,k] == 0)
+                end
+                #=
+                for idx in k-ps.gen.ShutDownTime[g]:k-1
+                    if idx>0
+                        gen_state_exp = gen_state_exp + (1-ug[idx,g])
+                        counter+=1
+                    elseif idx<=0 && size(prev_run_data) > (0,0)  && size(prev_run_data,1) > abs(idx)
+                        gen_state_exp = gen_state_exp + (1-prev_run_data[Symbol("Ug$g")][end+idx])
+                        counter+=1
+                    else #idx<=0 && size(prev_run_data) == (0,0)
+                        #Ignore previous generator states
+                    end
+                end
+                #counter == ps.gen.ShutDownTime[g] under most conditions, but not all
+                #NaNs don't affect Cbc, but Gurobi gets angry
+                if counter != 0 || gen_state_exp != 0
+                    @constraint(uc, us[k,g]<=1/counter*gen_state_exp)
+                end =#
+            end
+        end
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SU[g].*goff[g,k]) # generator power shut down
         @constraint(m, [k=1:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
