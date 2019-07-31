@@ -23,6 +23,14 @@ function Res_dist(ps_folder,out_folder,dt;param_file = "")
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
     ps0 = deepcopy(ps);
+    #add columns to keep track of the time each generator is on or off
+    if sum(names(ps.gen).==:time_on) == 0
+        ps.gen.time_on = zeros(length(ps.gen.Pg));
+    end
+    if sum(names(ps.gen).==:time_off) == 0
+        ps.gen.time_off = zeros(length(ps.gen.Pg));
+        ps.gen.time_off[ps.gen.Pg.==0] .= ps.gen.minDownTimeHr;
+    end
 
     if isempty(param_file)
         # parameters of distributions for line outages and recovery times
@@ -31,8 +39,6 @@ function Res_dist(ps_folder,out_folder,dt;param_file = "")
         mu_line = 3.66;#lines_dist[2];
         sigma_line = 2.43;#lines_dist[3];
         lambda_gen = 1;
-        #pick start up times for gens:
-        gen_startup = 90 .*ones(length(ps.gen.bus));
     end
 
     for iterat in 1:Num
