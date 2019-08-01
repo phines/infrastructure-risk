@@ -235,7 +235,9 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         sol_Ps=value.(Ps)[:,1]
         sol_Pg=value.(Pg)[:,1]
         sol_E=value.(E)[:,1]
-        sol_ug=value.(ug)[:,1]
+        sol_ug=value.(ug)
+        sol_gon = value.(gon)
+        sol_goff = value.(goff)
         @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
         @assert sum(ps.storage.E .< 0)==0
         dPd_star = (sol_Pd.*ps.baseMVA)./ps.shunt.P # % load served
