@@ -14,43 +14,43 @@ function crisp_dcpf_g_s!(ps)
     bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
     # load data
     nd = size(ps.shunt,1)
-    D = bi[ps.shunt[:bus]]
-    Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+    D = bi[ps.shunt.bus]
+    Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
     if any(D.<1) || any(D.>n)
         error("Bad indices in shunt matrix")
     end
     Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
     # gen data
-    gst = (ps.gen[:status].==1)
+    gst = (ps.gen.status.==1)
     ng = size(ps.gen[gst,:],1)
-    G = bi[ps.gen[gst,:bus]]
-    Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+    G = bi[ps.gen.bus[gst]]
+    Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
     Pg_bus = Array(sparse(G,ones(size(G)),Pg,n,1))
     # storage data
-    S = bi[ps.storage[:bus]];
-    Ps = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
+    S = bi[ps.storage.bus];
+    Ps = ps.storage.Ps ./ ps.baseMVA .* ps.storage.status
     if any(S.<1) || any(S.>n)
         error("Bad indices in sstorage matrix")
     end
         Ps_bus = Array(sparse(S,ones(size(S)),Ps,n,1))
     # branch data
-    brst = (ps.branch[:status].==1)
-    F = bi[ps.branch[brst,:f]]
-    T = bi[ps.branch[brst,:t]]
-    Xinv = (1 ./ ps.branch[brst,:X])
+    brst = (ps.branch.status .== 1)
+    F = bi[ps.branch.f[brst]]
+    T = bi[ps.branch.t[brst]]
+    Xinv = (1 ./ ps.branch.X[brst])
     Bdc = sparse(F,T,-Xinv,n,n) + sparse(T,F,-Xinv,n,n) +
           sparse(T,T,+Xinv,n,n) + sparse(F,F,+Xinv,n,n)
     #find reference bus
     if isempty(ps.bus.id[ps.bus.bus_type.==3]) # note in Pavan's ps structure I beleive it's called 'kind' not 'bus_type'
-        if (isempty(ps.gen[gst,:]))  || (isempty(ps.shunt) && isempty(ps.storage))
+        if (isempty(ps.gen[gst]))  || (isempty(ps.shunt) && isempty(ps.storage))
             ps.branch.Pf[brst] .= 0
             ps.branch.Pt[brst] .= 0
             ps.branch.Qf[brst] .= 0
             ps.branch.Qt[brst] .= 0
-            if !isempty(ps.gen[gst,:])
+            if !isempty(ps.gen[gst])
                 ps.gen.Pg[gst] .= 0.0
             end
             if !isempty(ps.shunt)
@@ -60,19 +60,19 @@ function crisp_dcpf_g_s!(ps)
                 ps.storage.Ps .= 0.0
             end
             return ps #TODO
-        elseif !isempty(ps.gen[gst,:])
+        elseif !isempty(ps.gen[gst])
             maxGen = findmax(ps.gen.Pg)[2]
             busID = ps.gen[maxGen,:bus];
             isref = (busID.==ps.bus.id)
             nonref = .~isref
         end
     elseif sum(ps.gen.status[ps.gen.bus.==ps.bus.id[ps.bus.bus_type.==3]])==0
-        if isempty(ps.gen[gst,:]) || (isempty(ps.shunt) && isempty(ps.storage))
+        if isempty(ps.gen[gst]) || (isempty(ps.shunt) && isempty(ps.storage))
             ps.branch.Pf[brst] .= 0
             ps.branch.Pt[brst] .= 0
             ps.branch.Qf[brst] .= 0
             ps.branch.Qt[brst] .= 0
-            if !isempty(ps.gen[gst,:])
+            if !isempty(ps.gen[gst])
                 ps.gen.Pg[gst] .= 0.0
             end
             if !isempty(ps.shunt)
@@ -94,7 +94,7 @@ function crisp_dcpf_g_s!(ps)
             ps.branch.Pt[brst] .= 0
             ps.branch.Qf[brst] .= 0
             ps.branch.Qt[brst] .= 0
-            if !isempty(ps.gen[gst,:])
+            if !isempty(ps.gen[gst])
                 ps.gen.Pg[gst] .= 0.0
             end
             if !isempty(ps.shunt)
@@ -129,8 +129,8 @@ function crisp_dcpf_g_s!(ps)
     # fix the generation at the slack bus
     mismatch = sum(Pbus)
     if abs(mismatch)>tolerance
-        refbusid = ps.bus[isref,:id]
-        is_refgen = (ps.gen[:bus].==refbusid)
+        refbusid = ps.bus.id[isref]
+        is_refgen = (ps.gen.bus .==refbusid)
         if sum(ps.gen.status[is_refgen].!=1) >=1
             is_refgen[.!gst] .= false;
         end
@@ -168,34 +168,34 @@ function crisp_lsopf_g_s1!(ps,dt)
         bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
         # load data
         nd = size(ps.shunt,1)
-        D = bi[ps.shunt[:bus]]
+        D = bi[ps.shunt.bus]
         D_bus = sparse(D,collect(1:nd),1.,n,nd);
-        Pd = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+        Pd = ps.shunt.P  ./ ps.baseMVA .* ps.shunt.status
         if any(D.<1) || any(D.>n)
             error("Bad indices in shunt matrix")
         end
         #Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
         # gen data
-        gst = (ps.gen[:status].==1)
-        ng = size(ps.gen[gst,:],1)
-        G = bi[ps.gen[gst,:bus]]
+        gst = (ps.gen.status.==1)
+        ng = size(ps.gen[gst],1)
+        G = bi[ps.gen.bus[gst]]
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
-        Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
-        Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
-        Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        Pg_max = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+        Pg_min = ps.gen.Pmin[gst] ./ ps.baseMVA .* ps.gen.status[gst]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
         #Pg_bus = Array(sparse(G,ones(size(G)),Pg,n,1))
         # storage data
         ns = size(ps.storage,1)
-        S = bi[ps.storage[:bus]];
+        S = bi[ps.storage.bus];
         S_bus = sparse(S,collect(1:ns),1.,n,ns);
-        Ps = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
-        E = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
-        E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_max = ps.storage[:Psmax] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_min = ps.storage[:Psmin] ./ ps.baseMVA .* ps.storage[:status]
+        Ps = ps.storage.Ps ./ ps.baseMVA .* ps.storage.status
+        E = ps.storage.E ./ ps.baseMVA .* ps.storage.status
+        E_max = ps.storage.Emax ./ ps.baseMVA .* ps.storage.status
+        Ps_max = ps.storage.Psmax ./ ps.baseMVA .* ps.storage.status
+        Ps_min = ps.storage.Psmin ./ ps.baseMVA .* ps.storage.status
         if any(S.<1) || any(S.>n)
             error("Bad indices in sstorage matrix")
         end
@@ -250,19 +250,19 @@ function crisp_lsopf_g_s1!(ps,dt)
         ps.storage.E += ps.storage.Ps.*dt;
         ps.gen.Pg[gst] += dPg_star; #changes ps structure
     else
-        gst = (ps.gen[:status].==1)
+        gst = (ps.gen.status .== 1)
         Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
         nd = length(Pd)
         Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
         ng = length(Pg)
         Pg_min = ps.gen.Pmin[gst] ./ ps.baseMVA .* ps.gen.status[gst]
         Pg_max = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
-        Ps = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
+        Ps = ps.storage.Ps  ./ ps.baseMVA .* ps.storage.status
         ns = length(Ps);
-        E = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
-        E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_max = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
-        Ps_min = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
+        E = ps.storage.E  ./ ps.baseMVA .* ps.storage.status
+        E_max = ps.storage.Emax  ./ ps.baseMVA .* ps.storage.status
+        Ps_max = ps.storage.Ps  ./ ps.baseMVA .* ps.storage.status
+        Ps_min = ps.storage.Ps  ./ ps.baseMVA .* ps.storage.status
         if sum(isempty(Pd) + isempty(Pg) + isempty(Ps)) <=1
             m = Model(with_optimizer(Gurobi.Optimizer))
             # variables
@@ -322,34 +322,34 @@ if n>1
     bi = ps.bi;
     # load data
     nd = size(ps.shunt,1)
-    D = bi[ps.shunt[:bus]]
+    D = bi[ps.shunt.bus]
     D_bus = sparse(D,collect(1:nd),1.,n,nd);
-    Pd1 = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+    Pd1 = ps.shunt.P  ./ ps.baseMVA .* ps.shunt.status
     if any(D.<1) || any(D.>n)
         error("Bad indices in shunt matrix")
     end
     # gen data
     gst = (ps.gen.status .== 1);
-    ng = size(ps.gen[gst,:Pg],1)
-    G = bi[ps.gen[gst,:bus]]
+    ng = size(ps.gen.Pg[gst],1)
+    G = bi[ps.gen.bus[gst]]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
-    Pg1 = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+    Pg1 = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
     ug1 = ones(ng); ug1[Pg1.==0] .= 0;
     #Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
-    Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
-    Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
+    Pg_max = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+    Pg_min = ps.gen.Pmin[gst] ./ ps.baseMVA .* ps.gen.status[gst]
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
     # storage data
     ns = size(ps.storage,1)
-    S = bi[ps.storage[:bus]];
+    S = bi[ps.storage.bus];
     S_bus = sparse(S,collect(1:ns),1.,n,ns);
-    Ps1 = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
-    E1 = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
-    E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
-    Ps_max = ps.storage[:Psmax] ./ ps.baseMVA .* ps.storage[:status]
-    Ps_min = ps.storage[:Psmin] ./ ps.baseMVA .* ps.storage[:status]
+    Ps1 = ps.storage.Ps ./ ps.baseMVA .* ps.storage.status
+    E1 = ps.storage.E ./ ps.baseMVA .* ps.storage.status
+    E_max = ps.storage.Emax ./ ps.baseMVA .* ps.storage.status
+    Ps_max = ps.storage.Psmax ./ ps.baseMVA .* ps.storage.status
+    Ps_min = ps.storage.Psmin ./ ps.baseMVA .* ps.storage.status
     if any(S.<1) || any(S.>n)
         error("Bad indices in storage matrix")
     end
@@ -399,34 +399,34 @@ else
     bi = ps.bi;
     # load data
     nd = size(ps.shunt,1)
-    D = bi[ps.shunt[:bus]]
+    D = bi[ps.shunt.bus]
     D_bus = sparse(D,collect(1:nd),1.,n,nd);
-    Pd1 = ps.shunt[:P] ./ ps.baseMVA .* ps.shunt[:status]
+    Pd1 = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
     if any(D.<1) || any(D.>n)
         error("Bad indices in shunt matrix")
     end
     # gen data
     gst = (ps.gen.status .== 1);
-    ng = size(ps.gen[gst,:Pg],1)
-    G = bi[ps.gen[gst,:bus]]
+    ng = size(ps.gen.Pg[gst],1)
+    G = bi[ps.gen.bus[gst]]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
-    Pg1 = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+    Pg1 = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
     ug1 = ones(ng); ug1[Pg1.==0] .= 0;
     #Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
-    Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
-    Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
+    Pg_max = ps.gen.Pmax[gst] ./ ps.baseMVA .* ps.gen.status[gst]
+    Pg_min = ps.gen.Pmin[gst] ./ ps.baseMVA .* ps.gen.status[gst]
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
     # storage data
     ns = size(ps.storage,1)
-    S = bi[ps.storage[:bus]];
+    S = bi[ps.storage.bus];
     S_bus = sparse(S,collect(1:ns),1.,n,ns);
-    Ps1 = ps.storage[:Ps] ./ ps.baseMVA .* ps.storage[:status]
-    E1 = ps.storage[:E] ./ ps.baseMVA .* ps.storage[:status]
-    E_max = ps.storage[:Emax] ./ ps.baseMVA .* ps.storage[:status]
-    Ps_max = ps.storage[:Psmax] ./ ps.baseMVA .* ps.storage[:status]
-    Ps_min = ps.storage[:Psmin] ./ ps.baseMVA .* ps.storage[:status]
+    Ps1 = ps.storage.Ps ./ ps.baseMVA .* ps.storage.status
+    E1 = ps.storage.E ./ ps.baseMVA .* ps.storage.status
+    E_max = ps.storage.Emax ./ ps.baseMVA .* ps.storage.status
+    Ps_max = ps.storage.Psmax ./ ps.baseMVA .* ps.storage.status
+    Ps_min = ps.storage.Psmin ./ ps.baseMVA .* ps.storage.status
     if any(S.<1) || any(S.>n)
         error("Bad indices in storage matrix")
     end

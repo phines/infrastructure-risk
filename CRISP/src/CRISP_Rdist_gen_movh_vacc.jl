@@ -5,7 +5,7 @@ include("CRISP_RLOPF_movh.jl")
 include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
-function Res_dist(ps_folder,out_folder,dt;param_file = "")
+function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
 
     debug=1;
     tolerance1 = 10^(-6);
@@ -20,17 +20,17 @@ function Res_dist(ps_folder,out_folder,dt;param_file = "")
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
     crisp_dcpf_g_s!(ps)
-    total = sum(ps.shunt[:P]);
-    Pd_max = deepcopy(ps.shunt[:P]);
-    ps0 = deepcopy(ps);
+    total = sum(ps.shunt.P);
+    Pd_max = deepcopy(ps.shunt.P);
     #add columns to keep track of the time each generator is on or off
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_on = zeros(length(ps.gen.Pg));
     end
     if sum(names(ps.gen).==:time_off) == 0
         ps.gen.time_off = zeros(length(ps.gen.Pg));
-        ps.gen.time_off[ps.gen.Pg.==0] .= ps.gen.minDownTimeHr;
+        ps.gen.time_off[ps.gen.Pg.==0] .= ps.gen.minDownTimeHr[ps.gen.Pg.==0];
     end
+    ps0 = deepcopy(ps);
 
     if isempty(param_file)
         # parameters of distributions for line outages and recovery times
@@ -69,10 +69,10 @@ function Res_dist(ps_folder,out_folder,dt;param_file = "")
             # run lsopf
             dt = 10;
             crisp_lsopf_g_s!(psi,dt);
-            ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-            ps.storage[ps_islands[i].storage,:Ps] = psi.storage.Ps
-            ps.storage[ps_islands[i].storage,:E] = psi.storage.E
-            ps.shunt[ps_islands[i].shunt,:status] = psi.shunt.status
+            ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
+            ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
+            ps.storage.E[ps_islands[i].storage] = psi.storage.E
+            ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
         end
         println(iterat)
         @assert total>=sum(ps.shunt.P .* ps.shunt.status)
@@ -80,8 +80,8 @@ function Res_dist(ps_folder,out_folder,dt;param_file = "")
         tolerance = 10^(-10);
         LoadShed0[iterat] = total-sum(ps.shunt.P .* ps.shunt.status);
         ## run step 3
-        dt = 1
-        ti = dt;#10
+        dt = 15
+        ti = 3dt;#10
         t0 = 10
         #crisp_mh_rlopf!(ps,dt,time)
         Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0)
@@ -116,8 +116,8 @@ end
 #=
 #for debugging
 include("src\\CRISP_initiate.jl")
-include("src\\CRISP_LSOPF_gen.jl")
-include("src\\CRISP_RLSOPF_gen.jl")
+include("src\\CRISP_LSOPF_gen1.jl")
+include("src\\CRISP_RLOPF_movh.jl")
 include("src\\CRISP_RT.jl")
 include("src\\CRISP_network_gen.jl")
 =#

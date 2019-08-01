@@ -16,14 +16,14 @@ function import_ps(filename)
     mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
-    psBranchData[:,:Pf] = psBranchData[:,:Pf].*1.0;
-    psBranchData[:,:Qf] = psBranchData[:,:Qf].*1.0;
-    psBranchData[:,:Pt] = psBranchData[:,:Pt].*1.0;
-    psBranchData[:,:Qt] = psBranchData[:,:Qt].*1.0;
-    psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
-    psGenData[:,:Pmax] = psGenData[:,:Pmax].*1.0;
-    psShuntData[:,:P] = psShuntData[:,:P].*1.0;
-    psShuntData[:,:status] = psShuntData[:,:status].*1.0;
+    psBranchData.Pf = psBranchData.Pf .* 1.0;
+    psBranchData.Qf = psBranchData.Qf .* 1.0;
+    psBranchData.Pt = psBranchData.Pt .* 1.0;
+    psBranchData.Qt = psBranchData.Qt .* 1.0;
+    psGenData.Pg = psGenData.Pg .* 1.0;
+    psGenData.Pmax = psGenData.Pmax .* 1.0;
+    psShuntData.P = psShuntData.P .* 1.0;
+    psShuntData.status = psShuntData.status .* 1.0;
     if isfile("$filename\\storage.csv") psStorageData = CSV.read("$filename\\storage.csv",allowmissing=:none);
     else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], status = Int64[]); end
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
@@ -54,11 +54,11 @@ function find_subgraphs(ps)
 
     n = size(ps.bus,1) # the number of buses
     bi = sparse(ps.bus.id,fill(1,n),collect(1:n))
-    stats = (ps.branch[:status].==1);
-    links = [bi[ps.branch[stats,:f]] bi[ps.branch[stats,:t]]]
+    stats = (ps.branch.status .== 1);
+    links = [bi[ps.branch.f[stats]] bi[ps.branch.t[stats]]]
 
-    n = length(ps.bus[:id]);
-    m = length(ps.branch[stats,:f]);
+    n = length(ps.bus.id);
+    m = length(ps.branch.f[stats]);
 
     A = zeros(n,n);
     for i = 1:m
@@ -111,28 +111,28 @@ function build_islands(subgraph,ps)
     for jj = 1:N
         nodes = subgraph.==jj;
         buses = ps.bus[nodes,:id];
-        gen = falses(length(ps.gen[:bus]));
-        shunt = falses(length(ps.shunt[:bus]));
-        storage = falses(length(ps.storage[:bus]));
-        branch = falses(length(ps.branch[:f]));
-        for g = 1:length(ps.gen[:bus])
-            if sum(ps.gen[g,:bus].==buses)!=0
+        gen = falses(length(ps.gen.bus));
+        shunt = falses(length(ps.shunt.bus));
+        storage = falses(length(ps.storage.bus));
+        branch = falses(length(ps.branch.f));
+        for g = 1:length(ps.gen.bus)
+            if sum(ps.gen.bus[g] .== buses)!=0
                 gen[g] = true;
             end
         end
-        for s = 1:length(ps.shunt[:bus])
-            if sum(ps.shunt[s,:bus].==buses)!=0
+        for s = 1:length(ps.shunt.bus)
+            if sum(ps.shunt.bus[s].==buses)!=0
                 shunt[s] = true;
             end
         end
-        for st = 1:length(ps.storage[:bus])
-            if sum(ps.storage[st,:bus].==buses)!=0
+        for st = 1:length(ps.storage.bus)
+            if sum(ps.storage.bus[st] .== buses)!=0
                 storage[st] = true;
             end
         end
-        for l = 1:length(ps.branch[:f])
-            if ps.branch[l,:status]!=0
-                if sum(ps.branch[l,:f].==buses)!=0 && sum(ps.branch[l,:t].==buses)!=0
+        for l = 1:length(ps.branch.f)
+            if ps.branch.status[l] != 0
+                if (sum(ps.branch.f[l] .== buses) != 0) && (sum(ps.branch.t[l] .== buses) != 0)
                   branch[l]=true;
                 end
             end
@@ -149,7 +149,7 @@ mutable struct PSCase
     gen::DataFrame
     shunt::DataFrame
     storage::DataFrame
-    bi::SparseMatrixCSC{Int64,Int64} # TODO: figure out how to make this the same as Pavan's PSCase
+    bi::SparseMatrixCSC{Int64,Int64}
 end
 
 function ps_subset(ps,ps_island)
@@ -166,10 +166,14 @@ function ps_subset(ps,ps_island)
 end
 
 function add_changes!(ps,psi,ps_island);
-    ps.gen[ps_island.gen,:Pg] = psi.gen.Pg
-    ps.shunt[ps_island.shunt,:status] = psi.shunt.status
-    ps.storage[ps_island.storage,:Ps] = psi.storage.Ps
-    ps.storage[ps_island.storage,:E] = psi.storage.E
+    ps.gen.Pg[ps_island.gen] = psi.gen.Pg
+    if sum(names(ps.gen).==:time_on) == 0
+        ps.gen.time_off[ps_island.gen] = psi.gen.time_off
+        ps.gen.time_on[ps_island.gen] = psi.gen.time_on
+    end
+    ps.shunt.status[ps_island.shunt] = psi.shunt.status
+    ps.storage.Ps[ps_island.storage] = psi.storage.Ps
+    ps.storage.E[ps_island.storage] = psi.storage.E
 end
 
 function ps_visualize(ps,filename)
