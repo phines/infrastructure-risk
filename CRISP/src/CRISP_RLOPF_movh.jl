@@ -52,11 +52,11 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
             #add_changes!(ps,psi,ps_islands[j]);
         end
         # save current values
-        cv.time = ti;
-        cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
-        cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
-        cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
+        cv.time .= ti;
+        cv.load_shed .= sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
+        cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
         println(i)
         println(cv.load_shed)
@@ -98,11 +98,11 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         @assert abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
         @assert sum(ps.storage.E .< 0)==0
         # save current values
-        cv.time = ti;
-        cv.load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
-        cv.perc_load_served = (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
-        cv.lines_out = length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_out = length(ps.gen.status) - sum(ps.gen.status);
+        cv.time .= ti;
+        cv.load_shed .= sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
+        cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
     end
     return Restore
@@ -202,12 +202,12 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         Sum_ug = 0;
         for g in 1:ng
             #starting point
-            @constraint(m, ug[g,0] .== ug1)
-            @constraint(m, Pg[g,0] .== Pg1)
+            #@constraint(m, ug[g,0] .== ug1)
+            #@constraint(m, Pg[g,0] .== Pg1)
             for k in 0:Ti
                 if k >=1
-                    @constraint(m, ug[g,k].*Pg_min .<=Pg[g,k] .<= ug[g,k].*Pg_max) # generator power limits upper
-                    #@constraint(m, ug[g,k].*Pg_min .<= Pg[g,k]) # generator power limits lower
+                    @constraint(m, Pg[g,k] .<= ug[g,k].*Pg_max) # generator power limits upper
+                    @constraint(m, ug[g,k].*Pg_min .<= Pg[g,k]) # generator power limits lower
                     @constraint(m, ug[g,k] .<= ug[g,k-1] + gon[g,k-1] - goff[g,k-1]) # generator on and off constraint
                 end
                 # Start-up time constraint
@@ -250,9 +250,9 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
         @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # set starting point (time at step 0 == k=1);
-        for d in 1:nd
-        @constraint(m, Pd[d,0] .== Pd1[d])
-        end
+        #for d in 1:nd
+        #@constraint(m, Pd[d,0] .== Pd1[d])
+        #end
         if !isempty(Ps)
             for s in 1:ns
                 @constraint(m, Ps[s,0] .== Ps1)
