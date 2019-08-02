@@ -43,12 +43,12 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
             crisp_mh_rlopf!(psi,dt,t_window);
-            ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
-            ps.gen[ps_islands[j].gen,:time_on] = psi.gen.time_on
-            ps.gen[ps_islands[j].gen,:time_off] = psi.gen.time_off
-            ps.storage[ps_islands[j].storage,:Ps] = psi.storage.Ps
-            ps.storage[ps_islands[j].storage,:E] = psi.storage.E
-            ps.shunt[ps_islands[j].shunt,:status] = psi.shunt.status
+            ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
+            ps.gen.time_off[ps_islands[j].gen] = psi.gen.time_off
+            ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
+            ps.storage.E[ps_islands[j].storage] = psi.storage.E
+            ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
             #add_changes!(ps,psi,ps_islands[j]);
         end
         # save current values
@@ -87,7 +87,13 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
             crisp_mh_rlopf!(psi,dt,t_window);
-            add_changes!(ps,psi,ps_islands[j]);
+            ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
+            ps.gen.time_off[ps_islands[j].gen] = psi.gen.time_off
+            ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
+            ps.storage.E[ps_islands[j].storage] = psi.storage.E
+            ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
+            #add_changes!(ps,psi,ps_islands[j]);
         end
         @assert abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
         @assert sum(ps.storage.E .< 0)==0
@@ -160,7 +166,8 @@ function crisp_mh_rlopf!(ps,dt,t_win)
             sparse(T,F,-Xinv,n,n) +
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n);
-
+        # vector that depreciates the value of later elements in objective
+        C_time = exp.(0:-1:-Ti);
         m = Model(with_optimizer(Gurobi.Optimizer))
         # variables
         @variable(m, Pd[1:nd, 0:Ti]) # demand
@@ -185,13 +192,122 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 @constraint(m, B*Theta[:,k] .== G_bus*Pg[:,k]-D_bus*Pd[:,k])
             end
             # power flow limits
-            @constraint(m, -flow_max .<= Xinv .* (Theta[F,k] - Theta[T,k]) .<= flow_max)
+            for l in 1:length(F)
+                f = F[l];
+                t = T[l];
+                @constraint(m, -flow_max[l] .<= Xinv .* (Theta[f,k] - Theta[t,k]) .<= flow_max[l])
+            end
         end
+        Sum_Pd = 0;
+        Sum_ug = 0;
         for g in 1:ng
             #starting point
             @constraint(m, ug[g,0] .== ug1)
-            @constraint(m, gon[g,0] .== gon1)
-            @constraint(m, goff[g,0] .== goff1)
+            @constraint(m, Pg[g,0] .== Pg1)
+            for k in 0:Ti
+                if k >=1
+                    @constraint(m, ug[g,k].*Pg_min .<=Pg[g,k] .<= ug[g,k].*Pg_max) # generator power limits upper
+                    #@constraint(m, ug[g,k].*Pg_min .<= Pg[g,k]) # generator power limits lower
+                    @constraint(m, ug[g,k] .<= ug[g,k-1] + gon[g,k-1] - goff[g,k-1]) # generator on and off constraint
+                end
+                # Start-up time constraint
+                #Summation term in the start-up time constraint:
+                sum_ug_on = 0;
+                for i in k-(T_SU[g]):k # should this be (T_SU[g]+T_SD[g])
+                    if i <= 0
+                        sum_ug = t_on[g];
+                    elseif ug[g,i].==0
+                        sum_ug +=1;
+                    else
+                        @constraint(m, gon[g,k] == 0);
+                    end
+                end
+                #Shut-down time constraint
+                sum_ug_off = 0;
+                for l in k:k+T_SD[g]
+                    #Summation term in the shutdown time constraint
+                    if l > Ti
+                        sum_ug_off += 1;
+                    elseif ug[g,l] == 0
+                        sum_ug_off += 1;
+                    else
+                        @constraint(m, goff[g,k] == 0);
+                    end
+                end
+                #ramp rate constraints
+                if ((goff[g,k] == 0) & (gon[g,k] == 0))
+                    if k<Ti
+                        @constraint(m, -RR .<= Pg[g,k]-Pg[g,k+1] .<= RR)
+                    end
+                end
+                for d in 1:nd
+                    Sum_Pd += Pd[d,k].*C_time[k+1]
+                end
+                Sum_ug += ug[g,k].*C_time[k+1];
+            end
+        end
+        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
+        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
+        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
+        # set starting point (time at step 0 == k=1);
+        for d in 1:nd
+        @constraint(m, Pd[d,0] .== Pd1[d])
+        end
+        if !isempty(Ps)
+            for s in 1:ns
+                @constraint(m, Ps[s,0] .== Ps1)
+                @constraint(m, E[s,0] .== E1)
+            end
+        end
+        # objective
+        @objective(m, Max, 100*Sum_Pd + Sum_ug);
+        #@objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time));
+        ## SOLVE! ##
+        optimize!(m)
+        sol_Pd=value.(Pd)[:,1]
+        sol_Ps=value.(Ps)[:,1]
+        sol_Pg=value.(Pg)[:,1]
+        sol_E=value.(E)[:,1]
+        sol_ug=value.(ug)
+        sol_gon = value.(gon)
+        sol_goff = value.(goff)
+        @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
+        @assert sum(ps.storage.E .< 0)==0
+        dPd_star = (Vector(sol_Pd).*ps.baseMVA)./ps.shunt.P # % load served
+        dPs_star = Vector(sol_Ps).*ps.baseMVA
+        dPg_star = Vector(sol_Pg).*ps.baseMVA
+        dE_star = Vector(sol_E).*ps.baseMVA
+    else
+        # vector that depreciates the value of later elements in objective
+        C_time = exp.(0:-1:-Ti);
+        m = Model(with_optimizer(Gurobi.Optimizer))
+        # variables
+        @variable(m, Pd[1:nd, 0:Ti]) # demand
+        @variable(m, Pg[1:ng, 0:Ti]) # generation
+        @variable(m, ug[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, gon[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, goff[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, Ps[1:ns, 0:Ti]) # power flow into or out of storage (negative flow = charging)
+        @variable(m, E[1:ns, 0:Ti]) # energy level in battery
+        # variable bounds constraints
+        for k in 1:Ti
+            @constraint(m, 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
+            if !isempty(Ps)
+                @constraint(m, Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
+                @constraint(m, E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+                @constraint(m, 0 .<= (E[:,k]) .<= E_max) # storage energy
+                #power balance
+                @constraint(m, 0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
+            else
+                # power balance
+                @constraint(m, 0 .== G_bus*Pg[:,k]-D_bus*Pd[:,k])
+            end
+        end
+        Sum_Pd = 0;
+        Sum_ug = 0;
+        for g in 1:ng
+            #starting point
+            @constraint(m, ug[g,0] .== ug1)
             @constraint(m, Pg[g,0] .== Pg1)
             for k in 0:Ti
                 if k >=1
@@ -229,14 +345,17 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                         @constraint(m, -RR .<= Pg[g,k]-Pg[g,k+1] .<= RR)
                     end
                 end
+                for d in 1:nd
+                    Sum_Pd += Pd[d,k].*C_time[k+1]
+                end
+                Sum_ug += ug[g,k].*C_time[k+1];
             end
         end
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
-        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # set starting point (time at step 0 == k=1);
         for d in 1:nd
-        @constraint(m, Pd[:,0] .== Pd1[:])
+        @constraint(m, Pd[d,0] .== Pd1[d])
         end
         if !isempty(Ps)
             for s in 1:ns
@@ -244,10 +363,9 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 @constraint(m, E[s,0] .== E1)
             end
         end
-        # vector that depreciates the value of later elements in objective
-        C_time = exp.(-1:-1:-Ti);
         # objective
-        @objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time));
+        @objective(m, Max, 100*Sum_Pd + Sum_ug);
+        #@objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time));
         ## SOLVE! ##
         optimize!(m)
         sol_Pd=value.(Pd)[:,1]
@@ -259,90 +377,10 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         sol_goff = value.(goff)
         @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
         @assert sum(ps.storage.E .< 0)==0
-        dPd_star = (sol_Pd.*ps.baseMVA)./ps.shunt.P # % load served
-        dPs_star = sol_Ps.*ps.baseMVA
-        dPg_star = sol_Pg.*ps.baseMVA
-        dE_star = sol_E.*ps.baseMVA
-    else
-        m = Model(with_optimizer(Gurobi.Optimizer))
-        # variables
-        @variable(m, Pd[1:nd, 0:Ti]) # demand
-        @variable(m, Pg[1:ng, 0:Ti]) # generation
-        @variable(m, ug[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, Ps[1:ns, 0:Ti]) # power flow into or out of storage (negative flow = charging)
-        @variable(m, E[1:ns,0:Ti+1]) # energy level in battery
-        # variable bounds constraints
-        for k in 1:Ti
-            @constraint(m, 0.0 .<= Pd[:,k] .<= (ps.shunt.P./ps.baseMVA)) # load served limits
-            @constraint(m, Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
-            @constraint(m, ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
-            @constraint(m, ug[:,k].*Pg_min .<= Pg[:,k]) # connecting ug to gon
-            @constraint(m, Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-            @constraint(m, E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
-            @constraint(m, 0 .<= (E[:,k]) .<= E_max) # storage energy
-        end
-        # Start-up time constraint
-        for g in 1:ng
-            for k in 0:Ti
-                #Summation term in the start-up time constraint:
-                sum_ug_on = 0;
-                for i in k-(T_SU[g]+T_SD[g]):k # should this be (T_SU[g]+T_SD[g])
-                    if i <= 0
-                        sum_ug = t_off[g];#+t_on[g];
-                    elseif ug[g,i].==0
-                        sum_ug +=1;
-                    else
-                        @constraint(m, gon[g,k] == 0);
-                    end
-                end
-                #Shut-down time constraint
-                sum_ug_off = 0;
-                for l in k:k+T_SD[g]
-                    #Summation term in the shutdown time constraint
-                    if l > Ti
-                        sum_ug_off += 1;
-                    elseif ug[g,l] == 0
-                        sum_ug_off += 1;
-                    else
-                        @constraint(m, goff[g,k] == 0)
-                    end
-                end
-            end
-            #ramp rate constraints
-            if ((goff[g,k] == 0) & (gon[g,k] == 0))
-                if k<Ti
-                    @constraint(m, -RR .<= Pg[g,k]-Pg[g,k+1] .<= RR)
-                end
-            end
-        end
-        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
-        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
-        #@constraint(m, [k=1:Ti], -RR .<= Pg[:,k]-Pg[:,k-1] .<= RR) # generator ramp rate
-        # set starting point (time at step 0 == k=1);
-        @constraint(m, Pd[:,0] .== Pd1)
-        @constraint(m, ug[:,0] .== ug1)
-        @constraint(m, Pg[:,0] .== Pg1)
-        @constraint(m, Ps[:,0] .== Ps1)
-        @constraint(m, E[:,0] .== E1)
-        # power balance
-        @constraint(m, [k=1:Ti], 0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
-        # objective
-        @objective(m, Max, 100*sum(sum(Pd)) + sum(sum(ug)));
-        ## SOLVE! ##
-        optimize!(m)
-        sol_Pd=value.(Pd)[:,1]
-        sol_Ps=value.(Ps)[:,1]
-        sol_Pg=value.(Pg)[:,1]
-        sol_E=value.(E)[:,1]
-        sol_ug=value.(ug)
-        sol_gon = value.(gon)
-        sol_goff = value.(goff)
-        @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
-        @assert sum(ps.storage.E .< 0)==0
-        dPd_star = (sol_Pd.*ps.baseMVA)./ps.shunt.P # % load served
-        dPs_star = sol_Ps.*ps.baseMVA
-        dPg_star = sol_Pg.*ps.baseMVA
-        dE_star = sol_E.*ps.baseMVA
+        dPd_star = (Vector(sol_Pd).*ps.baseMVA)./ps.shunt.P # % load served
+        dPs_star = Vector(sol_Ps).*ps.baseMVA
+        dPg_star = Vector(sol_Pg).*ps.baseMVA
+        dE_star = Vector(sol_E).*ps.baseMVA
     end
     # add changes ps/psi structure
     ps.shunt.status = dPd_star;

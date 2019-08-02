@@ -9,10 +9,10 @@ using Random
 
 function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
-TotalLines = length(ps.branch[1]);
+TotalLines = length(ps.branch.f);
 Nlines = init_out_zipf_p1(s_line,maxLinesOut,TotalLines);
 lines_state = initiate_state(TotalLines, Nlines);
-ps.branch[:status] = lines_state;
+ps.branch.status .= lines_state;
 RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
 lines_outage_recovery = RecTime(RecovTimeL,lines_state);
 return lines_outage_recovery
@@ -47,7 +47,7 @@ end
 
 function gen_state!(ps,lambda_gen,mu_gen,sigma_gen;orignumGen=0)
 # number of lines and generators in network case
-TotalGens =length(ps.gen[1]);
+TotalGens =length(ps.gen.Pg);
 Ngens = init_out_exp(lambda_gen,TotalGens);
 gens_state = initiate_state(TotalGens, Ngens);
 ps.gen.status = gens_state;

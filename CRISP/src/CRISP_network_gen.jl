@@ -6,13 +6,13 @@ using DataFrames
 using CSV
 #import ps from csv files
 function import_ps(filename)
-    psBusData = CSV.read("$filename\\bus.csv",allowmissing=:none)
+    psBusData = CSV.File("$filename\\bus.csv")  |> DataFrame
     n = length(psBusData.id);
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));
     #psBusIndex = CSV.read("$filename\\bi.csv",allowmissing=:none)
-    psBranchData = CSV.read("$filename\\branch.csv",allowmissing=:none);
-    psGenData = CSV.read("$filename\\gen.csv",allowmissing=:none);
-    psShuntData = CSV.read("$filename\\shunt.csv",allowmissing=:none);
+    psBranchData = CSV.File("$filename\\branch.csv")  |> DataFrame;
+    psGenData = CSV.File("$filename\\gen.csv")  |> DataFrame;
+    psShuntData = CSV.File("$filename\\shunt.csv")  |> DataFrame;
     mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
@@ -50,7 +50,7 @@ function find_subgraphs(ps)
     #  where nodes is an n x 1 list of node numbers and links is
     #  m x (2+) list of edges (from, to)
     # The return value is a n x 1 vector of sub-graph numbers
-    subgraphs = zeros(length(ps.bus[:id]))
+    subgraphs = zeros(length(ps.bus.id))
 
     n = size(ps.bus,1) # the number of buses
     bi = sparse(ps.bus.id,fill(1,n),collect(1:n))
