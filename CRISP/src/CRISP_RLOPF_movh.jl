@@ -132,7 +132,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
     G = bi[ps.gen.bus[gst]]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
     Pg1 = (ps.gen.Pg[gst] ./ ps.baseMVA) .* ps.gen.status[gst]
-    ug1 = ones(ng); ug1[Pg1.==0] .= 0;
+    ug1 = falses(ng); ug1[Pg1.!=0] .= true;
     Pg_max = (ps.gen.Pmax[gst] ./ ps.baseMVA) .* ps.gen.status[gst]
     Pg_min = (ps.gen.Pmin[gst] ./ ps.baseMVA) .* ps.gen.status[gst]
     RR = ps.gen.RampRateMWMin[gst] .* dt ./ ps.baseMVA .* ps.gen.status[gst]
@@ -167,7 +167,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n);
         # vector that depreciates the value of later elements in objective
-        C_time = exp.(1:-1:-Ti);
+        C_time = exp.(0:-1:(-Ti+1))';
         m = Model(with_optimizer(Gurobi.Optimizer))
         # variables
         @variable(m, Pd[1:nd, 1:Ti]) # demand
@@ -178,38 +178,38 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         @variable(m, Ps[1:ns, 1:Ti]) # power flow into or out of storage (negative flow = charging)
         @variable(m, E[1:ns, 1:Ti]) # energy level in battery
         @variable(m, Theta[1:n, 1:Ti])
-        # variable bounds constraints
-        for k in 1:Ti
-            @constraint(m, 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
-            if !isempty(Ps)
-                @constraint(m, Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-                @constraint(m, E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
-                @constraint(m, 0 .<= (E[:,k]) .<= E_max) # storage energy
-                #power balance
-                @constraint(m, B*Theta[:,k] .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
-            else
-                # power balance
-                @constraint(m, B*Theta[:,k] .== G_bus*Pg[:,k]-D_bus*Pd[:,k])
+        # first time step constraints
+        for k=1
+            for d in 1:nd
+                fix(Pd[d,k], Pd1[d], force = true) #Pd1[d]
             end
-            # power flow limits
-            for l in 1:length(F)
-                f = F[l];
-                t = T[l];
-                @constraint(m, -flow_max[l] .<= Xinv .* (Theta[f,k] - Theta[t,k]) .<= flow_max[l])
+            for s in 1:ns
+                fix(Ps[s,k], Ps1[s], force = true)
+                fix(E[s,k], E1[s], force = true)
+            end
+            for g in 1:ng
+                fix(Pg[g,k], Pg1[g], force = true) #Pg1[g]
+                #fix(ug[g,k], ug1[g], force = true)
+                @constraint(m, ug[g,k] .== ug1[g]) #ug1[g]
+                #@constraint(m, Pg[g,1] .== Pg1)
             end
         end
-        Sum_Pd = 0;
-        Sum_ug = 0;
+        # variable bounds constraints
+        @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
+        @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
+        @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
+        @constraint(m, genPglcon[k=2:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
+        @constraint(m, genOnOffcon[k=2:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
+        #power balance
+        @constraint(m, PBcon[k=2:Ti], B*Theta[:,k] .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
+        # power flow limits
+        @constraint(m, PFcon[k=2:Ti], -flow_max .<= Xinv .* (Theta[F,k] - Theta[T,k]) .<= flow_max)
+        #Sum_Pd = 0;
+        #Sum_ug = 0;
         for g in 1:ng
-            #starting point
-            #@constraint(m, ug[g,1] .== ug1)
-            #@constraint(m, Pg[g,1] .== Pg1)
-            for k in 1:Ti
-                if k >=2
-                    @constraint(m, Pg[g,k] .<= ug[g,k].*Pg_max) # generator power limits upper
-                    @constraint(m, ug[g,k].*Pg_min .<= Pg[g,k]) # generator power limits lower
-                    @constraint(m, ug[g,k] .<= ug[g,k-1] + gon[g,k-1] - goff[g,k-1]) # generator on and off constraint
-                end
+            for k in 2:Ti
                 # Start-up time constraint
                 #Summation term in the start-up time constraint:
                 sum_ug_on = 0;
@@ -220,6 +220,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                         sum_ug +=1;
                     else
                         @constraint(m, gon[g,k] == 0);
+                        #fix(gon[g,k], 0,force = true);
                     end
                 end
                 #Shut-down time constraint
@@ -232,36 +233,35 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                         sum_ug_off += 1;
                     else
                         @constraint(m, goff[g,k] == 0);
+                        #fix(goff[g,k], 0,force = t);
                     end
                 end
                 #ramp rate constraints
-                if ((goff[g,k] == 0) & (gon[g,k] == 0))
-                    if k<Ti
-                        @constraint(m, -RR .<= Pg[g,k]-Pg[g,k+1] .<= RR)
-                    end
+                if ((goff[g,k-1] == 0) & (gon[g,k-1] == 0))
+                    @constraint(m, -RR .<= Pg[g,k-1]-Pg[g,k] .<= RR)
                 end
-                for d in 1:nd
+                #=for d in 1:nd
                     Sum_Pd += Pd[d,k].*C_time[k+1]
                 end
-                Sum_ug += ug[g,k].*C_time[k+1];
+                Sum_ug += ug[g,k].*C_time[k+1]; =#
             end
         end
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
         @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # set starting point (time at step 0 == k=1);
-        #@constraint(m, Pd[:,1] .== Pd1[:])
-        @constraint(m, Ps[:,1] .== Ps1)
-        @constraint(m, E[:,1] .== E1)
         # objective
-        @objective(m, Max, 100*Sum_Pd + Sum_ug);
-        #@objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time));
+        #@objective(m, Max, 100*Sum_Pd + Sum_ug);
+        println(size(Pd))
+        println(size(C_time))
+        println(size(ug))
+        @objective(m, Max, 100*sum(Pd*C_time') + sum(ug*C_time'));
         ## SOLVE! ##
         optimize!(m)
-        sol_Pd=value.(Pd)[:,1]
-        sol_Ps=value.(Ps)[:,1]
-        sol_Pg=value.(Pg)[:,1]
-        sol_E=value.(E)[:,1]
+        sol_Pd=value.(Pd)[:,2]
+        sol_Ps=value.(Ps)[:,2]
+        sol_Pg=value.(Pg)[:,2]
+        sol_E=value.(E)[:,2]
         sol_ug=value.(ug)
         sol_gon = value.(gon)
         sol_goff = value.(goff)
@@ -273,42 +273,44 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         dE_star = Vector(sol_E).*ps.baseMVA
     else
         # vector that depreciates the value of later elements in objective
-        C_time = exp.(0:-1:-Ti);
+        C_time = exp.(0:-1:(-Ti+1))';
         m = Model(with_optimizer(Gurobi.Optimizer))
         # variables
-        @variable(m, Pd[1:nd, 0:Ti]) # demand
-        @variable(m, Pg[1:ng, 0:Ti]) # generation
-        @variable(m, ug[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, gon[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, goff[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, Ps[1:ns, 0:Ti]) # power flow into or out of storage (negative flow = charging)
-        @variable(m, E[1:ns, 0:Ti]) # energy level in battery
-        # variable bounds constraints
-        for k in 1:Ti
-            @constraint(m, 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
-            if !isempty(Ps)
-                @constraint(m, Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-                @constraint(m, E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
-                @constraint(m, 0 .<= (E[:,k]) .<= E_max) # storage energy
-                #power balance
-                @constraint(m, 0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
-            else
-                # power balance
-                @constraint(m, 0 .== G_bus*Pg[:,k]-D_bus*Pd[:,k])
+        @variable(m, Pd[1:nd, 1:Ti]) # demand
+        @variable(m, Pg[1:ng, 1:Ti]) # generation
+        @variable(m, ug[1:ng, 1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, gon[1:ng, 1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, goff[1:ng, 1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, Ps[1:ns, 1:Ti]) # power flow into or out of storage (negative flow = charging)
+        @variable(m, E[1:ns, 1:Ti]) # energy level in battery
+        # first time step constraints
+        for k=1
+            for d in 1:nd
+                fix(Pd[d,k], 0.0, force = true) #Pd1[d]
+            end
+            for s in 1:ns
+                fix(Ps[s,k], Ps1[s], force = true)
+                fix(E[s,k], E1[s], force = true)
+            end
+            for g in 1:ng
+                fix(Pg[g,k], 0.0, force = true) #Pd1[d]
+                #fix(ug[g,k], ug1[g], force = true)
+                @constraint(m, ug[g,k] .== false) #ug1[g]
+                #@constraint(m, Pg[g,1] .== Pg1)
             end
         end
-        Sum_Pd = 0;
-        Sum_ug = 0;
+        # variable bounds constraints
+        @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
+        @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
+        @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
+        @constraint(m, genPglcon[k=2:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
+        @constraint(m, genOnOffcon[k=2:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
+        #power balance
+        @constraint(m, PBcon[k=2:Ti], 0.0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
         for g in 1:ng
-            #starting point
-            @constraint(m, ug[g,0] .== ug1)
-            @constraint(m, Pg[g,0] .== Pg1)
-            for k in 0:Ti
-                if k >=1
-                    @constraint(m, Pg[g,k] .<= ug[g,k].*Pg_max) # generator power limits upper
-                    @constraint(m, ug[g,k].*Pg_min .<= Pg[g,k]) # generator power limits lower
-                    @constraint(m, ug[g,k] .<= ug[g,k-1] + gon[g,k-1] - goff[g,k-1]) # generator on and off constraint
-                end
+            for k in 2:Ti
                 # Start-up time constraint
                 #Summation term in the start-up time constraint:
                 sum_ug_on = 0;
@@ -334,38 +336,23 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                     end
                 end
                 #ramp rate constraints
-                if ((goff[g,k] == 0) & (gon[g,k] == 0))
-                    if k<Ti
-                        @constraint(m, -RR .<= Pg[g,k]-Pg[g,k+1] .<= RR)
-                    end
+                if ((goff[g,k-1] == 0) & (gon[g,k-1] == 0))
+                    @constraint(m, -RR .<= Pg[g,k-1]-Pg[g,k] .<= RR)
                 end
-                for d in 1:nd
-                    Sum_Pd += Pd[d,k].*C_time[k+1]
-                end
-                Sum_ug += ug[g,k].*C_time[k+1];
             end
         end
-        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
-        #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
-        # set starting point (time at step 0 == k=1);
-        for d in 1:nd
-        @constraint(m, Pd[d,0] .== Pd1[d])
-        end
-        if !isempty(Ps)
-            for s in 1:ns
-                @constraint(m, Ps[s,0] .== Ps1)
-                @constraint(m, E[s,0] .== E1)
-            end
-        end
+        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # objective
-        @objective(m, Max, 100*Sum_Pd + Sum_ug);
-        #@objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time));
+        println(size(Pd))
+        println(size(C_time))
+        println(size(ug))
+        @objective(m, Max, 100*sum(Pd*C_time') + sum(ug*C_time'));
         ## SOLVE! ##
         optimize!(m)
-        sol_Pd=value.(Pd)[:,1]
-        sol_Ps=value.(Ps)[:,1]
-        sol_Pg=value.(Pg)[:,1]
-        sol_E=value.(E)[:,1]
+        sol_Pd=value.(Pd)[:,2]
+        sol_Ps=value.(Ps)[:,2]
+        sol_Pg=value.(Pg)[:,2]
+        sol_E=value.(E)[:,2]
         sol_ug=value.(ug)
         sol_gon = value.(gon)
         sol_goff = value.(goff)
@@ -382,7 +369,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
     ps.storage.E = dE_star;
     ps.gen.Pg[gst] = dPg_star;
     # find turn on and off time
-    ps.gen.time_off[ps.gen.Pg[gst] .== 0] .+= dt ;
+    ps.gen.time_off[ps.gen.Pg .== 0] .+= dt ;
     ps.gen.time_on[ps.gen.Pg .!= 0] .+= dt;
     return ps
 end

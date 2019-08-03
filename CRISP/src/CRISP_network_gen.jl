@@ -24,7 +24,7 @@ function import_ps(filename)
     psGenData.Pmax = psGenData.Pmax .* 1.0;
     psShuntData.P = psShuntData.P .* 1.0;
     psShuntData.status = psShuntData.status .* 1.0;
-    if isfile("$filename\\storage.csv") psStorageData = CSV.read("$filename\\storage.csv",allowmissing=:none);
+    if isfile("$filename\\storage.csv") psStorageData = CSV.File("$filename\\storage.csv")   |> DataFrame;;
     else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], status = Int64[]); end
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
     return ps
