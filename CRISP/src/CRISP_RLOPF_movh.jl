@@ -167,17 +167,17 @@ function crisp_mh_rlopf!(ps,dt,t_win)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n);
         # vector that depreciates the value of later elements in objective
-        C_time = exp.(0:-1:-Ti);
+        C_time = exp.(1:-1:-Ti);
         m = Model(with_optimizer(Gurobi.Optimizer))
         # variables
-        @variable(m, Pd[1:nd, 0:Ti]) # demand
-        @variable(m, Pg[1:ng, 0:Ti]) # generation
-        @variable(m, ug[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, gon[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, goff[1:ng, 0:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
-        @variable(m, Ps[1:ns, 0:Ti]) # power flow into or out of storage (negative flow = charging)
-        @variable(m, E[1:ns, 0:Ti]) # energy level in battery
-        @variable(m, Theta[1:n, 0:Ti])
+        @variable(m, Pd[1:nd, 1:Ti]) # demand
+        @variable(m, Pg[1:ng, 1:Ti]) # generation
+        @variable(m, ug[1:ng, 1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, gon[1:ng, 1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, goff[1:ng, 1:Ti], Bin) # generator j at time  k on == ug[j,k]=1, off == ug[j,k]=0
+        @variable(m, Ps[1:ns, 1:Ti]) # power flow into or out of storage (negative flow = charging)
+        @variable(m, E[1:ns, 1:Ti]) # energy level in battery
+        @variable(m, Theta[1:n, 1:Ti])
         # variable bounds constraints
         for k in 1:Ti
             @constraint(m, 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
@@ -202,10 +202,10 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         Sum_ug = 0;
         for g in 1:ng
             #starting point
-            #@constraint(m, ug[g,0] .== ug1)
-            #@constraint(m, Pg[g,0] .== Pg1)
-            for k in 0:Ti
-                if k >=1
+            #@constraint(m, ug[g,1] .== ug1)
+            #@constraint(m, Pg[g,1] .== Pg1)
+            for k in 1:Ti
+                if k >=2
                     @constraint(m, Pg[g,k] .<= ug[g,k].*Pg_max) # generator power limits upper
                     @constraint(m, ug[g,k].*Pg_min .<= Pg[g,k]) # generator power limits lower
                     @constraint(m, ug[g,k] .<= ug[g,k-1] + gon[g,k-1] - goff[g,k-1]) # generator on and off constraint
@@ -250,15 +250,9 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
         @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # set starting point (time at step 0 == k=1);
-        #for d in 1:nd
-        #@constraint(m, Pd[d,0] .== Pd1[d])
-        #end
-        if !isempty(Ps)
-            for s in 1:ns
-                @constraint(m, Ps[s,0] .== Ps1)
-                @constraint(m, E[s,0] .== E1)
-            end
-        end
+        #@constraint(m, Pd[:,1] .== Pd1[:])
+        @constraint(m, Ps[:,1] .== Ps1)
+        @constraint(m, E[:,1] .== E1)
         # objective
         @objective(m, Max, 100*Sum_Pd + Sum_ug);
         #@objective(m, Max, 100*sum(Pd*C_time) + sum(ug*C_time));
