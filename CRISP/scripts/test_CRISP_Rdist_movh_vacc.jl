@@ -6,7 +6,7 @@ case1 = "data\\saved_ps\\case73_noPWS+S5\\"
 case2 = "data\\saved_ps\\case73_noPWS+S20\\"
 case3 = "data\\saved_ps\\case73_noPWS+S50\\"
 
-out = "\\experiments_gen_stor\\case73"
+out = "\\experiments_gen_stor\\case73\\mh"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)

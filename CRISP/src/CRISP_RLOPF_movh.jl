@@ -219,9 +219,12 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                     elseif ug[g,i].==0
                         sum_ug +=1;
                     else
-                        @constraint(m, gon[g,k] == 0);
+
                         #fix(gon[g,k], 0,force = true);
                     end
+                end
+                if sum_ug_on >= T_SU[g]
+                    @constraint(m, gon[g,k] == 0);
                 end
                 #Shut-down time constraint
                 sum_ug_off = 0;
@@ -240,18 +243,12 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 if ((goff[g,k-1] == 0) & (gon[g,k-1] == 0))
                     @constraint(m, -RR .<= Pg[g,k-1]-Pg[g,k] .<= RR)
                 end
-                #=for d in 1:nd
-                    Sum_Pd += Pd[d,k].*C_time[k+1]
-                end
-                Sum_ug += ug[g,k].*C_time[k+1]; =#
             end
         end
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k-T_SU[g]:k]) .>= T_SU[g].*gon[g,k]) # generator power start up
         #@constraint(m, [g=1:ng, k=1:Ti],   sum(1 .- ug[g,k:k+T_SD[g]]) .>= T_SD[g].*goff[g,k]) # generator power shut down
         @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
-        # set starting point (time at step 0 == k=1);
         # objective
-        #@objective(m, Max, 100*Sum_Pd + Sum_ug);
         @objective(m, Max, 100*sum(Pd*C_time') + sum(ug*C_time'));
         ## SOLVE! ##
         optimize!(m)
