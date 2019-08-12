@@ -1,0 +1,7 @@
+time,load_shed,perc_load_served,lines_out,gens_out
+10,0,1,1,0
+25,0,1,1,0
+40,0,1,1,0
+55,0,1,1,0
+70,0,1,1,0
+85,0,1,0,0

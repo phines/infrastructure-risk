@@ -96,7 +96,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
             #add_changes!(ps,psi,ps_islands[j]);
         end
         @assert abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
-        @assert sum(ps.storage.E .< 0)==0
+        @assert sum(ps.storage.E .< -tolerance)==0
         # save current values
         cv.time .= ti;
         cv.load_shed .= sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
@@ -198,7 +198,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
         @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
-        @constraint(m, stEcon[k=2:Ti], 0.01 .<= (E[:,k]) .<= E_max) # storage energy
+        @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
         @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
         @constraint(m, genOnOffcon[k=2:Ti], ug[:,k] .<= ug[:,k-1] + gon[:,k-1] - goff[:,k-1]) # generator on and off constraint
@@ -260,7 +260,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         sol_gon = value.(gon)
         sol_goff = value.(goff)
         @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
-        @assert sum(ps.storage.E .< 0)==0
+        @assert sum(ps.storage.E .< -tolerance)==0
         dPd_star = (Vector(sol_Pd).*ps.baseMVA)./ps.shunt.P # % load served
         dPs_star = Vector(sol_Ps).*ps.baseMVA
         dPg_star = Vector(sol_Pg).*ps.baseMVA
@@ -351,7 +351,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         sol_gon = value.(gon)
         sol_goff = value.(goff)
         @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
-        @assert sum(ps.storage.E .< 0)==0
+        @assert sum(ps.storage.E .< -tolerance)==0
         dPd_star = (Vector(sol_Pd).*ps.baseMVA)./ps.shunt.P # % load served
         dPs_star = Vector(sol_Ps).*ps.baseMVA
         dPg_star = Vector(sol_Pg).*ps.baseMVA

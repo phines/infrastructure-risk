@@ -222,7 +222,7 @@ function crisp_lsopf_g_s1!(ps,dt)
         # variable bounds
         @constraint(m,-Pd .<= dPd .<= 0)
         @constraint(m, Ps_min .<= Ps+dPs .<= Ps_max)
-        @constraint(m, 0.01 .<= E + (Ps+dPs).*dt .<= E_max)
+        @constraint(m, 0.01 .<= E + (Ps+dPs).*dt/60 .<= E_max)
         @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
         @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
         @constraint(m, pdPg .>= 0)
@@ -376,7 +376,7 @@ if n>1
     @constraint(m, Pg .<= ug.*Pg_max) # generator power limits upper
     @constraint(m, ug.*Pg_min .<= Pg) # generator power limits lower
     @constraint(m, Ps_min .<= Ps .<= Ps_max) # storage power flow
-    @constraint(m, E .== (E1 + (dt/60) .*(Ps))) # storage energy at next time step
+    @constraint(m, E .== (E1 + ((dt/60) .*(Ps)))) # storage energy at next time step
     @constraint(m, 0 .<= E .<= E_max) # storage energy
     @constraint(m, Theta[1] .== 0); # set first bus as reference bus: V angle to 0
     # power balance

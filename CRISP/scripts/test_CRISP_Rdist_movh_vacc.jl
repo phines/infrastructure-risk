@@ -12,13 +12,14 @@ else
     mkdir("results\\"*out)
 end
 #
-i="01"
+ARGS = ["01"; 1];
+i=parse(Int,ARGS[1]);
 # number of events
-N = 10;
+N = 50;
 #time steps
 dt = 15 #minutes
 #set randomized seed
-rng = MersenneTwister(100);
+rng = MersenneTwister(100+i);
 #save restoration data to folder within results folder:
 filename = "res_out_$(case[15:end-1])";
 out_folder = out*"\\$filename.csv"
