@@ -71,7 +71,7 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
             crisp_lsopf_g_s!(psi,dt);
             ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
-            ps.storage.E[ps_islands[i].storage] = psi.storage.E
+            #ps.storage.E[ps_islands[i].storage] = psi.storage.E
             ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
         end
         println(iterat)
@@ -81,7 +81,7 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
         LoadShed0[iterat] = total-sum(ps.shunt.P .* ps.shunt.status);
         ## run step 3
         dt = 15
-        ti = 3dt;#10
+        ti = 3dt;#1
         t0 = 10
         #crisp_mh_rlopf!(ps,dt,time)
         Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0)
