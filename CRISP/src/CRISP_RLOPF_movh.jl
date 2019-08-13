@@ -213,9 +213,9 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 # Start-up time constraint
                 #Summation term in the start-up time constraint:
                 sum_ug_on = 0;
-                for i in k-(T_SU[g]):k # should this be (T_SU[g]+T_SD[g])
+                for i in (k-(T_SU[g]+T_SD[g])):k # should this be (T_SU[g]+T_SD[g])
                     if i <= 0
-                        sum_ug = t_on[g];
+                        sum_ug = t_off[g]+t_on[g];
                     elseif ug[g,i].==0
                         sum_ug +=1;
                     else
@@ -223,7 +223,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                         #fix(gon[g,k], 0,force = true);
                     end
                 end
-                if sum_ug_on >= T_SU[g]
+                if sum_ug_on >= T_SU[g]+T_SD[g]
                     @constraint(m, gon[g,k] == 0);
                 end
                 #Shut-down time constraint
@@ -363,8 +363,8 @@ function crisp_mh_rlopf!(ps,dt,t_win)
     ps.storage.E = dE_star;
     ps.gen.Pg[gst] = dPg_star;
     # find turn on and off time
-    ps.gen.time_off[ps.gen.Pg .== 0] .+= dt ;
-    ps.gen.time_on[ps.gen.Pg .!= 0] .+= dt;
+    ps.gen.time_off[ps.gen.Pg .== 0] .+= dt;
+    ps.gen.time_off[ps.gen.Pg .!= 0] .= 0.0;
     return ps
 end
 
