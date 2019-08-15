@@ -1,0 +1,1562 @@
+started job 1, part  at 14:32:26.656607856
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 4448 - 0.00 seconds
+Cgl0004I processed model has 271 rows, 197 columns (73 integer (73 of which binary)) and 909 elements
+Cbc0038I Initial state - 0 integers unsatisfied sum - 7.77156e-16
+Cbc0038I Solution found of -4448
+Cbc0038I Relaxing continuous gives -4448
+Cbc0038I Before mini branch and bound, 73 integers at bound fixed and 35 continuous
+Cbc0038I Mini branch and bound did not improve solution (0.01 seconds)
+Cbc0038I After 0.01 seconds - Feasibility pump exiting with objective of -4448 - took 0.00 seconds
+Cbc0012I Integer solution of -4448 found by feasibility pump after 0 iterations and 0 nodes (0.01 seconds)
+Cbc0001I Search completed - best objective -4448, took 0 iterations and 0 nodes (0.01 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -4448 to -4448
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                4448.00000000
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             0.03
+Time (Wallclock seconds):       0.03
+
+Total time (CPU seconds):       0.03   (Wallclock seconds):       0.03
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7013.63 - 2.56 seconds
+Cgl0002I 22871 variables fixed
+Cgl0004I processed model has 59486 rows, 44744 columns (17944 integer (17944 of which binary)) and 193308 elements
+Cbc0038I Initial state - 275 integers unsatisfied sum - 72.0748
+Cbc0038I Pass   1: (4.32 seconds) suminf.    0.00000 (0) obj. -7013.63 iterations 473
+Cbc0038I Solution found of -7013.63
+Cbc0038I Relaxing continuous gives -7013.63
+Cbc0038I Before mini branch and bound, 17669 integers at bound fixed and 15265 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.47 seconds)
+Cbc0038I After 4.60 seconds - Feasibility pump exiting with objective of -7013.63 - took 0.45 seconds
+Cbc0012I Integer solution of -7013.6324 found by feasibility pump after 0 iterations and 0 nodes (5.76 seconds)
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34367 rows 16191 columns - 167 fixed gives 34363, 16024 - still too large
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34318 rows 16024 columns - too large
+Cbc0001I Search completed - best objective -7013.632390871398, took 0 iterations and 0 nodes (6.65 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7013.63 to -7013.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7013.63239086
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             80.39
+Time (Wallclock seconds):       80.95
+
+Total time (CPU seconds):       80.39   (Wallclock seconds):       80.95
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 2.63 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 59486 rows, 44744 columns (17944 integer (17944 of which binary)) and 193308 elements
+Cbc0038I Initial state - 275 integers unsatisfied sum - 72.0748
+Cbc0038I Pass   1: (4.42 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 473
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17669 integers at bound fixed and 15265 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.58 seconds)
+Cbc0038I After 4.71 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.46 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (5.88 seconds)
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34367 rows 16191 columns - 167 fixed gives 34363, 16024 - still too large
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34318 rows 16024 columns - too large
+Cbc0001I Search completed - best objective -7016.632390871398, took 0 iterations and 0 nodes (6.78 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239086
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             81.29
+Time (Wallclock seconds):       81.86
+
+Total time (CPU seconds):       81.29   (Wallclock seconds):       81.86
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 2.55 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 59486 rows, 44744 columns (17944 integer (17944 of which binary)) and 193308 elements
+Cbc0038I Initial state - 273 integers unsatisfied sum - 71.1381
+Cbc0038I Pass   1: (4.30 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 460
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17671 integers at bound fixed and 15265 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.45 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7016.63
+Cbc0038I After 4.58 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.45 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (5.76 seconds)
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34367 rows 16186 columns - 164 fixed gives 34363, 16022 - still too large
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34309 rows 16022 columns - too large
+Cbc0001I Search completed - best objective -7016.632390865292, took 0 iterations and 0 nodes (6.65 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239088
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             32.61
+Time (Wallclock seconds):       33.20
+
+Total time (CPU seconds):       32.61   (Wallclock seconds):       33.20
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 2.64 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 59486 rows, 44744 columns (17944 integer (17944 of which binary)) and 193308 elements
+Cbc0038I Initial state - 273 integers unsatisfied sum - 71.1381
+Cbc0038I Pass   1: (4.43 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 460
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17671 integers at bound fixed and 15265 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.59 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7016.63
+Cbc0038I After 4.72 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.46 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (5.92 seconds)
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34367 rows 16186 columns - 164 fixed gives 34363, 16022 - still too large
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34309 rows 16022 columns - too large
+Cbc0001I Search completed - best objective -7016.632390865292, took 0 iterations and 0 nodes (6.82 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239088
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             32.58
+Time (Wallclock seconds):       33.11
+
+Total time (CPU seconds):       32.58   (Wallclock seconds):       33.11
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 2.67 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 59486 rows, 44744 columns (17944 integer (17944 of which binary)) and 193308 elements
+Cbc0038I Initial state - 273 integers unsatisfied sum - 71.1381
+Cbc0038I Pass   1: (4.46 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 460
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17671 integers at bound fixed and 15265 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.62 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7016.63
+Cbc0038I After 4.75 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.45 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (5.96 seconds)
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34367 rows 16186 columns - 164 fixed gives 34363, 16022 - still too large
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34309 rows 16022 columns - too large
+Cbc0001I Search completed - best objective -7016.632390865292, took 0 iterations and 0 nodes (6.87 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239088
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             32.45
+Time (Wallclock seconds):       32.98
+
+Total time (CPU seconds):       32.45   (Wallclock seconds):       32.98
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 2.57 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 59486 rows, 44744 columns (17944 integer (17944 of which binary)) and 193308 elements
+Cbc0038I Initial state - 273 integers unsatisfied sum - 71.1381
+Cbc0038I Pass   1: (4.35 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 460
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17671 integers at bound fixed and 15265 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.51 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7016.63
+Cbc0038I After 4.65 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.45 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (5.86 seconds)
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34367 rows 16186 columns - 164 fixed gives 34363, 16022 - still too large
+Cbc0038I Full problem 59486 rows 44744 columns, reduced to 34309 rows 16022 columns - too large
+Cbc0001I Search completed - best objective -7016.632390865292, took 0 iterations and 0 nodes (6.76 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239088
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             32.78
+Time (Wallclock seconds):       33.28
+
+Total time (CPU seconds):       32.78   (Wallclock seconds):       33.28
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 2.58 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 59485 rows, 44744 columns (17944 integer (17944 of which binary)) and 193882 elements
+Cbc0038I Initial state - 295 integers unsatisfied sum - 80.3706
+Cbc0038I Pass   1: (4.34 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 558
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17649 integers at bound fixed and 15241 continuous
+Cbc0038I Mini branch and bound did not improve solution (4.49 seconds)
+Cbc0038I After 4.63 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.46 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (5.79 seconds)
+Cbc0038I Full problem 59485 rows 44744 columns, reduced to 34374 rows 16202 columns - 158 fixed gives 34366, 16044 - still too large
+Cbc0038I Full problem 59485 rows 44744 columns, reduced to 34317 rows 16044 columns - too large
+Cbc0001I Search completed - best objective -7016.632390824454, took 0 iterations and 0 nodes (6.71 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239083
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             26.72
+Time (Wallclock seconds):       27.35
+
+Total time (CPU seconds):       26.72   (Wallclock seconds):       27.35
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 4448 - 0.00 seconds
+Cgl0004I processed model has 270 rows, 217 columns (73 integer (73 of which binary)) and 947 elements
+Cbc0038I Initial state - 0 integers unsatisfied sum - 7.77156e-16
+Cbc0038I Solution found of -4448
+Cbc0038I Relaxing continuous gives -4448
+Cbc0038I Before mini branch and bound, 73 integers at bound fixed and 55 continuous
+Cbc0038I Mini branch and bound did not improve solution (0.01 seconds)
+Cbc0038I After 0.01 seconds - Feasibility pump exiting with objective of -4448 - took 0.00 seconds
+Cbc0012I Integer solution of -4448 found by feasibility pump after 0 iterations and 0 nodes (0.01 seconds)
+Cbc0001I Search completed - best objective -4448, took 0 iterations and 0 nodes (0.01 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -4448 to -4448
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                4448.00000000
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             0.03
+Time (Wallclock seconds):       0.03
+
+Total time (CPU seconds):       0.03   (Wallclock seconds):       0.03
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7015.63 - 3.76 seconds
+Cgl0002I 22869 variables fixed
+Cgl0004I processed model has 62814 rows, 52463 columns (17944 integer (17944 of which binary)) and 212590 elements
+Cbc0038I Initial state - 219 integers unsatisfied sum - 57.0193
+Cbc0038I Pass   1: (6.12 seconds) suminf.    0.00000 (0) obj. -7015.63 iterations 506
+Cbc0038I Solution found of -7015.63
+Cbc0038I Relaxing continuous gives -7015.63
+Cbc0038I Before mini branch and bound, 17725 integers at bound fixed and 19684 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.29 seconds)
+Cbc0038I After 6.44 seconds - Feasibility pump exiting with objective of -7015.63 - took 0.50 seconds
+Cbc0012I Integer solution of -7015.6324 found by feasibility pump after 0 iterations and 0 nodes (8.54 seconds)
+Cbc0001I Search completed - best objective -7015.632391461379, took 0 iterations and 0 nodes (8.62 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -7015.63 to -7015.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7015.63239131
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             43.09
+Time (Wallclock seconds):       43.42
+
+Total time (CPU seconds):       43.09   (Wallclock seconds):       43.42
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7015.63 - 3.60 seconds
+Cgl0002I 22869 variables fixed
+Cgl0004I processed model has 62832 rows, 52481 columns (17944 integer (17944 of which binary)) and 212626 elements
+Cbc0038I Initial state - 225 integers unsatisfied sum - 63.7384
+Cbc0038I Pass   1: (5.98 seconds) suminf.    0.00000 (0) obj. -7015.63 iterations 566
+Cbc0038I Solution found of -7015.63
+Cbc0038I Relaxing continuous gives -7015.63
+Cbc0038I Before mini branch and bound, 17719 integers at bound fixed and 19695 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.15 seconds)
+Cbc0038I After 6.30 seconds - Feasibility pump exiting with objective of -7015.63 - took 0.51 seconds
+Cbc0012I Integer solution of -7015.6324 found by feasibility pump after 0 iterations and 0 nodes (8.43 seconds)
+Cbc0038I Full problem 62832 rows 52481 columns, reduced to 37710 rows 24013 columns - 159 fixed gives 37706, 23854 - still too large
+Cbc0038I Full problem 62832 rows 52481 columns, reduced to 37640 rows 23854 columns - too large
+Cbc0001I Search completed - best objective -7015.632390846932, took 7 iterations and 0 nodes (9.74 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7015.63 to -7015.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7015.63239065
+Enumerated nodes:               0
+Total iterations:               7
+Time (CPU seconds):             39.53
+Time (Wallclock seconds):       40.15
+
+Total time (CPU seconds):       39.53   (Wallclock seconds):       40.15
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7020.63 - 3.63 seconds
+Cgl0002I 22864 variables fixed
+Cgl0004I processed model has 62854 rows, 52503 columns (17944 integer (17944 of which binary)) and 212670 elements
+Cbc0038I Initial state - 242 integers unsatisfied sum - 65.2624
+Cbc0038I Pass   1: (6.05 seconds) suminf.    0.00000 (0) obj. -7020.63 iterations 617
+Cbc0038I Solution found of -7020.63
+Cbc0038I Relaxing continuous gives -7020.63
+Cbc0038I Before mini branch and bound, 17702 integers at bound fixed and 19645 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.22 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7020.63
+Cbc0038I After 6.38 seconds - Feasibility pump exiting with objective of -7020.63 - took 0.54 seconds
+Cbc0012I Integer solution of -7020.6324 found by feasibility pump after 0 iterations and 0 nodes (8.34 seconds)
+Cbc0001I Search completed - best objective -7020.632390965578, took 0 iterations and 0 nodes (8.45 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -7020.63 to -7020.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7020.63239074
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             43.39
+Time (Wallclock seconds):       43.77
+
+Total time (CPU seconds):       43.39   (Wallclock seconds):       43.77
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7018.63 - 3.72 seconds
+Cgl0002I 22866 variables fixed
+Cgl0004I processed model has 62874 rows, 52523 columns (17944 integer (17944 of which binary)) and 212710 elements
+Cbc0038I Initial state - 230 integers unsatisfied sum - 63.0722
+Cbc0038I Pass   1: (6.17 seconds) suminf.    0.00000 (0) obj. -7018.63 iterations 573
+Cbc0038I Solution found of -7018.63
+Cbc0038I Relaxing continuous gives -7018.63
+Cbc0038I Before mini branch and bound, 17714 integers at bound fixed and 19651 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.35 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7018.63
+Cbc0038I After 6.50 seconds - Feasibility pump exiting with objective of -7018.63 - took 0.53 seconds
+Cbc0012I Integer solution of -7018.6324 found by feasibility pump after 0 iterations and 0 nodes (8.50 seconds)
+Cbc0038I Full problem 62874 rows 52523 columns, reduced to 37772 rows 24090 columns - 140 fixed gives 37754, 23950 - still too large
+Cbc0038I Full problem 62874 rows 52523 columns, reduced to 37694 rows 23950 columns - too large
+Cbc0001I Search completed - best objective -7018.632390966963, took 1 iterations and 0 nodes (9.75 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7018.63 to -7018.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7018.63239108
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             45.52
+Time (Wallclock seconds):       46.06
+
+Total time (CPU seconds):       45.52   (Wallclock seconds):       46.06
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7015.63 - 3.72 seconds
+Cgl0002I 22869 variables fixed
+Cgl0004I processed model has 62889 rows, 52538 columns (17944 integer (17944 of which binary)) and 212740 elements
+Cbc0038I Initial state - 260 integers unsatisfied sum - 68.1562
+Cbc0038I Pass   1: (6.35 seconds) suminf.    0.00000 (0) obj. -7015.63 iterations 564
+Cbc0038I Solution found of -7015.63
+Cbc0038I Relaxing continuous gives -7015.63
+Cbc0038I Before mini branch and bound, 17684 integers at bound fixed and 19689 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.53 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7015.63
+Cbc0038I After 6.68 seconds - Feasibility pump exiting with objective of -7015.63 - took 0.52 seconds
+Cbc0012I Integer solution of -7015.6324 found by feasibility pump after 0 iterations and 0 nodes (8.82 seconds)
+Cbc0038I Full problem 62889 rows 52538 columns, reduced to 37781 rows 24123 columns - 188 fixed gives 37767, 23935 - still too large
+Cbc0038I Full problem 62889 rows 52538 columns, reduced to 37704 rows 23935 columns - too large
+Cbc0001I Search completed - best objective -7015.632390840364, took 1 iterations and 0 nodes (10.17 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7015.63 to -7015.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7015.63239084
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             34.71
+Time (Wallclock seconds):       35.22
+
+Total time (CPU seconds):       34.71   (Wallclock seconds):       35.22
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7015.63 - 3.88 seconds
+Cgl0002I 22869 variables fixed
+Cgl0004I processed model has 62912 rows, 52561 columns (17944 integer (17944 of which binary)) and 212786 elements
+Cbc0038I Initial state - 229 integers unsatisfied sum - 64.039
+Cbc0038I Pass   1: (6.37 seconds) suminf.    0.00000 (0) obj. -7015.63 iterations 572
+Cbc0038I Solution found of -7015.63
+Cbc0038I Relaxing continuous gives -7015.63
+Cbc0038I Before mini branch and bound, 17715 integers at bound fixed and 19696 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.55 seconds)
+Cbc0038I After 6.71 seconds - Feasibility pump exiting with objective of -7015.63 - took 0.53 seconds
+Cbc0012I Integer solution of -7015.6324 found by feasibility pump after 0 iterations and 0 nodes (8.72 seconds)
+Cbc0038I Full problem 62912 rows 52561 columns, reduced to 37799 rows 24112 columns - 148 fixed gives 37789, 23964 - still too large
+Cbc0038I Full problem 62912 rows 52561 columns, reduced to 37741 rows 23964 columns - too large
+Cbc0001I Search completed - best objective -7015.632390900942, took 3 iterations and 0 nodes (9.95 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7015.63 to -7015.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7015.63239079
+Enumerated nodes:               0
+Total iterations:               3
+Time (CPU seconds):             21.32
+Time (Wallclock seconds):       21.81
+
+Total time (CPU seconds):       21.32   (Wallclock seconds):       21.81
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7016.63 - 3.75 seconds
+Cgl0002I 22868 variables fixed
+Cgl0004I processed model has 62927 rows, 52577 columns (17944 integer (17944 of which binary)) and 213392 elements
+Cbc0038I Initial state - 265 integers unsatisfied sum - 73.8655
+Cbc0038I Pass   1: (6.19 seconds) suminf.    0.00000 (0) obj. -7016.63 iterations 691
+Cbc0038I Solution found of -7016.63
+Cbc0038I Relaxing continuous gives -7016.63
+Cbc0038I Before mini branch and bound, 17679 integers at bound fixed and 19639 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.37 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7016.63
+Cbc0038I After 6.53 seconds - Feasibility pump exiting with objective of -7016.63 - took 0.54 seconds
+Cbc0012I Integer solution of -7016.6324 found by feasibility pump after 0 iterations and 0 nodes (8.72 seconds)
+Cbc0038I Full problem 62927 rows 52577 columns, reduced to 37830 rows 24179 columns - 178 fixed gives 37822, 24001 - still too large
+Cbc0038I Full problem 62927 rows 52577 columns, reduced to 37766 rows 24001 columns - too large
+Cbc0001I Search completed - best objective -7016.632390856432, took 0 iterations and 0 nodes (9.80 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7016.63 to -7016.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7016.63239085
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             21.19
+Time (Wallclock seconds):       21.70
+
+Total time (CPU seconds):       21.19   (Wallclock seconds):       21.70
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 4448 - 0.00 seconds
+Cgl0004I processed model has 270 rows, 217 columns (73 integer (73 of which binary)) and 947 elements
+Cbc0038I Initial state - 0 integers unsatisfied sum - 7.77156e-16
+Cbc0038I Solution found of -4448
+Cbc0038I Relaxing continuous gives -4448
+Cbc0038I Before mini branch and bound, 73 integers at bound fixed and 58 continuous
+Cbc0038I Mini branch and bound did not improve solution (0.01 seconds)
+Cbc0038I After 0.01 seconds - Feasibility pump exiting with objective of -4448 - took 0.00 seconds
+Cbc0012I Integer solution of -4448 found by feasibility pump after 0 iterations and 0 nodes (0.01 seconds)
+Cbc0001I Search completed - best objective -4448, took 0 iterations and 0 nodes (0.01 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -4448 to -4448
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                4448.00000000
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             0.03
+Time (Wallclock seconds):       0.03
+
+Total time (CPU seconds):       0.03   (Wallclock seconds):       0.03
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7017.63 - 4.17 seconds
+Cgl0002I 22867 variables fixed
+Cgl0004I processed model has 62814 rows, 52463 columns (17944 integer (17944 of which binary)) and 212590 elements
+Cbc0038I Initial state - 251 integers unsatisfied sum - 64.0718
+Cbc0038I Pass   1: (6.85 seconds) suminf.    0.00000 (0) obj. -7017.63 iterations 497
+Cbc0038I Solution found of -7017.63
+Cbc0038I Relaxing continuous gives -7017.63
+Cbc0038I Before mini branch and bound, 17693 integers at bound fixed and 19693 continuous
+Cbc0038I Mini branch and bound did not improve solution (7.02 seconds)
+Cbc0038I After 7.18 seconds - Feasibility pump exiting with objective of -7017.63 - took 0.52 seconds
+Cbc0012I Integer solution of -7017.6324 found by feasibility pump after 0 iterations and 0 nodes (9.64 seconds)
+Cbc0038I Full problem 62814 rows 52463 columns, reduced to 37700 rows 24056 columns - 152 fixed gives 37690, 23904 - still too large
+Cbc0038I Full problem 62814 rows 52463 columns, reduced to 37624 rows 23904 columns - too large
+Cbc0001I Search completed - best objective -7017.632390944442, took 1 iterations and 0 nodes (10.89 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7017.63 to -7017.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7017.63239091
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             30.71
+Time (Wallclock seconds):       31.33
+
+Total time (CPU seconds):       30.71   (Wallclock seconds):       31.33
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7021.63 - 4.11 seconds
+Cgl0002I 22863 variables fixed
+Cgl0004I processed model has 62832 rows, 52481 columns (17944 integer (17944 of which binary)) and 212626 elements
+Cbc0038I Initial state - 273 integers unsatisfied sum - 67.8311
+Cbc0038I Pass   1: (6.80 seconds) suminf.    0.00000 (0) obj. -7018.65 iterations 527
+Cbc0038I Solution found of -7018.65
+Cbc0038I Relaxing continuous gives -7021.63
+Cbc0038I Before mini branch and bound, 17671 integers at bound fixed and 19643 continuous
+Cbc0038I Mini branch and bound did not improve solution (6.97 seconds)
+Cbc0038I After 7.14 seconds - Feasibility pump exiting with objective of -7021.63 - took 0.54 seconds
+Cbc0012I Integer solution of -7021.6324 found by feasibility pump after 0 iterations and 0 nodes (9.84 seconds)
+Cbc0038I Full problem 62832 rows 52481 columns, reduced to 37728 rows 24125 columns - 171 fixed gives 37718, 23954 - still too large
+Cbc0038I Full problem 62832 rows 52481 columns, reduced to 37668 rows 23954 columns - too large
+Cbc0001I Search completed - best objective -7021.632391022913, took 9 iterations and 0 nodes (11.06 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7021.63 to -7021.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7021.63239092
+Enumerated nodes:               0
+Total iterations:               9
+Time (CPU seconds):             24.97
+Time (Wallclock seconds):       25.50
+
+Total time (CPU seconds):       24.97   (Wallclock seconds):       25.50
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7020.63 - 4.24 seconds
+Cgl0002I 22864 variables fixed
+Cgl0004I processed model has 62847 rows, 52496 columns (17944 integer (17944 of which binary)) and 212656 elements
+Cbc0038I Initial state - 234 integers unsatisfied sum - 59.6121
+Cbc0038I Pass   1: (6.90 seconds) suminf.    0.00000 (0) obj. -7020.48 iterations 511
+Cbc0038I Solution found of -7020.48
+Cbc0038I Relaxing continuous gives -7020.63
+Cbc0038I Before mini branch and bound, 17710 integers at bound fixed and 19670 continuous
+Cbc0038I Mini branch and bound did not improve solution (7.08 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7020.63
+Cbc0038I After 7.26 seconds - Feasibility pump exiting with objective of -7020.63 - took 0.56 seconds
+Cbc0012I Integer solution of -7020.6324 found by feasibility pump after 0 iterations and 0 nodes (9.70 seconds)
+Cbc0038I Full problem 62847 rows 52496 columns, reduced to 37744 rows 24057 columns - 150 fixed gives 37728, 23907 - still too large
+Cbc0038I Full problem 62847 rows 52496 columns, reduced to 37666 rows 23907 columns - too large
+Cbc0001I Search completed - best objective -7020.632391021094, took 1 iterations and 0 nodes (10.88 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7020.63 to -7020.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7020.63239086
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             78.41
+Time (Wallclock seconds):       79.06
+
+Total time (CPU seconds):       78.41   (Wallclock seconds):       79.06
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7022.63 - 4.19 seconds
+Cgl0002I 22862 variables fixed
+Cgl0004I processed model has 62871 rows, 52520 columns (17944 integer (17944 of which binary)) and 212704 elements
+Cbc0038I Initial state - 231 integers unsatisfied sum - 57.8473
+Cbc0038I Pass   1: (6.93 seconds) suminf.    0.00000 (0) obj. -7010.56 iterations 455
+Cbc0038I Solution found of -7010.56
+Cbc0038I Relaxing continuous gives -7022.63
+Cbc0038I Before mini branch and bound, 17713 integers at bound fixed and 19690 continuous
+Cbc0038I Mini branch and bound did not improve solution (7.10 seconds)
+Cbc0038I After 7.26 seconds - Feasibility pump exiting with objective of -7022.63 - took 0.52 seconds
+Cbc0012I Integer solution of -7022.6324 found by feasibility pump after 0 iterations and 0 nodes (9.36 seconds)
+Cbc0038I Full problem 62871 rows 52520 columns, reduced to 37775 rows 24109 columns - 144 fixed gives 37759, 23965 - still too large
+Cbc0001I Search completed - best objective -7022.632391096619, took 1 iterations and 0 nodes (10.67 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7022.63 to -7022.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7022.63239093
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             106.73
+Time (Wallclock seconds):       107.31
+
+Total time (CPU seconds):       106.73   (Wallclock seconds):       107.31
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7022.63 - 4.35 seconds
+Cgl0002I 22862 variables fixed
+Cgl0004I processed model has 62890 rows, 52539 columns (17944 integer (17944 of which binary)) and 212742 elements
+Cbc0038I Initial state - 261 integers unsatisfied sum - 66.9043
+Cbc0038I Pass   1: (7.40 seconds) suminf.    0.00000 (0) obj. -7022.11 iterations 520
+Cbc0038I Solution found of -7022.11
+Cbc0038I Relaxing continuous gives -7022.63
+Cbc0038I Before mini branch and bound, 17683 integers at bound fixed and 19641 continuous
+Cbc0038I Mini branch and bound did not improve solution (7.57 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7022.63
+Cbc0038I After 7.74 seconds - Feasibility pump exiting with objective of -7022.63 - took 0.53 seconds
+Cbc0012I Integer solution of -7022.6324 found by feasibility pump after 0 iterations and 0 nodes (9.97 seconds)
+Cbc0038I Full problem 62890 rows 52539 columns, reduced to 37786 rows 24179 columns - 161 fixed gives 37768, 24018 - still too large
+Cbc0038I Full problem 62890 rows 52539 columns, reduced to 37723 rows 24018 columns - too large
+Cbc0001I Search completed - best objective -7022.632390947171, took 4 iterations and 0 nodes (12.80 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7022.63 to -7022.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7022.63239098
+Enumerated nodes:               0
+Total iterations:               4
+Time (CPU seconds):             55.80
+Time (Wallclock seconds):       56.37
+
+Total time (CPU seconds):       55.80   (Wallclock seconds):       56.37
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7022.63 - 4.29 seconds
+Cgl0002I 22862 variables fixed
+Cgl0004I processed model has 62913 rows, 52562 columns (17944 integer (17944 of which binary)) and 212788 elements
+Cbc0038I Initial state - 240 integers unsatisfied sum - 61.3254
+Cbc0038I Pass   1: (6.95 seconds) suminf.    0.00000 (0) obj. -7022.63 iterations 493
+Cbc0038I Solution found of -7022.63
+Cbc0038I Relaxing continuous gives -7022.63
+Cbc0038I Before mini branch and bound, 17704 integers at bound fixed and 19677 continuous
+Cbc0038I Mini branch and bound did not improve solution (7.12 seconds)
+Cbc0038I After 7.28 seconds - Feasibility pump exiting with objective of -7022.63 - took 0.53 seconds
+Cbc0012I Integer solution of -7022.6324 found by feasibility pump after 0 iterations and 0 nodes (9.46 seconds)
+Cbc0001I Search completed - best objective -7022.632391499607, took 0 iterations and 0 nodes (9.55 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -7022.63 to -7022.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7022.63239136
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             43.95
+Time (Wallclock seconds):       44.25
+
+Total time (CPU seconds):       43.95   (Wallclock seconds):       44.25
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7021.63 - 4.14 seconds
+Cgl0002I 22863 variables fixed
+Cgl0004I processed model has 62932 rows, 52582 columns (17944 integer (17944 of which binary)) and 213402 elements
+Cbc0038I Initial state - 278 integers unsatisfied sum - 72.2843
+Cbc0038I Pass   1: (7.01 seconds) suminf.    0.00000 (0) obj. -7021.63 iterations 515
+Cbc0038I Solution found of -7021.63
+Cbc0038I Relaxing continuous gives -7021.63
+Cbc0038I Before mini branch and bound, 17666 integers at bound fixed and 19737 continuous
+Cbc0038I Mini branch and bound did not improve solution (7.19 seconds)
+Cbc0038I After 7.35 seconds - Feasibility pump exiting with objective of -7021.63 - took 0.55 seconds
+Cbc0012I Integer solution of -7021.6324 found by feasibility pump after 0 iterations and 0 nodes (9.77 seconds)
+Cbc0038I Full problem 62932 rows 52582 columns, reduced to 37833 rows 24222 columns - 193 fixed gives 37821, 24029 - still too large
+Cbc0038I Full problem 62932 rows 52582 columns, reduced to 37760 rows 24029 columns - too large
+Cbc0001I Search completed - best objective -7021.63239105467, took 3 iterations and 0 nodes (11.05 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7021.63 to -7021.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7021.63239079
+Enumerated nodes:               0
+Total iterations:               3
+Time (CPU seconds):             24.23
+Time (Wallclock seconds):       24.84
+
+Total time (CPU seconds):       24.23   (Wallclock seconds):       24.84
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 4448 - 0.00 seconds
+Cgl0004I processed model has 270 rows, 217 columns (73 integer (73 of which binary)) and 947 elements
+Cbc0038I Initial state - 0 integers unsatisfied sum - 7.77156e-16
+Cbc0038I Solution found of -4448
+Cbc0038I Relaxing continuous gives -4448
+Cbc0038I Before mini branch and bound, 73 integers at bound fixed and 56 continuous
+Cbc0038I Mini branch and bound did not improve solution (0.01 seconds)
+Cbc0038I After 0.01 seconds - Feasibility pump exiting with objective of -4448 - took 0.00 seconds
+Cbc0012I Integer solution of -4448 found by feasibility pump after 0 iterations and 0 nodes (0.01 seconds)
+Cbc0001I Search completed - best objective -4448, took 0 iterations and 0 nodes (0.01 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -4448 to -4448
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                4448.00000000
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             0.04
+Time (Wallclock seconds):       0.04
+
+Total time (CPU seconds):       0.04   (Wallclock seconds):       0.04
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7022.63 - 5.60 seconds
+Cgl0002I 22862 variables fixed
+Cgl0004I processed model has 62805 rows, 52454 columns (17944 integer (17944 of which binary)) and 212572 elements
+Cbc0038I Initial state - 314 integers unsatisfied sum - 77.3544
+Cbc0038I Pass   1: (8.64 seconds) suminf.    0.00000 (0) obj. -7008.67 iterations 599
+Cbc0038I Solution found of -7008.67
+Cbc0038I Relaxing continuous gives -7022.63
+Cbc0038I Before mini branch and bound, 17630 integers at bound fixed and 19621 continuous
+Cbc0038I Mini branch and bound did not improve solution (8.83 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7022.63
+Cbc0038I After 9.05 seconds - Feasibility pump exiting with objective of -7022.63 - took 0.66 seconds
+Cbc0012I Integer solution of -7022.6324 found by feasibility pump after 0 iterations and 0 nodes (14.17 seconds)
+Cbc0038I Full problem 62805 rows 52454 columns, reduced to 37711 rows 24192 columns - 196 fixed gives 37695, 23996 - still too large
+Cbc0038I Full problem 62805 rows 52454 columns, reduced to 37634 rows 23996 columns - too large
+Cbc0001I Search completed - best objective -7022.632391223224, took 3 iterations and 0 nodes (17.52 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7022.63 to -7022.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7022.63239096
+Enumerated nodes:               0
+Total iterations:               3
+Time (CPU seconds):             52.85
+Time (Wallclock seconds):       53.48
+
+Total time (CPU seconds):       52.85   (Wallclock seconds):       53.48
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7029.63 - 5.49 seconds
+Cgl0002I 22855 variables fixed
+Cgl0004I processed model has 62829 rows, 52478 columns (17944 integer (17944 of which binary)) and 212620 elements
+Cbc0038I Initial state - 290 integers unsatisfied sum - 75.0704
+Cbc0038I Pass   1: (8.56 seconds) suminf.    0.00000 (0) obj. -6998.16 iterations 561
+Cbc0038I Solution found of -6998.16
+Cbc0038I Relaxing continuous gives -7029.63
+Cbc0038I Before mini branch and bound, 17654 integers at bound fixed and 19604 continuous
+Cbc0038I Mini branch and bound did not improve solution (8.75 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7029.63
+Cbc0038I After 8.94 seconds - Feasibility pump exiting with objective of -7029.63 - took 0.59 seconds
+Cbc0012I Integer solution of -7029.6324 found by feasibility pump after 0 iterations and 0 nodes (12.92 seconds)
+Cbc0038I Full problem 62829 rows 52478 columns, reduced to 37726 rows 24166 columns - 188 fixed gives 37716, 23978 - still too large
+Cbc0038I Full problem 62829 rows 52478 columns, reduced to 37665 rows 23978 columns - too large
+Cbc0001I Search completed - best objective -7029.632391196626, took 1 iterations and 0 nodes (16.16 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7029.63 to -7029.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7029.63239122
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             33.78
+Time (Wallclock seconds):       34.37
+
+Total time (CPU seconds):       33.78   (Wallclock seconds):       34.37
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7029.63 - 5.86 seconds
+Cgl0002I 22855 variables fixed
+Cgl0004I processed model has 62840 rows, 52489 columns (17944 integer (17944 of which binary)) and 212642 elements
+Cbc0038I Initial state - 299 integers unsatisfied sum - 74.5937
+Cbc0038I Pass   1: (9.01 seconds) suminf.    0.00000 (0) obj. -7029.63 iterations 527
+Cbc0038I Solution found of -7029.63
+Cbc0038I Relaxing continuous gives -7029.63
+Cbc0038I Before mini branch and bound, 17645 integers at bound fixed and 19605 continuous
+Cbc0038I Mini branch and bound did not improve solution (9.19 seconds)
+Cbc0038I After 9.37 seconds - Feasibility pump exiting with objective of -7029.63 - took 0.57 seconds
+Cbc0012I Integer solution of -7029.6324 found by feasibility pump after 0 iterations and 0 nodes (12.93 seconds)
+Cbc0001I Search completed - best objective -7029.632391656906, took 0 iterations and 0 nodes (13.02 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from -7029.63 to -7029.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7029.63239163
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             35.05
+Time (Wallclock seconds):       35.44
+
+Total time (CPU seconds):       35.05   (Wallclock seconds):       35.44
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7029.63 - 5.42 seconds
+Cgl0002I 22855 variables fixed
+Cgl0004I processed model has 62861 rows, 52510 columns (17944 integer (17944 of which binary)) and 212684 elements
+Cbc0038I Initial state - 287 integers unsatisfied sum - 74.6731
+Cbc0038I Pass   1: (8.18 seconds) suminf.    0.00000 (0) obj. -7029.63 iterations 538
+Cbc0038I Solution found of -7029.63
+Cbc0038I Relaxing continuous gives -7029.63
+Cbc0038I Before mini branch and bound, 17657 integers at bound fixed and 19620 continuous
+Cbc0038I Mini branch and bound did not improve solution (8.35 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7029.63
+Cbc0038I After 8.53 seconds - Feasibility pump exiting with objective of -7029.63 - took 0.56 seconds
+Cbc0012I Integer solution of -7029.6324 found by feasibility pump after 0 iterations and 0 nodes (12.29 seconds)
+Cbc0038I Full problem 62861 rows 52510 columns, reduced to 37750 rows 24201 columns - 176 fixed gives 37748, 24025 - still too large
+Cbc0038I Full problem 62861 rows 52510 columns, reduced to 37696 rows 24025 columns - too large
+Cbc0001I Search completed - best objective -7029.632391139811, took 2 iterations and 0 nodes (15.47 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7029.63 to -7029.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7029.63239116
+Enumerated nodes:               0
+Total iterations:               2
+Time (CPU seconds):             30.07
+Time (Wallclock seconds):       30.73
+
+Total time (CPU seconds):       30.07   (Wallclock seconds):       30.73
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7031.63 - 5.50 seconds
+Cgl0002I 22853 variables fixed
+Cgl0004I processed model has 62885 rows, 52534 columns (17944 integer (17944 of which binary)) and 212732 elements
+Cbc0038I Initial state - 314 integers unsatisfied sum - 76.0255
+Cbc0038I Pass   1: (8.62 seconds) suminf.    0.00000 (0) obj. -7024.39 iterations 576
+Cbc0038I Solution found of -7024.39
+Cbc0038I Relaxing continuous gives -7031.63
+Cbc0038I Before mini branch and bound, 17630 integers at bound fixed and 19631 continuous
+Cbc0038I Mini branch and bound did not improve solution (8.80 seconds)
+Cbc0038I After 8.99 seconds - Feasibility pump exiting with objective of -7031.63 - took 0.59 seconds
+Cbc0012I Integer solution of -7031.6324 found by feasibility pump after 0 iterations and 0 nodes (13.05 seconds)
+Cbc0038I Full problem 62885 rows 52534 columns, reduced to 37791 rows 24243 columns - 214 fixed gives 37771, 24029 - still too large
+Cbc0038I Full problem 62885 rows 52534 columns, reduced to 37714 rows 24029 columns - too large
+Cbc0001I Search completed - best objective -7031.632391180493, took 1 iterations and 0 nodes (14.28 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7031.63 to -7031.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7031.63239112
+Enumerated nodes:               0
+Total iterations:               1
+Time (CPU seconds):             61.69
+Time (Wallclock seconds):       62.25
+
+Total time (CPU seconds):       61.69   (Wallclock seconds):       62.25
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7029.63 - 5.23 seconds
+Cgl0002I 22855 variables fixed
+Cgl0004I processed model has 62904 rows, 52553 columns (17944 integer (17944 of which binary)) and 212770 elements
+Cbc0038I Initial state - 299 integers unsatisfied sum - 76.08
+Cbc0038I Pass   1: (8.35 seconds) suminf.    0.00000 (0) obj. -7028.99 iterations 555
+Cbc0038I Solution found of -7028.99
+Cbc0038I Relaxing continuous gives -7029.63
+Cbc0038I Before mini branch and bound, 17645 integers at bound fixed and 19650 continuous
+Cbc0038I Mini branch and bound did not improve solution (8.53 seconds)
+Cbc0038I After 8.72 seconds - Feasibility pump exiting with objective of -7029.63 - took 0.59 seconds
+Cbc0012I Integer solution of -7029.6324 found by feasibility pump after 0 iterations and 0 nodes (13.18 seconds)
+Cbc0038I Full problem 62904 rows 52553 columns, reduced to 37804 rows 24257 columns - 202 fixed gives 37792, 24053 - still too large
+Cbc0038I Full problem 62904 rows 52553 columns, reduced to 37740 rows 24053 columns - too large
+Cbc0001I Search completed - best objective -7029.632391121584, took 7 iterations and 0 nodes (14.40 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7029.63 to -7029.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7029.63239091
+Enumerated nodes:               0
+Total iterations:               7
+Time (CPU seconds):             37.58
+Time (Wallclock seconds):       38.12
+
+Total time (CPU seconds):       37.58   (Wallclock seconds):       38.12
+
+Welcome to the CBC MILP Solver 
+Version: 2.9.9 
+Build Date: Dec 31 2018 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Continuous objective value is 7032.63 - 5.14 seconds
+Cgl0002I 22852 variables fixed
+Cgl0004I processed model has 62921 rows, 52571 columns (17944 integer (17944 of which binary)) and 213380 elements
+Cbc0038I Initial state - 289 integers unsatisfied sum - 72.2814
+Cbc0038I Pass   1: (8.21 seconds) suminf.    0.00000 (0) obj. -7028.79 iterations 525
+Cbc0038I Solution found of -7028.79
+Cbc0038I Relaxing continuous gives -7032.63
+Cbc0038I Before mini branch and bound, 17655 integers at bound fixed and 19709 continuous
+Cbc0038I Mini branch and bound did not improve solution (8.39 seconds)
+Cbc0038I Freeing continuous variables gives a solution of -7032.63
+Cbc0038I After 8.59 seconds - Feasibility pump exiting with objective of -7032.63 - took 0.61 seconds
+Cbc0012I Integer solution of -7032.6324 found by feasibility pump after 0 iterations and 0 nodes (12.67 seconds)
+Cbc0038I Full problem 62921 rows 52571 columns, reduced to 37834 rows 24252 columns - 167 fixed gives 37818, 24085 - still too large
+Cbc0038I Full problem 62921 rows 52571 columns, reduced to 37769 rows 24085 columns - too large
+Cbc0001I Search completed - best objective -7032.63239107216, took 2 iterations and 0 nodes (16.07 seconds)
+Cbc0035I Maximum depth 0, 803 variables fixed on reduced cost
+Cuts at root node changed objective from -7032.63 to -7032.63
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                7032.63239111
+Enumerated nodes:               0
+Total iterations:               2
+Time (CPU seconds):             31.38
+Time (Wallclock seconds):       31.98
+
+Total time (CPU seconds):       31.38   (Wallclock seconds):       31.98
+
+┌ Warning: `getindex(df::DataFrame, col_ind::ColumnIndex)` is deprecated, use `df[!, col_ind]` instead.
+│   caller = crisp_res(::DataFrame) at CRISP_RT.jl:6
+└ @ Main /gpfs1/home/m/k/mkellygo/CRISP/src/CRISP_RT.jl:6
+┌ Warning: `getindex(df::DataFrame, col_ind::ColumnIndex)` is deprecated, use `df[!, col_ind]` instead.
+│   caller = crisp_res(::DataFrame) at CRISP_RT.jl:7
+└ @ Main /gpfs1/home/m/k/mkellygo/CRISP/src/CRISP_RT.jl:7
+Multiple Gen on ref bus, splitting mismatch among them.
+1
+1
+[-7.10543e-14]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.0
+P = 
+4352.0
+Ps = 
+0.0
+2
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.0
+P = 
+4352.0
+Ps = 
+0.0
+3
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.000000000001
+P = 
+4352.0
+Ps = 
+0.0
+4
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.000000000001
+P = 
+4352.0
+Ps = 
+0.0
+5
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.000000000001
+P = 
+4352.0
+Ps = 
+0.0
+6
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.000000000001
+P = 
+4352.0
+Ps = 
+0.0
+7
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+Float64[]
+Pg = 
+4352.000000000002
+P = 
+4352.0
+Ps = 
+0.0
+1
+1
+[-7.10543e-14]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[63.45, 56.9875, 73.4375, 113.975, 186.238, 58.75, 195.638, 0.0, 0.0, 0.0, 63.45, 56.9875, 73.4375, 155.688, 113.975, 186.238, 58.75, 195.638, 0.0, 0.0, 0.0, 63.45, 56.9875, 73.4375, 155.688, 113.975, 186.238, 58.75, 195.638, 0.0, 0.0, 0.0]
+Pg = 
+4569.599999998164
+P = 
+4352.0
+Ps = 
+-217.60000000000002
+2
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[62.1, 55.775, 71.875, 111.55, 182.275, 57.5, 191.475, 0.0, 0.0, 0.0, 62.1, 55.775, 71.875, 152.375, 111.55, 182.275, 57.5, 191.475, 0.0, 0.0, 0.0, 62.1, 55.775, 71.875, 152.375, 111.55, 182.275, 57.5, 191.475, 0.0, 0.0, 0.0]
+Pg = 
+4569.599999999998
+P = 
+4352.0
+Ps = 
+-217.60000000000002
+3
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[63.45, 54.5625, 70.3125, 109.125, 178.313, 56.25, 187.313, 0.0, 0.0, 0.0, 60.75, 54.5625, 70.3125, 149.063, 109.125, 178.312, 56.25, 187.313, 0.0, 0.0, 0.0, 60.75, 54.5625, 70.3125, 149.063, 109.125, 178.313, 56.25, 187.313, 0.0, 0.0, 0.0]
+Pg = 
+4558.799999999999
+P = 
+4352.0
+Ps = 
+-206.8
+4
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[64.8, 55.775, 68.75, 106.7, 174.35, 55.0, 183.15, 0.0, 0.0, 0.0, 59.4, 53.35, 68.75, 145.75, 106.7, 174.35, 55.0, 183.15, 0.0, 0.0, 0.0, 59.4, 53.35, 68.75, 145.75, 106.7, 174.35, 55.0, 183.15, 0.0, 0.0, 0.0]
+Pg = 
+4549.099999999998
+P = 
+4352.0
+Ps = 
+-197.10000000000002
+5
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[63.45, 54.5625, 67.1875, 104.275, 170.388, 53.75, 178.988, 0.0, 0.0, 0.0, 58.05, 52.1375, 67.1875, 142.438, 104.275, 170.387, 53.75, 178.988, 0.0, 0.0, 0.0, 58.05, 52.1375, 67.1875, 142.438, 104.275, 170.388, 53.75, 178.987, 0.0, 0.0, 0.0]
+Pg = 
+4569.600000000009
+P = 
+4352.0
+Ps = 
+-217.60000000000002
+6
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[64.8, 55.775, 65.625, 101.85, 166.425, 52.5, 174.825, 0.0, 0.0, 0.0, 56.7, 50.925, 65.625, 145.75, 101.85, 166.425, 52.5, 174.825, 0.0, 0.0, 0.0, 56.7, 50.925, 65.625, 139.125, 101.85, 166.425, 52.5, 174.825, 0.0, 0.0, 0.0]
+Pg = 
+4522.6
+P = 
+4352.0
+Ps = 
+-170.60000000000002
+7
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[63.45, 54.5625, 64.0625, 99.425, 162.463, 51.25, 170.663, 0.0, 0.0, 0.0, 55.35, 49.7125, 64.0625, 142.438, 99.425, 162.462, 51.25, 170.663, 0.0, 0.0, 0.0, 55.35, 49.7125, 64.0625, 135.813, 99.425, 162.463, 51.25, 170.663, 0.0, 0.0, 0.0]
+Pg = 
+4569.6000000000395
+P = 
+4352.0
+Ps = 
+-217.60000000000002
+1
+1
+[-7.10543e-14]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[264.6, 237.65, 293.75, 455.9, 744.95, 235.0, 782.55, 0.0, 0.0, 0.0, 253.8, 227.95, 293.75, 622.75, 455.9, 744.95, 235.0, 782.55, 0.0, 0.0, 0.0, 253.8, 227.95, 293.75, 622.75, 455.9, 744.95, 235.0, 782.55, 0.0, 0.0, 0.0]
+Pg = 
+5140.400000000019
+P = 
+4352.0
+Ps = 
+-788.4000000000001
+2
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[259.2, 232.8, 287.5, 446.2, 729.1, 230.0, 765.9, 0.0, 0.0, 0.0, 248.4, 223.1, 287.5, 609.5, 446.2, 729.1, 230.0, 765.9, 0.0, 0.0, 0.0, 248.4, 223.1, 287.5, 609.5, 446.2, 729.1, 230.0, 765.9, 0.0, 0.0, 0.0]
+Pg = 
+5222.400000000027
+P = 
+4352.0
+Ps = 
+-870.4000000000001
+3
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[264.6, 230.765, 281.25, 436.5, 713.25, 225.0, 749.25, 0.0, 0.0, 0.0, 243.0, 218.25, 281.25, 596.25, 436.5, 713.25, 225.0, 749.25, 0.0, 0.0, 0.0, 243.0, 218.25, 281.25, 596.25, 436.5, 713.25, 225.0, 749.25, 0.0, 0.0, 0.0]
+Pg = 
+5167.939134232556
+P = 
+4352.0
+Ps = 
+-815.9391342325353
+4
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[270.0, 225.915, 275.0, 426.8, 697.4, 220.0, 732.6, 0.0, 0.0, 0.0, 237.6, 213.4, 275.0, 583.0, 426.8, 697.4, 220.0, 732.6, 0.0, 0.0, 0.0, 237.6, 213.4, 275.0, 583.0, 426.8, 697.4, 220.0, 732.6, 0.0, 0.0, 0.0]
+Pg = 
+5179.20000000002
+P = 
+4352.0
+Ps = 
+-827.2
+5
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[273.644, 230.765, 268.75, 417.1, 681.55, 215.0, 715.95, 0.0, 0.0, 0.0, 232.2, 208.55, 268.75, 569.75, 417.1, 681.55, 215.0, 715.95, 0.0, 0.0, 0.0, 232.2, 208.55, 268.75, 569.75, 417.1, 681.55, 215.0, 715.95, 0.0, 0.0, 0.0]
+Pg = 
+5147.42234372386
+P = 
+4352.0
+Ps = 
+-795.4223437238613
+6
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[279.044, 225.915, 262.5, 407.4, 665.7, 210.0, 699.3, 0.0, 0.0, 0.0, 226.8, 203.7, 262.5, 556.5, 407.4, 665.7, 210.0, 699.3, 0.0, 0.0, 0.0, 226.8, 203.7, 262.5, 556.5, 407.4, 665.7, 210.0, 699.3, 0.0, 0.0, 0.0]
+Pg = 
+5179.199999999995
+P = 
+4352.0
+Ps = 
+-827.2
+7
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[273.644, 221.065, 256.25, 397.7, 649.85, 205.0, 682.65, 0.0, 0.0, 0.0, 221.4, 198.85, 256.25, 543.25, 397.7, 649.85, 205.0, 682.65, 0.0, 0.0, 0.0, 221.4, 198.85, 256.25, 543.25, 397.7, 649.85, 205.0, 682.65, 0.0, 0.0, 0.0]
+Pg = 
+5222.399999999987
+P = 
+4352.0
+Ps = 
+-870.4000000000001
+1
+1
+[-7.10543e-14]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[661.5, 594.125, 734.375, 1139.75, 1862.38, 587.5, 1956.38, 0.0, 0.0, 0.0, 661.5, 569.875, 734.375, 1556.88, 1139.75, 1862.38, 612.5, 1956.38, 0.0, 0.0, 0.0, 634.5, 569.875, 734.375, 1556.88, 1139.75, 1862.38, 587.5, 1956.38, 0.0, 0.0, 0.0]
+Pg = 
+6115.0000000000055
+P = 
+4352.0
+Ps = 
+-1763.0
+2
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[648.0, 582.0, 718.75, 1115.5, 1822.75, 575.0, 1914.75, 0.0, 0.0, 0.0, 648.0, 557.75, 718.75, 1523.75, 1115.5, 1822.75, 600.0, 1914.75, 0.0, 0.0, 0.0, 621.0, 557.75, 718.75, 1523.75, 1115.5, 1848.74, 600.0, 1914.75, 0.0, 0.0, 0.0]
+Pg = 
+6324.047990756515
+P = 
+4352.0
+Ps = 
+-1972.0479907564988
+3
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[634.5, 569.875, 703.125, 1091.25, 1783.13, 562.5, 1873.13, 0.0, 0.0, 0.0, 634.5, 545.625, 703.125, 1490.63, 1091.25, 1783.13, 587.5, 1873.13, 0.0, 0.0, 0.0, 607.5, 545.625, 703.125, 1490.63, 1091.25, 1809.11, 587.5, 1873.13, 0.0, 0.0, 0.0]
+Pg = 
+6528.000000000038
+P = 
+4352.0
+Ps = 
+-2175.9999999999995
+4
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[621.0, 557.75, 687.5, 1067.0, 1743.5, 550.0, 1831.5, 0.0, 0.0, 0.0, 621.0, 533.5, 687.5, 1457.5, 1067.0, 1743.5, 575.0, 1831.5, 0.0, 0.0, 0.0, 594.0, 533.5, 687.5, 1457.5, 1067.0, 1769.49, 575.0, 1914.75, 0.0, 0.0, 0.0]
+Pg = 
+6195.000000000007
+P = 
+4352.0
+Ps = 
+-1843.0
+5
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[634.5, 569.875, 671.875, 1042.75, 1703.88, 537.5, 1789.88, 0.0, 0.0, 0.0, 607.5, 521.375, 671.875, 1424.38, 1042.75, 1703.88, 562.5, 1789.88, 0.0, 0.0, 0.0, 580.5, 521.375, 671.875, 1424.38, 1042.75, 1729.86, 562.5, 1873.13, 0.0, 0.0, 0.0]
+Pg = 
+6323.000000000013
+P = 
+4352.0
+Ps = 
+-1971.0
+6
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[621.0, 557.75, 656.25, 1018.5, 1664.25, 525.0, 1748.25, 0.0, 0.0, 0.0, 594.0, 509.25, 656.25, 1391.25, 1018.5, 1664.25, 550.0, 1748.25, 0.0, 0.0, 0.0, 567.0, 509.25, 656.25, 1391.25, 1018.5, 1725.03, 550.0, 1831.5, 0.0, 0.0, 0.0]
+Pg = 
+6388.822833899956
+P = 
+4352.0
+Ps = 
+-2036.822833899946
+7
+[-1.13687e-13]
+[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+[108.0, 97.0, 125.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0, 108.0, 97.0, 125.0, 265.0, 194.0, 317.0, 100.0, 333.0]
+[628.056, 569.875, 640.625, 994.25, 1624.63, 512.5, 1706.63, 0.0, 0.0, 0.0, 580.5, 497.125, 640.625, 1358.13, 994.25, 1624.63, 537.5, 1706.63, 0.0, 0.0, 0.0, 553.5, 497.125, 640.625, 1358.13, 994.25, 1685.41, 537.5, 1789.88, 0.0, 0.0, 0.0]
+Pg = 
+6348.775019830259
+P = 
+4352.0
+Ps = 
+-1996.7750198302501
+
+real	23m51.463s
+user	23m30.831s
+sys	0m20.827s
+completed job at ti
