@@ -6,21 +6,24 @@ using DataFrames
 using CSV
 #import ps from csv files
 function import_ps(filename)
-    psBusIndex = CSV.read("$filename\\bi.csv",allowmissing=:none)
-    psBusData = CSV.read("$filename\\bus.csv",allowmissing=:none)
-    psBranchData = CSV.read("$filename\\branch.csv",allowmissing=:none);
-    psGenData = CSV.read("$filename\\gen.csv",allowmissing=:none);
-    psShuntData = CSV.read("$filename\\shunt.csv",allowmissing=:none);
+    #psBusIndex = CSV.File("$filename\\bi.csv") |> DataFrame
+    psBusData = CSV.File("$filename\\bus.csv") |> DataFrame
+    psBranchData = CSV.File("$filename\\branch.csv") |> DataFrame
+    psGenData = CSV.File("$filename\\gen.csv") |> DataFrame
+    psShuntData = CSV.File("$filename\\shunt.csv") |> DataFrame
     mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
-    psBranchData[:,:Pf] = psBranchData[:,:Pf].*1.0;
-    psBranchData[:,:Qf] = psBranchData[:,:Qf].*1.0;
-    psBranchData[:,:Pt] = psBranchData[:,:Pt].*1.0;
-    psBranchData[:,:Qt] = psBranchData[:,:Qt].*1.0;
-    psGenData[:,:Pg] = psGenData[:,:Pg].*1.0;
-    psGenData[:,:Pmax] = psGenData[:,:Pmax].*1.0;
-    psShuntData[:,:P] = psShuntData[:,:P].*1.0;
+    psBranchData.Pf = psBranchData.Pf.*1.0;
+    psBranchData.Qf = psBranchData.Qf.*1.0;
+    psBranchData.Pt = psBranchData.Pt.*1.0;
+    psBranchData.Qt = psBranchData.Qt.*1.0;
+    psGenData.Pg = psGenData.Pg.*1.0;
+    psGenData.Pmax = psGenData.Pmax.*1.0;
+    psShuntData.P = psShuntData.P.*1.0;
+    n = length(psBusData.id);
+    bi = sparse(psBusData.id,fill(1,n),collect(1:n));
+    psBusIndex = bi;
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return ps
 end
@@ -144,7 +147,8 @@ function ps_subset(ps,ps_island)
     psBranchData = ps.branch[ps_island.branch,:];
     psGenData = ps.gen[ps_island.gen,:];
     psShuntData = ps.shunt[ps_island.shunt,:];
-    psBusIndex = DataFrame(bi=ps.bi.bi[ps_island.bus]);
+    n = length(psBusData.id);
+    psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));#psBusIndex = DataFrame(bi=ps.bi.bi[ps_island.bus]);
     psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psBusIndex);
     return psi
 end

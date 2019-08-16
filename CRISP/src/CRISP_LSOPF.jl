@@ -7,7 +7,7 @@ using LinearAlgebra
 #export run_dcpf
 function crisp_dcpf!(ps)
     # constants
-    tolerance = 1e-6
+    tolerance = 1e-4
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -105,7 +105,7 @@ end
 
 function crisp_lsopf!(ps)
     # constants
-    tolerance = 1e-6
+    tolerance = 1e-4
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
