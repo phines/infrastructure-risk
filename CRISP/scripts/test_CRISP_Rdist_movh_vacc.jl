@@ -6,40 +6,41 @@ case1 = "data\\saved_ps\\case73_noPWS+S5\\"
 case2 = "data\\saved_ps\\case73_noPWS+S20\\"
 case3 = "data\\saved_ps\\case73_noPWS+S50\\"
 
-out = "\\experiments_gen_stor\\case73"
+out = "\\experiments_gen_stor\\case73\\mh"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
 end
 #
-i="01"
+ARGS = ["01"; 1];
+i=parse(Int,ARGS[1]);
 # number of events
 N = 10;
 #time steps
 dt = 15 #minutes
 #set randomized seed
-rng = MersenneTwister(100);
+rng = MersenneTwister(100+i);
 #save restoration data to folder within results folder:
 filename = "res_out_$(case[15:end-1])";
 out_folder = out*"\\$filename.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case,out_folder,dt)
 #set randomized seed
-rng = MersenneTwister(100);
+rng = MersenneTwister(100+i);
 #save restoration data to folder within results folder:
 filename1 = "res_out_$(case1[15:end-1])";
 out_folder1 = out*"\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case1,out_folder1,dt)
 #set randomized seed
-rng = MersenneTwister(100);
+rng = MersenneTwister(100+i);
 #save restoration data to folder within results folder:
 filename2 = "res_out_$(case2[15:end-1])";
 out_folder2 = out*"\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case2,out_folder2,dt)
 #set randomized seed
-rng = MersenneTwister(100);
+rng = MersenneTwister(100+i);
 #save restoration data to folder within results folder:
 filename3 = "res_out_$(case3[15:end-1])";
 out_folder3 = out*"\\$filename3.csv"

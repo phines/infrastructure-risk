@@ -1,0 +1,5 @@
+data\case39\ made n-1 secure
+used generator types listed in cost info here:
+https://www.maths.ed.ac.uk/optenergy/NetworkData/39buscase/
+along with generator profiles of the same fuel type in data\saved_ps\case73_n-1
+to create case39 with more info about generators. Picked Pmin somewhat randomly and set DC link to have mostly 0 and NA for various time/heat/storage/info

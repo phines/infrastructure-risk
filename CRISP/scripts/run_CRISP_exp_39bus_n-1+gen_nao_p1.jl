@@ -6,7 +6,7 @@ case2 = "data\\saved_ps\\case39_n-1+PV5\\"
 case3 = "data\\saved_ps\\case39_n-1+PV20\\"
 case4 = "data\\saved_ps\\case39_n-1+PV100\\"
 
-out = "\\experiments\\9"
+out = "\\100"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
