@@ -189,9 +189,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
             end
             for g in 1:ng
                 fix(Pg[g,k], Pg1[g], force = true) #Pg1[g]
-                #fix(ug[g,k], ug1[g], force = true)
                 @constraint(m, ug[g,k] .== ug1[g]) #ug1[g]
-                #@constraint(m, Pg[g,1] .== Pg1)
             end
         end
         # variable bounds constraints
