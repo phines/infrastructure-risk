@@ -1,12 +1,12 @@
 using CSV
 include("CRISP_initiate.jl")
-include("CRISP_LSOPF.jl")
+include("CRISP_LSOPF1.jl")
 include("CRISP_RLSOPF.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist(Num,ps_folder,out_folder;param_file = "")
-    debug=0;
+    debug=1;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -58,7 +58,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
                     # run the dcpf
                     crisp_dcpf!(psi);
                     # run lsopf
-                    crisp_lsopf!(psi);
+                    crisp_lsopf1!(psi);
                     ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
                     ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
                     crisp_dcpf!(psi);
@@ -67,7 +67,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
                     @assert total>=sum(ps.shunt.P)
             else
                 crisp_dcpf!(ps);
-                crisp_lsopf!(ps);
+                crisp_lsopf1!(ps);
                 crisp_dcpf!(ps);
             end
             println(iterat)

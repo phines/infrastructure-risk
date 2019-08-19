@@ -1,4 +1,3 @@
-include("..\\src\\CRISP_network_gen.jl")
 include("..\\src\\CRISP_Rdist_gen_stor1.jl")
 ## folder of case data
 case = "data\\saved_ps\\case39_n-1_gen\\"

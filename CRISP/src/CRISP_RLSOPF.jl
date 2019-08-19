@@ -123,71 +123,46 @@ function crisp_rlopf!(ps,Pd_max)
         ps.shunt.P += dPd_star; #changes ps structure
         ps.gen.Pg += dPg_star; #changes ps structure
     else
-        if (!isempty(ps.gen) && isempty(ps.shunt)) || (isempty(ps.gen) && !isempty(ps.shunt)) || (isempty(ps.gen) && isempty(ps.shunt))
-            ps.gen.Pg  .= ps.gen.Pg.*0.0;
-            ps.shunt.P .= ps.shunt.P.*0.0;
-        elseif !isempty(ps.gen) && !isempty(ps.shunt)
-            Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
-            Pg = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
-            Pg_cap = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
-            if sum(Pg_cap) >= sum(Pd)
-                deltaPd = 0.0;
-                deltaPg = sum(Pd)-sum(Pg);
-            else
-                deltaPd = sum(Pg_cap)-sum(Pd);
-                deltaPg = sum(Pg_cap)-sum(Pg);
-            end
-            if length(Pd)  > 1
-                deltaPd_star = zeros(length(Pd))
-                deltaPd_used = 0;
-                for load = 1:length(Pd)
-                    if abs(deltaPd) >= abs(deltaPd_used)
-                        dload = 0;
-                    else
-                        if abs(Pd[load]) < abs(deltaPd_used - deltaPd)
-                            dload = -Pd[load]
-                        else
-                            dload = -abs(deltaPd_used - deltaPd)
-                        end
-                    end
-                    deltaPd_star[load] = dload.*ps.baseMVA;
-                    deltaPd_used = deltaPd_used + dload;
-                end
-            else
-                deltaPd_star = deltaPd.*ps.baseMVA;
-            end
-            if length(Pg) > 1
-                deltaPg_star = zeros(length(Pg))
-                deltaPg_used = 0;
-                for gen = 1:length(Pg)
-                    deltaPg_star[gen] = deltaPg.*ps.baseMVA;
-                    if abs(deltaPg) >= abs(deltaPg_used)
-                        dgen = 0;
-                    else
-                        if abs(Pg[gen]) < abs(deltaPg_used - deltaPg)
-                            if deltaPg < 0
-                                dgen = -Pg[gen]
-                            else
-                                dgen = Pg[gen]
-                            end
-                        elseif deltaPg < 0
-                            dgen = -abs(deltaPg_used - deltaPg)
-                        else
-                            dgen = abs(deltaPg_used - deltaPg)
-                        end
-                    end
-                    deltaPg_star[gen] = dgen.*ps.baseMVA;
-                    deltaPg_used = deltaPg_used + dgen;
-                end
-            else
-                deltaPg_star = deltaPg.*ps.baseMVA;
-            end
-            ps.shunt.P .+= deltaPd_star;
-            ps.gen.Pg  .+= deltaPg_star;
-        else
-            ps.shunt.P = ps.shunt.P.*0.0;
-            ps.gen.Pg  = ps.gen.Pg.*0.0;
+        bi = sparse(ps.bus.id,fill(1,n),collect(1:n));
+        # load data
+        nd = size(ps.shunt,1)
+        D = bi[ps.shunt.bus]
+        D_bus = sparse(D,collect(1:nd),1.,n,nd);
+        Pd1 = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
+        if any(D.<1) || any(D.>n)
+            error("Bad indices in shunt matrix")
         end
+        # gen data
+        ng = size(ps.gen.Pg,1)
+        G = bi[ps.gen.bus]
+        G_bus = sparse(G,collect(1:ng),1.,n,ng);
+        Pg1 = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
+        ug1 = ones(ng); ug1[Pg1.==0] .= 0;
+        #Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_max = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
+        Pg_min = ps.gen.Pmin ./ ps.baseMVA .* ps.gen.status
+        if any(G.<1) || any(G.>n)
+            error("Bad indices in gen matrix")
+        end
+        m = Model(with_optimizer(Gurobi.Optimizer))
+        # variables
+        @variable(m, Pd[1:nd]) # demand
+        @variable(m, Pg[1:ng]) # generation
+        # variable bounds constraints
+        @constraint(m, 0.0 .<= Pd .<= Pd_max./ ps.baseMVA .* ps.shunt[:status]) # load served limits
+        @constraint(m, 0 .<= Pg .<= Pg_max) # generator power limits
+        # power balance
+        @constraint(m, 0 .== G_bus*Pg-D_bus*Pd)
+        # objective
+        @objective(m, Max, 100*sum(sum(Pd)));
+        ## SOLVE! ##
+        optimize!(m)
+        sol_Pd=value.(Pd)
+        sol_Pg=value.(Pg)
+        dPd_star = sol_Pd.*ps.baseMVA
+        dPg_star = sol_Pg.*ps.baseMVA
+        ps.shunt.P .== dPd_star; #changes ps structure
+        ps.gen.Pg .== dPg_star; #changes ps structure
     end
     #adding criteria that should produce errors if incorrect.
     @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
