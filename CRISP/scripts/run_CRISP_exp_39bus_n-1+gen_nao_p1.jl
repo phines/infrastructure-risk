@@ -13,7 +13,7 @@ else
 end
 
 # number of events
-N = 100;
+N = 10000;
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:

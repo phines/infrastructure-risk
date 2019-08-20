@@ -6,7 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist(Num,ps_folder,out_folder;param_file = "")
-    debug=1;
+    debug=0;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -17,6 +17,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     ## load the case data
     ps = import_ps("$ps_folder")
     crisp_dcpf!(ps)
+    ps.shunt.P .=1.5*ps.shunt.P;
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
     ps0 = deepcopy(ps);
