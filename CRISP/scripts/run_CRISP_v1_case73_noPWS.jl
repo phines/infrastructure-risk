@@ -3,7 +3,7 @@ include("..\\src\\CRISP_Rdist.jl")
 ## folder of case data
 case1 = "data\\saved_ps\\case73_noPWS_n-1\\"
 case2 = "data\\saved_ps\\case73_noPWS\\"
-out = "\\100\\case73_load1.5"
+out = "100\\case73_load1.5"
 if isdir("results\\"*out)
 else
     mkdir("results\\"*out)
