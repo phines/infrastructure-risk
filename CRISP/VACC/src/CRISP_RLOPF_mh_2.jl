@@ -275,7 +275,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
             for g in 1:ng
                 fix(Pg[g,k], 0.0, force = true) #Pd1[d]
                 #fix(ug[g,k], ug1[g], force = true)
-                @constraint(m, ug[g,k] .== false) #ug1[g]
+                @constraint(m, ug[g,k] .== ug1[g])
                 #@constraint(m, Pg[g,1] .== Pg1)
             end
         end
