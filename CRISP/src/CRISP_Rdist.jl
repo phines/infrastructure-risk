@@ -6,7 +6,7 @@ include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist(Num,ps_folder,out_folder;param_file = "")
-    debug=0;
+    debug=1;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -16,8 +16,8 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
     ps = import_ps("$ps_folder")
+    ps.shunt.P .= 2*ps.shunt.P;
     crisp_dcpf!(ps)
-    ps.shunt.P .=1.5*ps.shunt.P;
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
     ps0 = deepcopy(ps);
@@ -83,6 +83,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
                 LoadShed0[iterat] = total-sum(ps.shunt.P);
                 ## run step 3
                 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
+                println(Restore)
                 K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
                 K[1] = false;
                 R = Restore.time[K];

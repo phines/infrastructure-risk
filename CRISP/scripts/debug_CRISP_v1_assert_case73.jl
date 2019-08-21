@@ -12,12 +12,13 @@ include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 
 ps = import_ps("data\\saved_ps\\case73_noPWS_n-1\\")
+ps.shunt.P .= 2*ps.shunt.P;
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 ps0 = deepcopy(ps);
 
-Lines_Init_State = CSV.read("results\\100\\case73\\res_out_case39_n-1_p1 IC544.csv", allowmissing=:none)
+Lines_Init_State = CSV.read("results\\100\\case73_load2.5\\res_out_case73_n-1_p1 IC1.csv", allowmissing=:none)
 
 state = Lines_Init_State[:,1];
 ps.branch.status[state .==0] .= 0;

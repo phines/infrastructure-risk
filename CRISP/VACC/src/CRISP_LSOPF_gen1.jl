@@ -394,10 +394,14 @@ if n>1
     sol_Ps=value.(Ps)
     sol_Pg=value.(Pg)
     sol_E=value.(E)
+    sol_ug = value.(ug)
+    println(sol_ug)
+    println(sol_Pg)
+    @assert sum(0 .!= sol_Pg[sol_ug .== 0]) == 0
     dE_star = sol_E.*ps.baseMVA
     dPd_star = sol_Pd.*ps.baseMVA./ps.shunt.P # % load served
     dPs_star = sol_Ps.*ps.baseMVA
-    dPg_star = sol_Pg.*ps.baseMVA
+    dPg_star = sol_Pg.*sol_ug.*ps.baseMVA
 else
     bi = ps.bi;
     # load data

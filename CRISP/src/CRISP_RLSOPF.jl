@@ -50,7 +50,7 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max ;t0 = 10, load_cost=0)
         end
         @assert abs(sum(ps.gen.Pg)-sum(ps.shunt.P))<=tolerance
         # set load shed for this time step
-        load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
+        load_shed[i+2] = sum(load_cost.*(Pd_max - ps.shunt.P));
     end
     times = [0.0;t0*1.0;times.+t0*1.0];
     perc_load_served = (sum(load_cost.*Pd_max) .- load_shed)./sum(load_cost.*Pd_max);
