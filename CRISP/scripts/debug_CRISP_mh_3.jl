@@ -27,8 +27,7 @@ end
 ps0 = deepcopy(ps);
 
 Lines_Init_State = CSV.File("VACC\\results\\experiments\\mh\\res_out_case73_noPWS_n-1-4656_lines1.csv") |> DataFrame
-Lines_Init_State.state[1:110] .= 0
-Lines_Init_State.recovery_time .= 1
+Lines_Init_State.recovery_time[Lines_Init_State.state .!=1] .= 1
 Gens_Init_State = CSV.File("VACC\\results\\experiments\\mh\\res_out_case73_noPWS_n-1-4656_gens1.csv") |> DataFrame
 Gens_Init_State.state[1:50] .= 0
 l_failures = Lines_Init_State.state;

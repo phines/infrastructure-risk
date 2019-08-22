@@ -6,7 +6,7 @@
 % costs2 = xlsread('..\results\experiments\6\res_out_case39_05PV_p1_2.csv');
 % costs3 = xlsread('..\results\experiments\6\res_out_case39_20PV_p1_2.csv');
 
-% N-1 Secure 39 bus p1 sampling.
+% N-1 Secure 73 bus original model sampling.
 % costs1 = xlsread('..\results\100\case73\data\res_out_case39_n-1_p1.csv');
 % costs2 = xlsread('..\results\100\case73_load1.5\res_out_case73_n-1_p1.csv');
 % costs3 = xlsread('..\results\100\case73_load2\res_out_case73_n-1_p1.csv');
