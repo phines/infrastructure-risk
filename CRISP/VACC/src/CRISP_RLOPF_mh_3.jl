@@ -42,6 +42,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         ps_islands = build_islands(subgraph,ps);
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
+            turn_gen_on!(psi,dt);
             crisp_mh_rlopf!(psi,dt,t_window);
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
@@ -127,6 +128,11 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         error("Bad indices in shunt matrix")
     end
     # gen data
+    g1 = (ps.gen.status .== 1);
+    g2 = (ps.gen.Pg .!=0);
+    g3 = (ps.gen.time_on .!= 0)
+    gst = g1 .| g2;
+    gf = .!gst .& g3
     gst = (ps.gen.status .== 1);
     ng = size(ps.gen.Pg[gst],1)
     G = bi[ps.gen.bus[gst]]
