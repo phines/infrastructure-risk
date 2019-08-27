@@ -42,6 +42,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         ps_islands = build_islands(subgraph,ps);
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
+            turn_gen_on!(psi,dt);
             crisp_mh_rlopf!(psi,dt,t_window);
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
@@ -127,21 +128,23 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         error("Bad indices in shunt matrix")
     end
     # gen data
-    gs = (ps.gen.Pg .!= 0);
-    gst = (ps.gen.status .== 1);
-    g = gst .& gs;
-    ng = size(ps.gen.Pg[g],1)
-    G = bi[ps.gen.bus[g]]
+    g1 = (ps.gen.status .== 1);
+    g2 = (ps.gen.Pg .!=0);
+    g3 = (ps.gen.time_on .!= 0)
+    gst = g1 .| g2;
+    gf = .!gst .& g3
+    ng = size(ps.gen.Pg[gst],1)
+    G = bi[ps.gen.bus[gst]]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
-    Pg1 = (ps.gen.Pg[g] ./ ps.baseMVA) .* ps.gen.status[g]
+    Pg1 = (ps.gen.Pg[gst] ./ ps.baseMVA) .* ps.gen.status[gst]
     ug1 = falses(ng); ug1[Pg1.!=0] .= true;
-    Pg_max = (ps.gen.Pmax[g] ./ ps.baseMVA) .* ps.gen.status[g]
-    Pg_min = (ps.gen.Pmin[g] ./ ps.baseMVA) .* ps.gen.status[g]
-    RR = ps.gen.RampRateMWMin[g] .* dt ./ ps.baseMVA .* ps.gen.status[g]
-    T_SU =  Int64.(round.(ps.gen.minUpTimeHr[g] .*60 ./dt .* ps.gen.status[g])) # number of time steps to turn on
-    T_SD =  Int64.(round.(ps.gen.minDownTimeHr[g] .*60 ./dt ./ ps.baseMVA .* ps.gen.status[g])) # number of time steps to turn off
-    t_off = Int64.(round.(ps.gen.time_off[g]./dt ./ ps.baseMVA .* ps.gen.status[g]))
-    t_on = Int64.(round.(ps.gen.time_on[g]./dt ./ ps.baseMVA .* ps.gen.status[g]))
+    Pg_max = (ps.gen.Pmax[gst] ./ ps.baseMVA) .* ps.gen.status[gst]
+    Pg_min = (ps.gen.Pmin[gst] ./ ps.baseMVA) .* ps.gen.status[gst]
+    RR = ps.gen.RampRateMWMin[gst] .* dt ./ ps.baseMVA .* ps.gen.status[gst]
+    T_SU =  Int64.(round.(ps.gen.minUpTimeHr[gst] .*60 ./dt .* ps.gen.status[gst])) # number of time steps to turn on
+    T_SD =  Int64.(round.(ps.gen.minDownTimeHr[gst] .*60 ./dt ./ ps.baseMVA .* ps.gen.status[gst])) # number of time steps to turn off
+    t_off = Int64.(round.(ps.gen.time_off[gst]./dt ./ ps.baseMVA .* ps.gen.status[gst]))
+    t_on = Int64.(round.(ps.gen.time_on[gst]./dt ./ ps.baseMVA .* ps.gen.status[gst]))
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
@@ -188,7 +191,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 fix(E[s,k], E1[s], force = true)
             end
             for g in 1:ng
-                fix(Pg[g,k], Pg1[g], force = true) #Pg1[g]
+                fix(Pg[gst,k], Pg1[gst], force = true) #Pg1[gst]
             end
         end
         # variable bounds constraints
@@ -211,7 +214,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         sol_Ps=value.(Ps)[:,2]
         sol_Pg=value.(Pg)[:,2]
         sol_E=value.(E)[:,2]
-        @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[g]))<=2*tolerance
+        @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
         @assert sum(ps.storage.E .< -tolerance)==0
         dPd_star = (Vector(sol_Pd).*ps.baseMVA)./ps.shunt.P # % load served
         dPs_star = Vector(sol_Ps).*ps.baseMVA
@@ -237,10 +240,10 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 fix(E[s,k], E1[s], force = true)
             end
             for g in 1:ng
-                fix(Pg[g,k], 0.0, force = true) #Pd1[d]
-                #fix(ug[g,k], ug1[g], force = true)
-                @constraint(m, ug[g,k] .== ug1[g])
-                #@constraint(m, Pg[g,1] .== Pg1)
+                fix(Pg[gst,k], 0.0, force = true) #Pd1[d]
+                #fix(ug[gst,k], ug1[gst], force = true)
+                @constraint(m, ug[gst,k] .== ug1[gst])
+                #@constraint(m, Pg[gst,1] .== Pg1)
             end
         end
         # variable bounds constraints
@@ -265,7 +268,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         sol_Ps=value.(Ps)[:,2]
         sol_Pg=value.(Pg)[:,2]
         sol_E=value.(E)[:,2]
-        @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[g]))<=2*tolerance
+        @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
         @assert sum(ps.storage.E .< -tolerance)==0
         dPd_star = (Vector(sol_Pd).*ps.baseMVA)./ps.shunt.P # % load served
         dPs_star = Vector(sol_Ps).*ps.baseMVA
@@ -276,7 +279,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
     ps.shunt.status = dPd_star;
     ps.storage.Ps = dPs_star;
     ps.storage.E = dE_star;
-    ps.gen.Pg[g] = dPg_star;
+    ps.gen.Pg[gst] = dPg_star;
     # find turn on and off time
     ps.gen.time_off[ps.gen.Pg .== 0] .+= dt;
     ps.gen.time_off[ps.gen.Pg .!= 0] .= 0.0;
@@ -303,14 +306,14 @@ function turn_gen_on!(ps,dt)
         gs = (ps.gen.Pg .!= 0);
         gst = (ps.gen.status .== 1);
         g = gs .& gst;
-        ng = size(ps.gen[g,:Pg],1)
-        G = bi[ps.gen[g,:bus]]
+        ng = size(ps.gen[gst,:Pg],1)
+        G = bi[ps.gen[gst,:bus]]
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
-        Pg1 = ps.gen[g,:Pg] ./ ps.baseMVA .* ps.gen[g,:status]
+        Pg1 = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
         ug1 = ones(ng); ug1[Pg1.==0] .= 0;
-        #Pg = ps.gen[g,:Pg] ./ ps.baseMVA .* ps.gen[g,:status]
-        Pg_max = ps.gen[g,:Pmax] ./ ps.baseMVA .* ps.gen[g,:status]
-        Pg_min = ps.gen[g,:Pmin] ./ ps.baseMVA .* ps.gen[g,:status]
+        #Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -380,14 +383,14 @@ function turn_gen_on!(ps,dt)
         gs = (ps.gen.Ps .!= 0);
         gst = (ps.gen.status .== 1);
         g = gs .& gst;
-        ng = size(ps.gen[g,:Pg],1)
-        G = bi[ps.gen[g,:bus]]
+        ng = size(ps.gen[gst,:Pg],1)
+        G = bi[ps.gen[gst,:bus]]
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
-        Pg1 = ps.gen[g,:Pg] ./ ps.baseMVA .* ps.gen[g,:status]
+        Pg1 = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
         ug1 = ones(ng); ug1[Pg1.==0] .= 0;
-        #Pg = ps.gen[g,:Pg] ./ ps.baseMVA .* ps.gen[g,:status]
-        Pg_max = ps.gen[g,:Pmax] ./ ps.baseMVA .* ps.gen[g,:status]
-        Pg_min = ps.gen[g,:Pmin] ./ ps.baseMVA .* ps.gen[g,:status]
+        #Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_max = ps.gen[gst,:Pmax] ./ ps.baseMVA .* ps.gen[gst,:status]
+        Pg_min = ps.gen[gst,:Pmin] ./ ps.baseMVA .* ps.gen[gst,:status]
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
@@ -431,11 +434,11 @@ function turn_gen_on!(ps,dt)
         sol_ug=value.(ug)
         @assert abs(sum(sol_Pd)-sum(sol_Ps)-sum(sol_Pg)) <= 3tolerance
     end
-    on1 =  ps.gen.time_off[g] .>= ps.gen.minDownTimeHr[g]
-    ps.gen.time_on[g][sol_ug.==1 .& on1] .+= dt/60;
-    on2 = ps.gen.time_on[g] .>= ps.gen.minUpTimeHr[g]
-        ps.gen.time_off[g][on2] .= 0;
-        ps.gen.Pg[g][on2] .= ps.gen.Pmin[g][on2]
-        ps.gen.time_on[g][on2] .= 0;
+    on1 =  ps.gen.time_off[gst] .>= ps.gen.minDownTimeHr[gst]
+    ps.gen.time_on[gst][sol_ug.==1 .& on1] .+= dt/60;
+    on2 = ps.gen.time_on[gst] .>= ps.gen.minUpTimeHr[gst]
+        ps.gen.time_off[gst][on2] .= 0;
+        ps.gen.Pg[gst][on2] .= ps.gen.Pmin[gst][on2]
+        ps.gen.time_on[gst][on2] .= 0;
     return ps
 end
