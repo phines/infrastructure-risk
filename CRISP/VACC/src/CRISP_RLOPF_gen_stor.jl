@@ -29,7 +29,7 @@ function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_
     lines_out = length(ps.branch.status) - sum(ps.branch.status);
     gens_out = length(ps.gen.status) - sum(ps.gen.status);
     Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
-    lines_out = lines_out, gens_out = gens_out)
+     lines_out = lines_out, gens_out = gens_out)
     cv = deepcopy(Restore);
     # find longest recovery
     recTime = maximum([maximum(l_recovery_times) maximum(g_recovery_times)]);

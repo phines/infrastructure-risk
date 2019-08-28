@@ -13,14 +13,14 @@
 ## Send mail on job start, end, aborted by batch system, or f for non-zero exit
 ## #PBS -m bea
 ## #PBS -M mkellygo@uvm.edu
-#PBS -t 0-99
+#PBS -t 0-9
 #switcher julia = julia-1.1.0
 ti=$(date +"%H:%M:%S.%N")
 echo "started job $PASSx part $PASSB at $ti"
 cd /users/m/k/mkellygo/CRISP
 module load julia
 ## times and runs program
-time julia scripts/run_CRISP_Rdist_movh_vacc.jl ${PBS_ARRAYID} $PASSy
+time julia scripts/run_CRISP_Rdist_mh_fast.jl ${PBS_ARRAYID} $PASSy
 ## ${PBS_ARRAYID} $PASSB
 ti=$(date +"%H:%M:%S.%N")
 echo "completed job at ti" ## $PASSx part $PASSy at $ti"

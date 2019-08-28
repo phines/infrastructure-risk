@@ -1,7 +1,7 @@
 using CSV
 include("CRISP_initiate.jl")
 include("CRISP_LSOPF_gen1.jl")
-include("CRISP_RLOPF_mh_2.jl")
+include("CRISP_RLOPF_mh_3.jl")
 include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
@@ -19,10 +19,10 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
-    ps.shunt.P = 1.5*ps.shunt.P
     crisp_dcpf_g_s!(ps)
     total = sum(ps.shunt.P);
     Pd_max = deepcopy(ps.shunt.P);
+    gen_on = ps.gen.Pg .!= 0;
     #add columns to keep track of the time each generator is on or off
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_on = zeros(length(ps.gen.Pg));
@@ -82,16 +82,14 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
         LoadShed0[iterat] = total-sum(ps.shunt.P .* ps.shunt.status);
         ## run step 3
         dt = 15
-        ti = 60*48;#1
+        ti = 60*48;
         t0 = 10
-        #crisp_mh_rlopf!(ps,dt,time)
-        Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0)
+        Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
         if debug==1
             outnow = (out_folder[1:end-4]);
             CSV.write("results"*outnow*"_restore.csv", Restore)
         end
-        #Restore = RLSOPF_g_s!(ps,dt,state,gens_state,recovery_times,gens_recovery_time,Pd_max)# data frame [times, load shed in cost per hour]
-        ###find the time to restore the grid to 99.9% load served
+        ## find the time to restore the grid to 99.9% load served
         K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
         K[1] = false;
         if isempty( Restore.time[K]) && (size(Restore)[1] > 1)
@@ -103,8 +101,10 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
             LoadServedTime[iterat] = R[1] - Restore.time[2];
             ## run step 4
             ResilienceTri[iterat] = crisp_res(Restore);
+            println(ResilienceTri)
         end
     end
+    ## make dataframes
     case_res = DataFrame(resilience = ResilienceTri[:,1]);
     #case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], initial_load_shed = LoadShed0[:,1]);#, full_rest_time = MaxRestorationTime[:,1]);
 
@@ -112,13 +112,3 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
     CSV.write("results/$out_folder", case_res);
     #CSV.write("results/$(out_folder[1:end-4])_lines.csv", case_lines);
 end
-
-
-#=
-#for debugging
-include("src\\CRISP_initiate.jl")
-include("src\\CRISP_LSOPF_gen1.jl")
-include("src\\CRISP_RLOPF_movh.jl")
-include("src\\CRISP_RT.jl")
-include("src\\CRISP_network_gen.jl")
-=#

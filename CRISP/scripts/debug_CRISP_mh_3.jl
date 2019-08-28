@@ -11,7 +11,7 @@ include("..\\VACC\\src\\CRISP_RLOPF_mh_3.jl")
 #include("..\\VACC\\src\\CRISP_RLOPF_gen_stor.jl")
 include("..\\VACC\\src\\CRISP_RT.jl")
 include("..\\VACC\\src\\CRISP_network_gen.jl")
-case1 = "data\\saved_ps\\case73_noPWS_n-1\\"
+case1 = "data\\saved_ps\\case73_noPWS_lx2_n-1\\"
 ps = import_ps(case1)
 ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
 crisp_dcpf_g_s!(ps)

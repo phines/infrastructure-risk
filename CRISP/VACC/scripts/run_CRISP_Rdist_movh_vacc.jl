@@ -10,7 +10,7 @@ case1 = "data/saved_ps/case73_noPWS_n-1+S5"
 case2 = "data/saved_ps/case73_noPWS_n-1+S20"
 case3 = "data/saved_ps/case73_noPWS_n-1+S50"
 
-out = "/experiments/mh/case73_n-1/3"
+out = "/experiments/mh/case73_n-1_l1.5/1"
 if isdir("results"*out)
 else
     mkdir("results"*out)
@@ -26,7 +26,7 @@ dt = 60 #minutes
 #set randomized seed
 rng = MersenneTwister(100+iter);
 #save restoration data to folder within results folder:
-filename = "res_out_$(case[15:end])";
+filename = "res_out_$(case[15:end])1.5";
 out_folder = out*"/$filename-$iter.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case,out_folder,dt)
