@@ -25,6 +25,7 @@ if sum(names(ps.gen).==:time_off) == 0
     ps.gen.time_off = zeros(length(ps.gen.Pg));
     ps.gen.time_off[ps.gen.Pg.==0] .= ps.gen.minDownTimeHr[ps.gen.Pg.==0];
 end
+gen_on = ps.gen.Pg .!= 0;
 ps0 = deepcopy(ps);
 
 Lines_Init_State = CSV.File("VACC\\results\\experiments\\mh\\res_out_case73_noPWS_n-1-4656_lines1.csv") |> DataFrame
@@ -59,22 +60,6 @@ for i in 1:M
     println("Ps = ")
     println(sum(psi.storage.Ps))
     @assert 10^(-4)>=abs(sum(psi.shunt.P .* psi.shunt.status)-sum(psi.storage.Ps)-sum(psi.gen.Pg))
-    #=
-    # run the dcpf
-    crisp_dcpf_g_s!(psi);
-    # run lsopf
-    dt = 10;
-    crisp_lsopf_g_s1!(psi,dt);
-    ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-    ps.storage[ps_islands[i].storage,:Ps] = psi.storage.Ps
-    ps.storage[ps_islands[i].storage,:E] = psi.storage.E
-    ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-    crisp_dcpf_g_s!(psi);
-    ps.branch[ps_islands[i].branch,:Pf] = psi.branch.Pf
-    ps.branch[ps_islands[i].branch,:Pt] = psi.branch.Pt
-    ps.branch[ps_islands[i].branch,:Qf] = psi.branch.Qf
-    ps.branch[ps_islands[i].branch,:Qt] = psi.branch.Qt
-    =#
 end
 println("Pg = ")
 println(sum(ps.gen.Pg))
@@ -90,4 +75,4 @@ dt = 15;
 t_window = 60*6;#10
 t0 = 10
 #crisp_mh_rlopf!(ps,dt,time)
-Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0)
+Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on)
