@@ -86,7 +86,7 @@ println(sum(ps.storage.Ps))
 #LoadShed0[iterat] = total-sum(ps.shunt.P);
 ## run step 3
 dt = 15;
-t_window = dt;#10
+t_window = 30;#10
 t0 = 10
 #crisp_mh_rlopf!(ps,dt,time)
 Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0)

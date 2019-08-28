@@ -191,7 +191,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 fix(E[s,k], E1[s], force = true)
             end
             for g in 1:ng
-                fix(Pg[gst,k], Pg1[gst], force = true) #Pg1[gst]
+                fix(Pg[g,k], Pg1[g], force = true) #Pg1[gst]
             end
         end
         # variable bounds constraints
