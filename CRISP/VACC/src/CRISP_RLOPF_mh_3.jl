@@ -29,7 +29,11 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         t_window = 12*60;
     end
     # set time line
-    Time = t0+dt:dt:t0+recTime+dt
+    if recTime - t0 > (maximum(ps.gen.minDownTimeHr)*60)
+        Time = t0+dt:dt:(t0+recTime+dt+(maximum(ps.gen.minUpTimeHr)*60))
+    else
+        Time = t0+dt:dt:(t0+recTime+dt+(maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60)
+    end
     for i in 1:length(Time)
         # update time
         ti = Time[i];
@@ -71,40 +75,6 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;lo
         println("Ps = ")
         println(sum(ps.storage.Ps))
         @assert 10^(-4)>=abs(sum(ps.shunt.P .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
-    end
-
-    # make sure that a full recovery has occued or keep iterating:
-    while cv.load_shed[1] >= tolerance[1]
-        # update time
-        ti = ti+dt;
-        # remove failures as the recovery time is reached
-        ps.branch.status[ti .>= l_recovery_times] .= 1;
-        ps.gen.status[ti .>= g_recovery_times] .= 1;
-        # find the number of islands in ps
-        subgraph = find_subgraphs(ps);# add Int64 here hide info here
-        M = Int64(findmax(subgraph)[1]);
-        ps_islands = build_islands(subgraph,ps);
-        out =
-        for j in 1:M
-            psi = ps_subset(ps,ps_islands[j]);
-            crisp_mh_rlopf!(psi,dt,t_window);
-            ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
-            ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
-            ps.gen.time_off[ps_islands[j].gen] = psi.gen.time_off
-            ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
-            ps.storage.E[ps_islands[j].storage] = psi.storage.E
-            ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
-            #add_changes!(ps,psi,ps_islands[j]);
-        end
-        @assert abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
-        @assert sum(ps.storage.E .< -tolerance)==0
-        # save current values
-        cv.time .= ti;
-        cv.load_shed .= sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
-        cv.perc_load_served .= (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
-        cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
-        append!(Restore,cv)
     end
     return Restore
 end
