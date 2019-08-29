@@ -1,4 +1,4 @@
-include("../src/CRISP_Rdist_gen_mh_fast.jl")
+include("../src/CRISP_Rdist_gen_mh_varL+PV.jl")
 ## folder of case data
 #case = "data/saved_ps/case39_n-1_gen"
 #case1 = "data/saved_ps/case39_n-1_gen+S5"
@@ -7,7 +7,7 @@ include("../src/CRISP_Rdist_gen_mh_fast.jl")
 
 case = "VACC\\data\\saved_ps\\case73_noPWS_lx2_n-1"
 
-out = "\\experiments\\mh\\case73_lx2_n-1"
+out = "\\experiments\\mh\\case73_lx2_n-1_test"
 if isdir("VACC\\results"*out)
 else
     mkdir("VACC\\results"*out)

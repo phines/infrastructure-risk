@@ -78,7 +78,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,ge
         println(sum(ps.storage.Ps))
         @assert 10^(-4)>=abs(sum(ps.shunt.P .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
-    return Restore, ug
+    return Restore
 end
 
 function crisp_mh_rlopf!(ps,dt,t_win,ug)

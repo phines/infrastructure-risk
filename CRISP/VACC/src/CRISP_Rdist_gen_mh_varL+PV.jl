@@ -1,7 +1,7 @@
 using CSV
 include("CRISP_initiate.jl")
 include("CRISP_LSOPF_gen1.jl")
-include("CRISP_RLOPF_mh_3.jl")
+include("CRISP_RLOPF_mh_varLoad.jl")
 include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
@@ -117,7 +117,7 @@ end
 using CSV
 include("VACC\\src\\CRISP_initiate.jl")
 include("VACC\\src\\CRISP_LSOPF_gen1.jl")
-include("VACC\\src\\CRISP_RLOPF_mh_3.jl")
+include("VACC\\src\\CRISP_RLOPF_mh_varLoad.jl")
 include("VACC\\src\\CRISP_RT.jl")
 include("VACC\\src\\CRISP_network_gen.jl")
 =#

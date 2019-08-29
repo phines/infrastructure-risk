@@ -1,2 +1,2 @@
-bus,E,Ps,Emax,Emin,Psmax,Psmin,status
-313.0,75.0,0.0,150.0,0.0,50.0,-50.0,1
+bus,E,Ps,Emax,Emin,Psmax,Psmin,Efficiency,status
+313,75.1,0,150.1,0,50.1,-50.1,0.925,1

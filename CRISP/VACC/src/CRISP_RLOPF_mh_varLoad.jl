@@ -34,7 +34,13 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,ge
     #else
         Time = t0+dt:dt:(t0+recTime+dt+(maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60)
     #end
+    # find generator status
     ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    # varying load over the course of the optimization
+    Pd_max = vary_load(ps,Time,t_window)
+    # varying generation capacity over the optimization
+    Pg_max = vary_gen_cap(ps,Time,t_window)
+    # number of time steps within the time window
     t_win_step = Int64(t_window/dt);
     for i in 1:length(Time)
         # update time
@@ -49,7 +55,9 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,ge
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j]);
             ugi = ug[ps_islands[j].gen,i:i+t_win_step]
-            crisp_mh_rlopf!(psi,dt,t_window,ugi);
+            Pd_maxi = Pd_max[ps_islands[j].shunt,i:i+t_win_step]
+            Pg_maxi = Pg_max[ps_islands[j].gen,i:i+t_win_step]
+            crisp_mh_rlopf!(psi,dt,t_window,ugi,Pd_maxi,Pg_maxi);
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
             ps.gen.time_off[ps_islands[j].gen] = psi.gen.time_off
@@ -81,7 +89,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,ge
     return Restore
 end
 
-function crisp_mh_rlopf!(ps,dt,t_win,ug)
+function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
     timeline = 0:dt:t_win;
     Ti = size(timeline,1);
     # constants
@@ -94,7 +102,7 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug)
     nd = size(ps.shunt,1);
     D = bi[ps.shunt.bus];
     D_bus = sparse(D,collect(1:nd),1.,n,nd);
-    Pdmax = (ps.shunt.P ./ ps.baseMVA);
+    Pdmax = (Pd_max ./ ps.baseMVA);
     Pd1 = (ps.shunt.P ./ ps.baseMVA) .* ps.shunt.status;
     if any(D.<1) || any(D.>n)
         error("Bad indices in shunt matrix")
@@ -104,9 +112,8 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug)
     G = bi[ps.gen.bus]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
-    Pg_max = (ps.gen.Pmax ./ ps.baseMVA) .* ps.gen.status
-    Pg_min = (ps.gen.Pmin ./ ps.baseMVA) .* ps.gen.status
-    RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA .* ps.gen.status
+    Pg_max = (Pg_max1 ./ ps.baseMVA)
+    RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
@@ -136,7 +143,7 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug)
         # vector that depreciates the value of later elements in objective
         C_time = exp.(0:-1:(-Ti+1))';
         #m = Model(with_optimizer(Gurobi.Optimizer))
-	m = Model(with_optimizer(Cbc.Optimizer))
+	    m = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m, Pd[1:nd, 1:Ti]) # demand
         @variable(m, Pg[1:ng, 1:Ti]) # generation
@@ -157,11 +164,11 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug)
             end
         end
         # variable bounds constraints
-        @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
+        @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax[:,k]) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
         @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .* (Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
-        @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k] .* Pg_max) # generator power limits upper
+        @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k] .* Pg_max[:,k]) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], 0 .<= Pg[:,k]) # generator power limits lower
         #power balance
         @constraint(m, PBcon[k=2:Ti], B*Theta[:,k] .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
@@ -273,4 +280,61 @@ function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time)
     end
     @assert sum(ug[:,end].!=true).==0
     return ug
+end
+
+function vary_load(ps,Time,t_window)
+    Demand = CSV.File("data/solar+load/VT_hourly_load.csv") |> DataFrame
+    DemandCap = maximum.(Demand.Load);
+    TotD = Demand.Load ./ DemandCap .* sum(ps.shunt.P);
+    PerD = ps.shunt.P ./ sum(ps.shunt.P);
+    ### collect the data that we will need ###
+    dt = Time[2]-Time[1];
+    Time = Time .- Time[1] .+ dt;
+    ext_stps = Int64(t_window/dt);
+    # shunt data
+    nd = size(ps.shunt.P,1);
+    Pd = zeros(nd,length(Time)+ext_stps+1);
+    if length(Time)+ext_stps+1 > length(TotD)
+        n = Int64(round((length(Time)+ext_stps+1)/TotD))
+        Pd = zeros(nd,n*length(TotD));
+        for j in 0:n
+            N = length(TotD)*j
+            for t in 1:length(TotD)
+                for d in 1:nd
+                    Pd[d,N+t] = PerD[d]*TotD[N+t];
+                end
+            end
+        end
+    else
+        for t in 1:length(Time)+ext_stps+1
+            for d in 1:nd
+                Pd[d,t] = PerD[d]*TotD[t];
+            end
+        end
+    end
+    @assert sum(Pd[:,:].<=0).==0
+    return Pd
+end
+
+function vary_gen_cap(ps,Time,t_window)
+    PercSolar1 = CSV.File("data/solar+load/NY_NE_1244665_solarPV_power_density.csv") |> DataFrame
+    PowDen = PercSolar1.PowerDen;
+    ### collect the data that we will need ###
+    dt = Time[2]-Time[1];
+    Time = Time .- Time[1] .+ dt;
+    ext_stps = Int64(t_window/dt);
+    # shunt data
+    ng = size(ps.gen.Pg,1);
+    Pg_max = zeros(ng,length(Time)+ext_stps+1);
+    for t in 1:length(Time)+ext_stps+1
+        for g in 1:ng
+            if ps.gen.Fuel[g] .== "Solar"
+                Pg_max[g,t] = ps.gen.Pmax[g].*PercSolar1[2,t];
+            else
+                Pg_max[g,t] = ps.gen.Pmax[g];
+            end
+        end
+    end
+    @assert sum(Pg_max[:,:].<0).==0
+    return Pg_max
 end

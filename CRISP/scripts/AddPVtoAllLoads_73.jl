@@ -4,9 +4,9 @@ include("..\\src\\CRISP_network_gen.jl")
 include("..\\src\\CRISP_LSOPF_gen.jl")
 include("..\\src\\CRISP_RLSOPF_gen.jl")
 ## name base for new case
-new_case = "data\\saved_ps\\case73_n-1_NOx3_+PV";
+new_case = "data\\saved_ps\\case73_noPWS_lx2_n-1+PV";
 ## load the case data
-old_case = "data\\saved_ps\\case73_n-1_noPV_noWind_noStorage\\";
+old_case = "data\\saved_ps\\case73_noPWS_lx2_n-1\\";
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\$old_case")
 ps1 = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\saved_ps\\case73_n-1")
 crisp_dcpf_g!(ps)
@@ -25,6 +25,7 @@ for s = 1:nd #N_panels
     else
         #Params = randperm(length(gen.Pg))[1];
         PV = deepcopy(ps1.gen[97,:]);
+        println(ps1.gen[97,:])
         PV.bus = ps.shunt.bus[s];
         PV.Pmax = percent_solar.*ps.shunt.P[s]; #could also just reduce the load...
         PV.Qg = 0.0;
