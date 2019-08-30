@@ -17,7 +17,7 @@ Pd = deepcopy(ps.shunt.P);
 gen = deepcopy(ps.gen);
 nd = length(ps.shunt.P);
 ng = length(ps.gen.Pg);
-percent_solar = 0.5;
+percent_solar = 0.2;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #solar_options = ps1.gen.[97:116]

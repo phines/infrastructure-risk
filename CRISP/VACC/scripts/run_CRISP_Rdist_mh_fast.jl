@@ -5,7 +5,7 @@ include("../src/CRISP_Rdist_gen_mh_fast.jl")
 #case2 = "data/saved_ps/case39_n-1_gen+S20"
 #case3 = "data/saved_ps/case39_n-1_gen+S50"
 
-case = "VACC\\data\\saved_ps\\case73_noPWS_lx2_n-1"
+case = "VACC\\data\\saved_ps\\case73_noPWS_lx2_n-1+S5"
 
 out = "\\experiments\\mh\\case73_lx2_n-1"
 if isdir("VACC\\results"*out)

@@ -3,17 +3,17 @@ using Random
 include("..\\src\\CRISP_network_gen.jl")
 include("..\\src\\CRISP_LSOPF_gen.jl")
 include("..\\src\\CRISP_RLSOPF_gen.jl")
-## name base for new case
-new_case = "data\\saved_ps\\case73_noPWS_lx2_n-1+S";
 ## load the case data
-old_case = "data\\saved_ps\\case73_noPWS_lx2_n-1\\";
+old_case = "data\\saved_ps\\case73_noPWS_lx2_n-1+PV50\\";
+## name base for new case
+new_case = old_case[1:end-1]*"+S";
 ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\$old_case")
 ps1 = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\saved_ps\\case73_n-1")
 crisp_dcpf_g_s!(ps)
 total = sum(ps.shunt[:P]);
 storage = deepcopy(ps.storage);
 nd = length(ps.shunt[:P]);
-percent_batP = 0.05;
+percent_batP = 0.5;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #add generators

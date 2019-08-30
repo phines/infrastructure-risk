@@ -33,6 +33,12 @@ function import_ps(filename)
     psShuntData.P = psShuntData.P .* 1.0;
     psShuntData.status = psShuntData.status .* 1.0;
     if isfile("$filename\\storage.csv") psStorageData = CSV.File("$filename\\storage.csv")   |> DataFrame;;
+        psStorageData.Ps = psStorageData.Ps .* 1.0;
+        psStorageData.E = psStorageData.E .* 1.0;
+        psStorageData.Psmax = psStorageData.Psmax .* 1.0;
+        psStorageData.Psmin = psStorageData.Psmin .* 1.0;
+        psStorageData.Emax = psStorageData.Emax .* 1.0;
+        psStorageData.Emin = psStorageData.Emin .* 1.0;
     else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], Efficiency = Float64[], status = Int64[]); end
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
     return ps
