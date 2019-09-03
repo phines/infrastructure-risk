@@ -3,7 +3,7 @@
 # still needs variable weather and load data to have appropriate hourly responses
 using DataFrames;
 using JuMP
-#using Gurobi
+using Gurobi
 using Cbc;
 include("CRISP_network_gen.jl")
 
@@ -194,8 +194,8 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
     else
         # vector that depreciates the value of later elements in objective
         C_time = exp.(0:-1:(-Ti+1))';
-        #m = Model(with_optimizer(Gurobi.Optimizer))
-	m = Model(with_optimizer(Cbc.Optimizer))
+    m = Model(with_optimizer(Gurobi.Optimizer))
+	#m = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m, Pd[1:nd, 1:Ti]) # demand
         @variable(m, Pg[1:ng, 1:Ti]) # generation

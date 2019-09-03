@@ -1,7 +1,7 @@
 using JuMP
 using Clp
 using Cbc
-#using Gurobi
+using Gurobi
 using SparseArrays
 using LinearAlgebra
 
@@ -211,8 +211,8 @@ function crisp_lsopf_g_s1!(ps,dt)
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n)
         ### Build the optimization model ###
-        #m = Model(with_optimizer(Gurobi.Optimizer))
-	m = Model(with_optimizer(Cbc.Optimizer))
+    m = Model(with_optimizer(Gurobi.Optimizer))
+	#m = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m,dPd[1:nd])
         @variable(m,dPs[1:ns])
@@ -265,8 +265,8 @@ function crisp_lsopf_g_s1!(ps,dt)
         Ps_max = ps.storage.Ps  ./ ps.baseMVA .* ps.storage.status
         Ps_min = ps.storage.Ps  ./ ps.baseMVA .* ps.storage.status
         if sum(isempty(Pd) + isempty(Pg) + isempty(Ps)) <=1
-            #m = Model(with_optimizer(Gurobi.Optimizer))
-	    m = Model(with_optimizer(Cbc.Optimizer))
+        m = Model(with_optimizer(Gurobi.Optimizer))
+	    #m = Model(with_optimizer(Cbc.Optimizer))
             # variables
             @variable(m,dPd[1:nd])
             @variable(m,dPs[1:ns])
