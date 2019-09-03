@@ -173,7 +173,7 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
         #power balance
         @constraint(m, PBcon[k=2:Ti], B*Theta[:,k] .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
         #ramping constraints
-        @constraint(m, genPgRR[k=2:Ti],  -RR .<= Pg[:,k-1] .- Pg[:,k] .<= RR) # generator ramp rate
+        @constraint(m, genPgRR[k=2:Ti],  -RR.*dt .<= Pg[:,k-1] .- Pg[:,k] .<= RR.*dt) # generator ramp rate
         # power flow limits
         @constraint(m, PFcon[k=2:Ti], -flow_max .<= Xinv .* (Theta[F,k] - Theta[T,k]) .<= flow_max)
         @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
@@ -329,7 +329,7 @@ function vary_gen_cap(ps,Time,t_window)
     for t in 1:length(Time)+ext_stps+1
         for g in 1:ng
             if ps.gen.Fuel[g] .== "Solar"
-                Pg_max[g,t] = ps.gen.Pmax[g].*PercSolar1[2,t];
+                Pg_max[g,t] = ps.gen.Pmax[g].*PowDen[t];
             else
                 Pg_max[g,t] = ps.gen.Pmax[g];
             end

@@ -1,0 +1,1 @@
+Original_case = CRISP\data\saved_ps\case73_noPWS_lx2_n-1+PV50\ .Added battery to cover 5 fraction of demand when discharging.  To each PQ buses.  

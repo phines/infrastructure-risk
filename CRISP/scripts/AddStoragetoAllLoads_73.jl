@@ -13,7 +13,7 @@ crisp_dcpf_g_s!(ps)
 total = sum(ps.shunt[:P]);
 storage = deepcopy(ps.storage);
 nd = length(ps.shunt[:P]);
-percent_batP = 0.5;
+percent_batP = 0.2;
 #LoadCancList = zeros(nd);
 refbus = ps.bus.id[ps.bus.bus_type.==3];
 #add generators
