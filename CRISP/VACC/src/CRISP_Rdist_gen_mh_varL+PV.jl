@@ -49,8 +49,8 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
         Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
         if debug==1
             outnow = (out_folder[1:end-4]);
-            CSV.write("VACC\\results"*outnow*"_lines.csv", Lines_Init_State)
-            CSV.write("VACC\\results"*outnow*"_gens.csv", Gens_Init_State)
+            CSV.write("VACC\\results"*outnow*"_lines$iterat.csv", Lines_Init_State)
+            CSV.write("VACC\\results"*outnow*"_gens$iterat.csv", Gens_Init_State)
         end
         l_failures = Lines_Init_State[:,1];
         ps.branch.status[l_failures .==0] .= 0;
@@ -87,7 +87,7 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
         Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
         if debug==1
             outnow = (out_folder[1:end-4]);
-            CSV.write("VACC\\results"*outnow*"_restore.csv", Restore)
+            CSV.write("VACC\\results"*outnow*"_restore$iterat.csv", Restore)
         end
         ## find the time to restore the grid to 99.9% load served
         K = abs.(Restore.perc_load_served .- 1) .<= 0.001;

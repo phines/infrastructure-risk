@@ -223,8 +223,6 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
         @constraint(m, genPglcon[k=2:Ti], 0 .<= Pg[:,k]) # generator power limits lower
         #power balance
         @constraint(m, PBcon[k=2:Ti], 0.0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
-        #
-        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # objective
         @objective(m, Max, 100*sum(Pd*C_time'));
         ## SOLVE! ##
