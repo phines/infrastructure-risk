@@ -1,12 +1,12 @@
 using CSV
 include("CRISP_initiate.jl")
-include("CRISP_LSOPF1.jl")
+include("CRISP_LSOPF.jl")
 include("CRISP_RLSOPF.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Res_dist(Num,ps_folder,out_folder;param_file = "")
-    debug=1;
+    debug=0;
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
     NumLinesOut = Array{Float64}(undef,Num,1);
@@ -16,7 +16,6 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
     ps = import_ps("$ps_folder")
-    ps.shunt.P .= 2*ps.shunt.P;
     crisp_dcpf!(ps)
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
@@ -52,25 +51,19 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             #check for islands
             subgraph = find_subgraphs(ps);
             M = Int64(findmax(subgraph)[1]);
-            if M>1
-                ps_islands = build_islands(subgraph,ps);
-                for i in 1:M
-                    psi = ps_subset(ps,ps_islands[i]);
-                    # run the dcpf
-                    crisp_dcpf!(psi);
-                    # run lsopf
-                    crisp_lsopf1!(psi);
-                    ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-                    ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
-                    crisp_dcpf!(psi);
-                end
-                    @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
-                    @assert total>=sum(ps.shunt.P)
-            else
-                crisp_dcpf!(ps);
-                crisp_lsopf1!(ps);
-                crisp_dcpf!(ps);
+            ps_islands = build_islands(subgraph,ps);
+            for i in 1:M
+                psi = ps_subset(ps,ps_islands[i]);
+                # run the dcpf
+                crisp_dcpf!(psi);
+                # run lsopf
+                crisp_lsopf!(psi);
+                ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
+                ps.shunt[ps_islands[i].shunt,:P] = psi.shunt.P
+                crisp_dcpf!(psi);
             end
+            @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
+            @assert total>=sum(ps.shunt.P)
             println(iterat)
             @assert total>=sum(ps.shunt.P)
             @assert 10^(-6)>=abs(sum(ps.shunt.P)-sum(ps.gen.Pg))
