@@ -17,21 +17,21 @@ N = 10;
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename1 = "res_out_case39_n-1"
+filename1 = "res_out_case39"
 out_folder1 = out*"\\$filename1.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case1,out_folder1)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename2 = "res_out_case39_n-1_05PV";
+filename2 = "res_out_case3_05PV";
 out_folder2 = out*"\\$filename2.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case2,out_folder2)
 #set randomized seed
 rng = MersenneTwister(1000);
 #save restoration data to folder within results folder:
-filename3 = "res_out_case39_n-1_20PV";
+filename3 = "res_out_case39_20PV";
 out_folder3 = out*"\\$filename3.csv"
 # run to save csv of resilience cost distribution to the specified out_folder
 res = Res_dist(N,case3,out_folder3)
