@@ -1,1 +1,0 @@
-Original_case = CRISP\data\case39\ .Added solar to cover 0.05 percent of demand.  To 0.4 fraction of demand buses.  By reducing random loads.  
