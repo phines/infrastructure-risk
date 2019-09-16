@@ -21,15 +21,10 @@
 % costs2 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV5.csv');
 % costs3 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV20.csv');
 
-% % N-1 Secure 73 bus case generator outages DG 5 and storage
+% N-1 Secure 73 bus case generator outages DG
 % costs1 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV5.csv');
 % costs2 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV5+S5.csv');
 % costs3 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV5+S20.csv');
-
-% N-1 Secure 73 bus case generator outages DG 5 and storage
-costs1 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV20.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV20+S5.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\var\res_case73_lx2_n-1+PV20+S20.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -73,10 +68,8 @@ loglog(sorted_costs2,Pr2,'r')
 loglog(sorted_costs3,Pr3, 'color',[1.000    0.7000    0.0000])
 % legend("original", "1.5*load", "2.0*load")
 % legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
-% legend("original", "+5% load in DG", "+20% load in DG")
+legend("original", "+5% load in DG", "+20% load in DG")
 % legend("original", "+5% storage", "+20% storage")
-% legend("+5% load in DG","+5% load in DG + 5% storage", "+5% load in DG +20% storage")
-legend("+20% load in DG","+20% load in DG + 5% storage", "+20% load in DG +20% storage")
 ylabel("Prob(Energy lost \geq ENS)")
 set(gca, 'fontsize',13)
 %xlim([1 10^7.5])
