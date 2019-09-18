@@ -51,13 +51,14 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,ge
         # find the number of islands in ps
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
-        ps_islands = build_islands(subgraph,ps);
+        ps_islands = build_islands(subgraph,ps)
         for j in 1:M
-            psi = ps_subset(ps,ps_islands[j]);
-            ugi = ug[ps_islands[j].gen,i:i+t_win_step]
-            Pd_maxi = Pd_max[ps_islands[j].shunt,i:i+t_win_step]
-            Pg_maxi = Pg_max[ps_islands[j].gen,i:i+t_win_step]
-            crisp_mh_rlopf!(psi,dt,t_window,ugi,Pd_maxi,Pg_maxi);
+            psi = ps_subset(ps,ps_islands[j])
+            i_subset = i:(i+t_win_step)
+            ugi = ug[ps_islands[j].gen,i_subset]
+            Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
+            Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
+            crisp_mh_rlopf!(psi,dt,t_window,ugi,Pd_maxi,Pg_maxi)
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.gen.time_on[ps_islands[j].gen] = psi.gen.time_on
             ps.gen.time_off[ps_islands[j].gen] = psi.gen.time_off
@@ -175,10 +176,11 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
         #ramping constraints
         @constraint(m, genPgRR[k=2:Ti], -RR.*dt .<= Pg[:,k-1] .- Pg[:,k] .<= RR.*dt) # generator ramp rate
         # power flow limits
+        #line_subset = [] #TODO: iterate through the lines that are active
         @constraint(m, PFcon[k=2:Ti], -flow_max .<= Xinv .* (Theta[F,k] - Theta[T,k]) .<= flow_max)
         @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # objective
-        @objective(m, Max, 100*sum(Pd*C_time'));
+        @objective(m, Max, 100*sum(Pd*C_time')) #TODO: constants
         ## SOLVE! ##
         optimize!(m)
         sol_Pd=value.(Pd)[:,2]
@@ -191,7 +193,7 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
         dPs_star = Vector(sol_Ps).*ps.baseMVA
         dPg_star = Vector(sol_Pg).*ps.baseMVA
         dE_star = Vector(sol_E).*ps.baseMVA
-    else
+    else # TODO: Merge this into a single formulation with one-line if statement
         # vector that depreciates the value of later elements in objective
         C_time = exp.(0:-1:(-Ti+1))';
     m = Model(with_optimizer(Gurobi.Optimizer))
@@ -219,7 +221,7 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,Pd_max,Pg_max1)
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
         @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0.01 .<= (E[:,k]) .<= E_max) # storage energy
-        @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
+        @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max[:,k]) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], 0 .<= Pg[:,k]) # generator power limits lower
         #power balance
         @constraint(m, PBcon[k=2:Ti], 0.0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
