@@ -15,13 +15,13 @@ end
 # number of events
 N = 1000;
 # input rng iterate
-i = 0 #parse(Int,ARGS[1]);
-y = 0 #parse(Int,ARGS[2]);
-#iter = (100*y)+(N*i)
+i = parse(Int,ARGS[1]);
+y = parse(Int,ARGS[2]);
+iter = (100*y)+(N*i)
 #time steps
 dt = 60 #minutes
 #set randomized seed
-rng = MersenneTwister(100);#100+iter
+rng = MersenneTwister(100+iter);
 #save restoration data to folder within results folder:
 filename = "res_out_$(case[20:end])";
 out_folder = out*"\\$filename.csv"#$filename-$iter.csv"

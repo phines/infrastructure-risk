@@ -1,7 +1,7 @@
 using CSV
 include("CRISP_initiate.jl")
 include("CRISP_network_gen.jl")
-function Outages(Num,ps_folder;param_file = "")
+function Outages(Num,ps_folder;param_file = "",cascade=true)
     debug=1;
     tolerance1 = 10^(-6);
     ## Num = number of failure scenarios to run through
@@ -19,7 +19,11 @@ function Outages(Num,ps_folder;param_file = "")
     end
     for iterat in 1:Num
         # step 1
-        Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
+        if cascade
+            Lines_Init_State = line_state_cascade!(ps,s_line,maxLinesOut,mu_line,sigma_line)
+        else
+            Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
+        end
         Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
         if debug==1
             CSV.write("data\\outage_data\\out_case73_noPWS_lx2_n-1_lines$iterat.csv", Lines_Init_State)

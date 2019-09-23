@@ -4,8 +4,21 @@
 # it also uses an exponential function with paamter lambda=1 to determine the number of generators
 # that are outaged
 
-using SpecialFunctions;
+using SpecialFunctions
 using Random
+using CSV
+using DataFrames
+include("CRISP_network_gen.jl")
+
+function line_state_cascade!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
+# number of lines and generators in network case
+TotalLines = length(ps.branch.f);
+Nlines = init_out_zipf_p1(s_line, maxLinesOut, TotalLines);
+lines_state = cascade!(ps, TotalLines, Nlines);
+RecovTimeL = RecoveryTimes(mu_line, sigma_line, Nlines);
+lines_outage_recovery = RecTime(RecovTimeL, lines_state);
+return lines_outage_recovery
+end
 
 function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
@@ -144,6 +157,39 @@ end
 
 # next two functions take inital number of line or generator outages and picks the lines or
 # generators that actually are removed from the network
+
+function cascade!(ps, TotalLines, Nlines);
+    #hard coded pdf of cascade line distance in cascade
+    CascadeHopsData = CSV.File("data\\cascade_data\\LineDistanceFreq.csv")  |> DataFrame
+    cdf = CascadeHopsData.cdf
+    distance = CascadeHopsData.distance
+    # randomly pick initial line outage
+    init_line = rand(rng,1:TotalLines)
+    # define output vector of line states
+    lines_status = falses(TotalLines)
+    diameter = find_diameter(ps)
+    if Nlines == 1
+        lines_status .= true
+        lines_status[init_line] = false
+    elseif Nlines == TotalLines
+    elseif Nlines == TotalLines-1
+        lines_status[init_line] = true
+    else
+        lines_status .= true
+        lines_status[init_line] = false
+        Pr_line_hop = rand(rng,(Nlines-1))
+        for n in 1:(Nlines-1)
+            matchPr = Pr_line_hop[n].>=cdf
+            hop = distance[matchPr][end]
+            if hop > diameter
+                hop = diameter
+            end
+            find_lines_n_hops(ps,init_line,hop)
+        end
+    end
+    ps.branch.status[lines_status.==0] .= 0;
+    return lines_status
+end
 
 #THIS IS WHERE WE CAN INTEGRATE DISTRIBUTION OF NUMBER OF HOPS
 function initiate_state(TotalS, N);

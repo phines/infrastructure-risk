@@ -166,6 +166,10 @@ mutable struct PSCase
     bi::SparseMatrixCSC{Int64,Int64}
 end
 
+function K_nearest_neighbors()
+    findnz()
+end
+
 function ps_subset(ps,ps_island)
     mpBaseMVA = ps.baseMVA;
     psBusData = ps.bus[ps_island.bus,:];
