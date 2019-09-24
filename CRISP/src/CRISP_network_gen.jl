@@ -181,20 +181,32 @@ function find_lines_n_hops(ps,lines_status,hop)
         if hop > 1
             node_neighbor =  find_neighbors(nodes, edges, subset; K=hop)
             node_neighbor_less =  find_neighbors(nodes, edges, subset; K=(hop-1))
-            new_line = find_line_n(ps,node_neighbor,node_neighbor_less,lines_status)
+            new_line = find_line_n_neighbors(edges,node_neighbor,node_neighbor_less,lines_status)
         else
             node_neighbor =  find_neighbors(nodes, edges, subset; K=hop)
-            new_line = find_line(ps,node_neighbor,lines_status)
+            new_line = find_line_neighbors(edges,node_neighbor,subset,lines_status)
         end
     end
     return new_line
 end
 
-function find_line(ps,node_neighbor,lines_status)
+function find_line_neighbors(edges,node_neighbor,subset,lines_status)
+    nl = length(lines_status)
+    n = length(node_neighbors)
+    Index = 1:nl
+    cascade = Index[lines_status]
+    for h in 1:n
+        find_edges_t = edges[:,1] .== node_neighbor[h]
+        find_edges_t = find_edges_t[edges[:,2] .!== subset[1]]
+        find_edges_t = find_edges_t[edges[:,2] .!== subset[2]]
+        find_edges_f = edges[:,1] .== node_neighbor[h]
+        find_edges_f = find_edges_f[edges[:,2] .!== subset[1]]
+        find_edges_f = find_edges_f[edges[:,2] .!== subset[2]]
+    end
     return new_line
 end
 
-function find_line_n(ps,node_neighbor,node_neighbor_less,lines_status)
+function find_line_n_neighbors(ps,node_neighbor,node_neighbor_less,lines_status)
     return new_line
 end
 

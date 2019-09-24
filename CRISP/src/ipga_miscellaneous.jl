@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =#
 
+#
+#__precompile__()
 
-__precompile__()
-
-module ipga_miscellaneous
+#module ipga_miscellaneous
 
 using JuMP, LinearAlgebra, SparseArrays, DataFrames
 
@@ -141,4 +141,4 @@ for name in names(@__MODULE__, all=true)
 	@eval export $name
 end
 
-end # module
+#end # module

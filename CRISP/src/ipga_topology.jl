@@ -22,9 +22,9 @@ SOFTWARE.
 =#
 
 
-__precompile__()
+#__precompile__()
 
-module ipga_topology
+#module ipga_topology
 
 using SparseArrays, LinearAlgebra
 include("ipga_miscellaneous.jl")
@@ -148,4 +148,4 @@ for name in names(@__MODULE__, all=true)
 	@eval export $name
 end
 
-end # module
+#end # module
