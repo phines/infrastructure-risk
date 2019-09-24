@@ -12,9 +12,9 @@
 % costs3 = xlsread('..\results\100\case73_load2\res_out_case73_n-1_p1.csv');
 
 % N-1 Secure 73 bus case generator outages storage
-% costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1.csv');
-% costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S5.csv');
-% costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S20.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S5.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S20.csv');
 
 % N-1 Secure 73 bus case generator outages DG
 % costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1.csv');
@@ -22,9 +22,9 @@
 % costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20.csv');
 
 % N-1 Secure 73 bus case generator outages DG 5 and storage
-costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S5.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S20.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S5.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S20.csv');
 
 % N-1 Secure 73 bus case generator outages storage 5 and DG
 % costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S5.csv');
