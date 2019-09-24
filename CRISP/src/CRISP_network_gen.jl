@@ -4,6 +4,7 @@ using SparseArrays
 using LinearAlgebra
 using DataFrames
 using CSV
+include("ipga_topology.jl")
 #import ps from csv files
 function import_ps(filename)
     psBusData = CSV.File("$filename\\bus.csv")  |> DataFrame
@@ -166,8 +167,35 @@ mutable struct PSCase
     bi::SparseMatrixCSC{Int64,Int64}
 end
 
-function K_nearest_neighbors()
-    findnz()
+function find_lines_n_hops(ps,lines_status,hop)
+    nodes = ps.bus.id
+    edges = [ps.branch.f ps.branch.t]
+    cascade = ps.branch.f[lines_status.==0]
+    cascade = [cascade; ps.branch.t[lines_status.==0]]
+    node_neighbor = [];
+    counter = 0
+    while isempty(node_neighbor) && (counter <= (length(cascade)*2))
+        counter = counter + 1
+        i = rand(rng,1:length(cascade))
+        subset = cascade[i]
+        if hop > 1
+            node_neighbor =  find_neighbors(nodes, edges, subset; K=hop)
+            node_neighbor_less =  find_neighbors(nodes, edges, subset; K=(hop-1))
+            new_line = find_line_n(ps,node_neighbor,node_neighbor_less,lines_status)
+        else
+            node_neighbor =  find_neighbors(nodes, edges, subset; K=hop)
+            new_line = find_line(ps,node_neighbor,lines_status)
+        end
+    end
+    return new_line
+end
+
+function find_line(ps,node_neighbor,lines_status)
+    return new_line
+end
+
+function find_line_n(ps,node_neighbor,node_neighbor_less,lines_status)
+    return new_line
 end
 
 function ps_subset(ps,ps_island)

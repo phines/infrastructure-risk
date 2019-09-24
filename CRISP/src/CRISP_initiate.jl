@@ -184,7 +184,7 @@ function cascade!(ps, TotalLines, Nlines);
             if hop > diameter
                 hop = diameter
             end
-            find_lines_n_hops(ps,init_line,hop)
+            find_lines_n_hops(ps,lines_status,hop)
         end
     end
     ps.branch.status[lines_status.==0] .= 0;
