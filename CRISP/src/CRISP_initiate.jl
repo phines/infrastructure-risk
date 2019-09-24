@@ -14,7 +14,8 @@ function line_state_cascade!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLin
 # number of lines and generators in network case
 TotalLines = length(ps.branch.f);
 Nlines = init_out_zipf_p1(s_line, maxLinesOut, TotalLines);
-lines_state = cascade!(ps, TotalLines, Nlines);
+diameter = find_diameter(ps)
+lines_state = cascade!(ps, TotalLines, Nlines, diameter);
 RecovTimeL = RecoveryTimes(mu_line, sigma_line, Nlines);
 lines_outage_recovery = RecTime(RecovTimeL, lines_state);
 return lines_outage_recovery
@@ -86,6 +87,7 @@ cdf_lines = H_k_s./zeta(s);
 Nlines = sum(P_leqNlinesOut.>=cdf_lines);
 Nlines += 1;
 Nlines = Int64(round(ratioL*Nlines)) #
+println(Nlines)
 return Nlines
 end
 
@@ -158,7 +160,7 @@ end
 # next two functions take inital number of line or generator outages and picks the lines or
 # generators that actually are removed from the network
 
-function cascade!(ps, TotalLines, Nlines);
+function cascade!(ps, TotalLines, Nlines, diameter);
     #hard coded pdf of cascade line distance in cascade
     CascadeHopsData = CSV.File("data\\cascade_data\\LineDistanceFreq.csv")  |> DataFrame
     cdf = CascadeHopsData.cdf
@@ -166,25 +168,45 @@ function cascade!(ps, TotalLines, Nlines);
     # randomly pick initial line outage
     init_line = rand(rng,1:TotalLines)
     # define output vector of line states
-    lines_status = falses(TotalLines)
-    diameter = find_diameter(ps)
+    lines_status = zeros(TotalLines)
     if Nlines == 1
-        lines_status .= true
-        lines_status[init_line] = false
+        lines_status .= 1
+        lines_status[init_line] = 0
     elseif Nlines == TotalLines
-    elseif Nlines == TotalLines-1
-        lines_status[init_line] = true
+    elseif Nlines == (TotalLines-1)
+        lines_status[init_line] = 1
     else
-        lines_status .= true
-        lines_status[init_line] = false
-        Pr_line_hop = rand(rng,(Nlines-1))
+        lines_status .= 1
+        lines_status[init_line] = 0
         for n in 1:(Nlines-1)
-            matchPr = Pr_line_hop[n].>=cdf
-            hop = distance[matchPr][end]
+            matchPr = (rand(rng,1).>=cdf)
+            if sum(matchPr) == 0
+                hop = 1
+            else
+                hop = distance[matchPr][end]
+            end
             if hop > diameter
                 hop = diameter
             end
-            find_lines_n_hops(ps,lines_status,hop)
+            new_line = [];
+            c = 0
+            while isempty(new_line) && c<=10
+                c = c+1
+                new_line = find_lines_n_hops(ps,lines_status,hop)
+                if isempty(new_line)
+                    new_Pr = rand(rng,1)
+                    matchPr = new_Pr.>=cdf
+                    hop = distance[matchPr][end]
+                    if hop > diameter
+                        hop = diameter
+                    end
+                end
+            end
+            if isempty(new_line)
+                Index = 1:length(lines_status)
+                new_line = Index[lines_status .== 1][1]
+            end
+            lines_status[new_line] = 0
         end
     end
     ps.branch.status[lines_status.==0] .= 0;

@@ -167,21 +167,44 @@ mutable struct PSCase
     bi::SparseMatrixCSC{Int64,Int64}
 end
 
+
+function find_diameter(ps)
+    nodes = ps.bus.id
+    n = length(nodes)
+    edges = [ps.branch.f ps.branch.t]
+    diameter = zeros(n)
+    subset = Array{Int64,1}(undef,1)
+    for s in 1:n
+        k = 1
+        subset[1] = nodes[s]
+        n1 = [0]
+        n2 = [1 1]
+        while length(n1) < length(n2)
+            diameter[s] = k
+            n1 = find_neighbors(nodes, edges, subset; K=k)
+            n2 = find_neighbors(nodes, edges, subset; K=(k+1))
+            k = k+1
+        end
+    end
+    diameter = maximum(diameter)
+    return Int64(diameter)
+end
+
 function find_lines_n_hops(ps,lines_status,hop)
+    subset = Array{Int64,1}(undef,2)
     nodes = ps.bus.id
     edges = [ps.branch.f ps.branch.t]
-    cascade = ps.branch.f[lines_status.==0]
-    cascade = [cascade; ps.branch.t[lines_status.==0]]
     node_neighbor = [];
+    new_line = [];
     counter = 0
-    while isempty(node_neighbor) && (counter <= (length(cascade)*2))
+    while (isempty(node_neighbor) || isempty(new_line)) && (counter <= (sum(lines_status .== 0)*3))
         counter = counter + 1
-        i = rand(rng,1:length(cascade))
-        subset = cascade[i]
+        i = rand(rng,1:sum(lines_status .== 0))
+        subset = edges[lines_status .== 0,:][i,:]
         if hop > 1
             node_neighbor =  find_neighbors(nodes, edges, subset; K=hop)
             node_neighbor_less =  find_neighbors(nodes, edges, subset; K=(hop-1))
-            new_line = find_line_n_neighbors(edges,node_neighbor,node_neighbor_less,lines_status)
+            new_line = find_line_n_neighbors(edges,node_neighbor,node_neighbor_less,subset,lines_status)
         else
             node_neighbor =  find_neighbors(nodes, edges, subset; K=hop)
             new_line = find_line_neighbors(edges,node_neighbor,subset,lines_status)
@@ -191,22 +214,97 @@ function find_lines_n_hops(ps,lines_status,hop)
 end
 
 function find_line_neighbors(edges,node_neighbor,subset,lines_status)
+    lst = falses(length(lines_status))
+    lst[lines_status .== 1] .= true
     nl = length(lines_status)
-    n = length(node_neighbors)
+    n = length(node_neighbor)
     Index = 1:nl
-    cascade = Index[lines_status]
+    cascade = Index[lst]
+    possible_lines = falses(nl)
     for h in 1:n
         find_edges_t = edges[:,1] .== node_neighbor[h]
-        find_edges_t = find_edges_t[edges[:,2] .!== subset[1]]
-        find_edges_t = find_edges_t[edges[:,2] .!== subset[2]]
-        find_edges_f = edges[:,1] .== node_neighbor[h]
-        find_edges_f = find_edges_f[edges[:,2] .!== subset[1]]
-        find_edges_f = find_edges_f[edges[:,2] .!== subset[2]]
+        possible_lines[find_edges_t] .= true
+        find_edges_f = edges[:,2] .== node_neighbor[h]
+        possible_lines[find_edges_f] .= true
+    end
+    #make sure there's at least one possible line
+    if sum(possible_lines .== 1) == 0
+        return new_line = []
+    end
+    #remove lines that are parallel to subset
+    n11 = edges[:,1] .== subset[1]
+    possible_lines[n11] .= false
+    n21 = edges[:,2] .== subset[1]
+    possible_lines[n21] .= false
+    n12 = edges[:,1] .== subset[2]
+    possible_lines[n12] .= false
+    n22 = edges[:,2] .== subset[2]
+    possible_lines[n22] .= false
+    #remove lines that are already in cascade
+    possible_lines[lines_status .== 0] .= false
+    if sum(possible_lines .== 1) == 0
+        return new_lines = []
+    else
+        #pick line
+        line_nums = Index[possible_lines]
+        p = rand(rng,1:length(line_nums))
+        new_line = line_nums[p]
     end
     return new_line
 end
 
-function find_line_n_neighbors(ps,node_neighbor,node_neighbor_less,lines_status)
+function find_line_n_neighbors(edges,node_neighbor,node_neighbor_less,subset,lines_status)
+    lst = falses(length(lines_status))
+    lst[lines_status .== 1] .= true
+    neighbors = []
+    less = subset[1]
+    less = [less subset[2]]
+    for n in 1:length(node_neighbor)
+        if sum(node_neighbor[n] .== node_neighbor_less) > 0
+            less = [less node_neighbor[n]]
+        else
+            if isempty(neighbors)
+                neighbors = node_neighbor[n]
+            else
+                neighbors = [neighbors node_neighbor[n]]
+            end
+        end
+    end
+    nl = length(lines_status)
+    n = length(node_neighbor)
+    Index = 1:nl
+    cascade = Index[lst]
+    possible_lines = falses(nl)
+    for h in 1:n
+        find_edges_t = edges[:,1] .== node_neighbor[h]
+        possible_lines[find_edges_t] .= true
+        find_edges_f = edges[:,2] .== node_neighbor[h]
+        possible_lines[find_edges_f] .= true
+    end
+    #make sure there's at least one possible line
+    if sum(possible_lines .== 1) == 0
+        return new_line = []
+    end
+    #remove lines that are already in cascade
+    possible_lines[lines_status .== 0] .= false
+    if sum(possible_lines .== 1) == 0
+        return new_lines = []
+    end
+    #remove closer neighbors including in the subset
+    for m in 1:length(less)
+        n11 = edges[:,1] .== less[m]
+        possible_lines[n11] .= false
+        n21 = edges[:,2] .== less[m]
+        possible_lines[n21] .= false
+    end
+    if sum(possible_lines .== 1) == 0
+        return new_lines = []
+    else
+        #pick line
+        line_nums = Index[possible_lines]
+        p = rand(rng,1:length(line_nums))
+        new_line = line_nums[p]
+    end
     return new_line
 end
 
