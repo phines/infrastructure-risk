@@ -195,8 +195,12 @@ function cascade!(ps, TotalLines, Nlines, diameter);
                 new_line = find_lines_n_hops(ps,lines_status,hop)
                 if isempty(new_line)
                     new_Pr = rand(rng,1)
-                    matchPr = new_Pr.>=cdf
-                    hop = distance[matchPr][end]
+                    matchPr = new_Pr .>= cdf
+                    if sum(matchPr) .== 0
+                        hop = 1
+                    else
+                        hop = distance[matchPr][end]
+                    end
                     if hop > diameter
                         hop = diameter
                     end

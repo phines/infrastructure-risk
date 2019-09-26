@@ -28,8 +28,8 @@ function Outages(Num,ps_folder;param_file = "",cascade=true)
         end
         Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
         if debug==1
-            CSV.write("data\\outage_data\\cascade\\out_case73_noPWS_lx2_n-1_lines$iterat.csv", Lines_Init_State)
-            CSV.write("data\\outage_data\\cascade\\out_case73_noPWS_lx2_n-1_gens$iterat.csv", Gens_Init_State)
+            CSV.write("data\\outage_data\\cascade1\\out_case73_noPWS_lx2_n-1_lines$iterat.csv", Lines_Init_State)
+            CSV.write("data\\outage_data\\cascade1\\out_case73_noPWS_lx2_n-1_gens$iterat.csv", Gens_Init_State)
         end
     end
 end
