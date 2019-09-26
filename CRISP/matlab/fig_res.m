@@ -12,24 +12,24 @@
 % costs3 = xlsread('..\results\100\case73_load2\res_out_case73_n-1_p1.csv');
 
 % N-1 Secure 73 bus case generator outages storage
-costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S5.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S20.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S5.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
 
 % N-1 Secure 73 bus case generator outages DG
-% costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1.csv');
-% costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV5.csv');
-% costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20.csv');
 
 % N-1 Secure 73 bus case generator outages DG 5 and storage
-% costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20.csv');
-% costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S5.csv');
-% costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S20.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S5.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
 
 % N-1 Secure 73 bus case generator outages storage 5 and DG
-% costs1 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+S5.csv');
-% costs2 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV5+S5.csv');
-% costs3 = xlsread('..\VACC\results\experiments\mh\set\res_case73_noPWS_lx2_n-1+PV20+S5.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5+S20.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -73,12 +73,12 @@ loglog(sorted_costs2,Pr2,'r')
 loglog(sorted_costs3,Pr3, 'color',[1.000    0.7000    0.0000])
 % legend("original", "1.5*load", "2.0*load")
 % legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
-% legend("original", "+5% load in DG", "+20% load in DG")
+legend("original", "+5% load in DG", "+20% load in DG")
 % legend("original", "+5% storage", "+20% storage")
 % legend("+5% load in DG","+5% load in DG + 5% storage", "+5% load in DG +20% storage")
 % legend("+20% load in DG","+20% load in DG + 5% storage", "+20% load in DG +20% storage")
-legend("+5% storage","+5% load in DG + 5% storage", "+20% load in DG +5% storage")
-ylabel("Prob(Energy lost \geq ENS)")
+%legend("+20% storage","+20% storage +5% load in DG", " +20% storage +20% load in DG")
+ylabel("Prob(ENS \geq x)")
 set(gca, 'fontsize',13)
 %xlim([1 10^7.5])
 box off
@@ -93,7 +93,7 @@ legend boxoff
 % plot(x3,pdf3)
 % legend('original', '5% load added in DG', '20% load added in DG')
 % %title('Resilience 39 bus PDF')
-xlabel("ENS (MWh)"); 
+xlabel("x (ENS (MWh))"); 
 % ylabel('PDF(ENS)');
 % set(gca,'xscale','log');
 % set(gca,'yscale','log');
