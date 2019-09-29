@@ -17,9 +17,9 @@
 % costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
 
 % N-1 Secure 73 bus case generator outages DG
-costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20.csv');
 
 % N-1 Secure 73 bus case generator outages DG 5 and storage
 % costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20.csv');
@@ -27,9 +27,9 @@ costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-
 % costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
 
 % N-1 Secure 73 bus case generator outages storage 5 and DG
-% costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
-% costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5+S20.csv');
-% costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5+S20.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
 
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -67,17 +67,20 @@ for jj = 1:N3
 end
 
 
-loglog(sorted_costs1,Pr,'b')
+% loglog(sorted_costs1,Pr,'b')
+loglog(sorted_costs1,Pr,'color',[1.000    0.7000    0.0000])
 hold on
-loglog(sorted_costs2,Pr2,'r')
-loglog(sorted_costs3,Pr3, 'color',[1.000    0.7000    0.0000])
+loglog(sorted_costs2,Pr2,'color',[0.1 1.0 0.1]) %rgb(238,130,238) = violet
+loglog(sorted_costs3,Pr3,'color',[0.1    0.50    0.8000]) %rgb(255,69,0) orange-red
+% loglog(sorted_costs2,Pr2,'r')
+% loglog(sorted_costs3,Pr3, 'color',[1.000    0.7000    0.0000])
 % legend("original", "1.5*load", "2.0*load")
 % legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
-legend("original", "+5% load in DG", "+20% load in DG")
+% legend("original", "+5% PV", "+20% PV")
 % legend("original", "+5% storage", "+20% storage")
 % legend("+5% load in DG","+5% load in DG + 5% storage", "+5% load in DG +20% storage")
 % legend("+20% load in DG","+20% load in DG + 5% storage", "+20% load in DG +20% storage")
-%legend("+20% storage","+20% storage +5% load in DG", " +20% storage +20% load in DG")
+legend("+20% storage","+20% storage +5% PV", " +20% storage +20% PV")
 ylabel("Prob(ENS \geq x)")
 set(gca, 'fontsize',13)
 %xlim([1 10^7.5])
@@ -95,11 +98,11 @@ legend boxoff
 % %title('Resilience 39 bus PDF')
 xlabel("x (ENS (MWh))"); 
 % ylabel('PDF(ENS)');
-% set(gca,'xscale','log');
-% set(gca,'yscale','log');
-% set(gca, 'fontsize',13)
-% xlim([1 10^7.5])
-% box off
-% legend boxoff
+set(gca,'xscale','log');
+set(gca,'yscale','log');
+set(gca, 'fontsize',13)
+xlim([1 10^5])
+box off
+legend boxoff
 % hold off
 hold off
