@@ -1,4 +1,4 @@
 using Random
-include("..\\src\\CRISP_Save_Outage_Files.jl")
+include("..\\src\\CRISP_Save_Outage_Files_2.jl")
 rng = MersenneTwister(100);
-Outages(10000,"data\\saved_ps\\case73_noPWS_lx2_n-1")
+Outages(1000,"data\\saved_ps\\case73_noPWS_lx2_n-1")
