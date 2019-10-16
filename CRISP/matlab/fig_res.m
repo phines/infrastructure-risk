@@ -39,10 +39,10 @@
 % costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
 
 % N-1 Secure 73 bus case generator outages storage 5 and DG
-costs = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1.csv');
-costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5+S20.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
+% costs = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+S20.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV5+S20.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-1+PV20+S20.csv');
 % costs = xlsread('..\VACC\results\experiments\mh\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
 % costs1 = costs(:,1)
 % costs = xlsread('..\VACC\results\experiments\mh\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
@@ -50,6 +50,15 @@ costs3 = xlsread('..\VACC\results\experiments\mh\cascade_set\res_73_noPWS_lx2_n-
 % costs = xlsread('..\VACC\results\experiments\mh\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
 % costs3 = costs(:,1)
 
+
+% N-1 Secure 73 bus case generator outages communication system increased
+% restoration times
+costs = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1+S20.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1+PV5+S20.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1+PV20+S20.csv');
+
+costs(isnan(costs))=0;
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
 costs3(isnan(costs3))=0;
@@ -60,7 +69,7 @@ costs3(isnan(costs3))=0;
 [x3,pdf3] = emperical_pdf(costs3,80);
 
 % make ccdf
-N0 = length(costs)
+N0 = length(costs);
 N = length(costs1);
 N2 = length(costs2);
 N3 = length(costs3);
