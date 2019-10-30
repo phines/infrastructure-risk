@@ -70,7 +70,6 @@ function crisp_rlopf!(ps,Pd_max)
         if any(D.<1) || any(D.>n)
             error("Bad indices in shunt matrix")
         end
-        #Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
         # gen data
         ng = size(ps.gen,1)
         G = bi[ps.gen[:bus]]
@@ -80,7 +79,6 @@ function crisp_rlopf!(ps,Pd_max)
         if any(G.<1) || any(G.>n)
             error("Bad indices in gen matrix")
         end
-        #Pg_bus = Array(sparse(G,ones(size(G)),Pg,n,1))
         # branch data
         brst = (ps.branch.status.==1)
         F = bi[ps.branch.f[brst]]
@@ -106,7 +104,7 @@ function crisp_rlopf!(ps,Pd_max)
         @objective(m1,Max,sum(dPd)) # serve as much load as possible
         # mapping matrix to map loads/gens to buses
         # Power balance equality constraint
-        @constraint(m1,B*dTheta .== G_bus*dPg-D_bus*dPd);#M_G*dPg - M_D*dPd)
+        @constraint(m1,B*dTheta .== G_bus*dPg-D_bus*dPd);
         # Power flow constraints
         @constraint(m1,-flow_max .<= flow0 + Xinv.*(dTheta[F] - dTheta[T]) .<= flow_max)
         ### solve the model ###
@@ -134,7 +132,6 @@ function crisp_rlopf!(ps,Pd_max)
         G_bus = sparse(G,collect(1:ng),1.,n,ng);
         Pg1 = ps.gen.Pg ./ ps.baseMVA .* ps.gen.status
         ug1 = ones(ng); ug1[Pg1.==0] .= 0;
-        #Pg = ps.gen[gst,:Pg] ./ ps.baseMVA .* ps.gen[gst,:status]
         Pg_max = ps.gen.Pmax ./ ps.baseMVA .* ps.gen.status
         Pg_min = ps.gen.Pmin ./ ps.baseMVA .* ps.gen.status
         if any(G.<1) || any(G.>n)
@@ -162,6 +159,5 @@ function crisp_rlopf!(ps,Pd_max)
     end
     #adding criteria that should produce errors if incorrect.
     @assert abs(sum(ps.shunt.P)-sum(ps.gen.Pg))<=2*tolerance
-    #@assert 0.<=ps.shunt.P
     return ps
 end
