@@ -71,6 +71,44 @@ gens_outage_recovery = RecTime(RecovTimeG,gens_state)
 return gens_outage_recovery
 end
 
+function gen_trip!(ps,line_state,mu_gen,sigma_gen;orignumGen=0)
+# find generators that trip due to line outages in network case
+gens_state = initiate_trips(ps,line_state);
+Ngens = length(gens_state) - sum(gens_state);
+ps.gen.status = gens_state;
+ps.gen.Pg = ps.gen.Pg .*gens_state;
+RecovTimeG = RecoveryTimes(mu_gen,sigma_gen,Ngens);
+gens_outage_recovery = RecTime(RecovTimeG,gens_state)
+return gens_outage_recovery
+end
+
+function initiate_trips(ps,line_state;hops=1);
+# useful things
+tolerance = 10^(-6);
+Ng = length(ps.gen.bus);
+Nl = length(ps.branch.f);
+Pg = ps.gen.Pg;
+F = ps.branch.f;
+T = ps.branch.t;
+#set output
+gen_state = ones(Ng);
+#for i in 1:hops
+    for g in 1:Ng
+        if abs(Pg[g]) > tolerance
+            b = ps.gen.bus[g];
+            lf = F .== b;
+            lt = T .== b;
+            Total = sum(lf) + sum(lt);
+            Num = (length(line_state[lf])+length(line_state[lt]) - (sum(line_state[lf])+sum(line_state[lt])))
+            if rand(rng) <= Num/Total
+                gen_state[g] = 0
+            end
+        end
+    end
+#end
+return gen_state
+end
+
 function init_out_zipf_p1(s,k,TotalLines;OrigNumLines=TotalLines)
 ratioL = TotalLines/OrigNumLines;
 # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
