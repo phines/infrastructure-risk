@@ -1,3 +1,8 @@
+#=
+using CSV
+include("src\\CRISP_initiate.jl")
+include("src\\CRISP_network_gen.jl")
+=#
 using CSV
 include("CRISP_initiate.jl")
 include("CRISP_network_gen.jl")
