@@ -1,12 +1,19 @@
 % Original 39 bus p1 sampling.
-data1 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1.csv');
-data11 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
-data21 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
+% data1 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1.csv');
+% data11 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
+% data21 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
+data1 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1.csv');
+data11 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
+data21 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
 % N-1 Secure 39 bus p1 sampling.
-data2 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
-data3 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
-data31 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
-data41 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
+% data2 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
+% data3 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
+% data31 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
+% data41 = xlsread('..\VACC\results\experiments\mh\cascade_Set\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
+data2 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
+data3 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
+data31 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
+data41 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
 
 costs11 = data11(:,1);
 costs21 = data21(:,1);

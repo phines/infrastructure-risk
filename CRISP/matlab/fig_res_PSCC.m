@@ -62,10 +62,17 @@
 % costs1 = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1+S20.csv');
 % costs2 = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1+PV5+S20.csv');
 % costs3 = xlsread('..\VACC\results\experiments\mh\communications_interactions\res_73_noPWS_lx2_n-1+PV20+S20.csv');
+
+%FIXED
 costs = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1.csv');
-costs1 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+S20.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV5+S20.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV20+S20.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+S20.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV5.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+S5.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV5+S20.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV20.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+S20.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV20+S20.csv');
 costs(isnan(costs))=0;
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;
@@ -116,31 +123,32 @@ end
 Pr0 = Pr0(sorted_costs0 ~= 0) 
 sorted_costs00 = sorted_costs0(sorted_costs0 ~= 0)
 Pr = Pr(sorted_costs1 ~= 0)
-sorted_costs10 = sorted_costs1(sorted_costs1 ~= 0)
+sorted_costs1 = sorted_costs1(sorted_costs1 ~= 0)
 Pr2 = Pr2(sorted_costs2 ~= 0)
-sorted_costs20 = sorted_costs2(sorted_costs2 ~= 0)
+sorted_costs2 = sorted_costs2(sorted_costs2 ~= 0)
 Pr3 = Pr3(sorted_costs3 ~= 0)
-sorted_costs30 = sorted_costs3(sorted_costs3 ~= 0)
-% loglog([10^(-1); sorted_costs1],[Pr(1) Pr],'b')
-% loglog([10^(-1); sorted_costs00],[Pr0(1) Pr0],'bv-')
-% hold on
+sorted_costs3 = sorted_costs3(sorted_costs3 ~= 0)
+loglog([10^(-1); sorted_costs1],[Pr(1) Pr],'b')
+%loglog([10^(-1); sorted_costs00],[Pr0(1) Pr0],'bv-')
+hold on
 % loglog([10^(-1); sorted_costs10],[Pr(1) Pr],'s-','color',[1.000    0.7000    0.0000])
 % loglog([10^(-1); sorted_costs20],[Pr2(1) Pr2],'x-','color',[0.1 1.0 0.1]) %rgb(238,130,238) = violet
 % loglog([10^(-1); sorted_costs30],[Pr3(1) Pr3],'d-','color',[0.5    0.50    0.8000]) %rgb(255,69,0) orange-red
-% % loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'c')
-% % loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'm')
-% % loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'r')
-% % loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'color',[1.000    0.7000    0.0000])
-% % legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
-% % legend("base case", "+5% PV", "+20% PV")
-% % legend("base case", "+5% storage", "+20% storage")
+loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'c')
+loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'm')
+% loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'r')
+% loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'color',[1.000    0.7000    0.0000])
+% legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
+legend("base case", "+5% PV", "+20% PV")
+% legend("base case", "+5% storage", "+20% storage")
 % legend("base case","+20% storage","+20% storage +5% PV", " +20% storage +20% PV")
-% ylabel("Prob(ENS \geq x)")
-% set(gca, 'fontsize',13)
-% %xlim([1 10^7.5])
-% box off
-% legend boxoff
-% % set(gca,'xticklabels',[])
+xlabel("x")
+ylabel("Prob(ENS \geq x)")
+set(gca, 'fontsize',13)
+%xlim([1 10^7.5])
+box off
+legend boxoff
+% set(gca,'xticklabels',[])
 % 
 % % make pdf plots
 % % subplot(3,1,3)
@@ -162,22 +170,22 @@ sorted_costs30 = sorted_costs3(sorted_costs3 ~= 0)
 % % hold off
 % hold off
 
-% Resilience Metric plot
-figure
-plot(length(sorted_costs00),EENS_0,'bv')
-hold on
-plot(length(sorted_costs10),EENS_1,'s','color',[1.000    0.7000    0.0000])
-plot(length(sorted_costs20),EENS_2,'x','color',[0.1 1.0 0.1])
-plot(length(sorted_costs30),EENS_3,'d','color',[0.5    0.50    0.8000])
-% plot(length(sorted_costs000),EENS_00,'bv',length(sorted_costs000),EENS_00,'b+')
-% plot(length(sorted_costs100),EENS_10,'s',length(sorted_costs100),EENS_10,'+','color',[1.000    0.7000    0.0000])
-% plot(length(sorted_costs200),EENS_20,'x',length(sorted_costs200),EENS_20,'+','color',[0.1 1.0 0.1])
-% plot(length(sorted_costs300),EENS_30,'d',length(sorted_costs300),EENS_30,'+','color',[0.5    0.50    0.8000])
-legend("base case","+20% storage","+20% storage +5% PV", " +20% storage +20% PV")%,"base case+comms","+20% storage+comms","+20% storage +5% PV+comms", " +20% storage +20% PV+comms")
-set(gca, 'fontsize',13)
-box off
-legend boxoff
-xlabel("No. Nonzero Events"); 
-ylabel('EENS');
-set(gca, 'fontsize',13)
-hold off
+% % Resilience Metric plot
+% figure
+% plot(length(sorted_costs00),EENS_0,'bv')
+% hold on
+% plot(length(sorted_costs10),EENS_1,'s','color',[1.000    0.7000    0.0000])
+% plot(length(sorted_costs20),EENS_2,'x','color',[0.1 1.0 0.1])
+% plot(length(sorted_costs30),EENS_3,'d','color',[0.5    0.50    0.8000])
+% % plot(length(sorted_costs000),EENS_00,'bv',length(sorted_costs000),EENS_00,'b+')
+% % plot(length(sorted_costs100),EENS_10,'s',length(sorted_costs100),EENS_10,'+','color',[1.000    0.7000    0.0000])
+% % plot(length(sorted_costs200),EENS_20,'x',length(sorted_costs200),EENS_20,'+','color',[0.1 1.0 0.1])
+% % plot(length(sorted_costs300),EENS_30,'d',length(sorted_costs300),EENS_30,'+','color',[0.5    0.50    0.8000])
+% legend("base case","+20% storage","+20% storage +5% PV", " +20% storage +20% PV")%,"base case+comms","+20% storage+comms","+20% storage +5% PV+comms", " +20% storage +20% PV+comms")
+% set(gca, 'fontsize',13)
+% box off
+% legend boxoff
+% xlabel("No. Nonzero Events"); 
+% ylabel('EENS');
+% set(gca, 'fontsize',13)
+% hold off
