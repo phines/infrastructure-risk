@@ -166,7 +166,7 @@ function turn_gen_on!(ps,dt)
         @constraint(m, Pg .<= ug.*Pg_max) # generator power limits upper
         @constraint(m, ug.*Pg_min .<= Pg) # generator power limits lower
         @constraint(m, Ps_min .<= Ps .<= Ps_max) # storage power flow
-        @constraint(m, E .== (E1 + (dt/60) .*(Ps))) # storage energy at next time step
+        @constraint(m, E .== (E1 - (dt/60) .*(Ps))) # storage energy at next time step
         @constraint(m, 0 .<= E .<= E_max) # storage energy
         @constraint(m, Theta[1] .== 0); # set first bus as reference bus: V angle to 0
         # power balance
@@ -230,7 +230,7 @@ function turn_gen_on!(ps,dt)
         @constraint(m, Pg .<= ug.*Pg_max) # generator power limits upper
         @constraint(m, ug.*Pg_min .<= Pg) # generator power limits lower
         @constraint(m, Ps_min .<= Ps .<= Ps_max) # storage power flow
-        @constraint(m, E .== (E1 + (dt/60) .*(Ps))) # storage energy at next time step
+        @constraint(m, E .== (E1 - (dt/60) .*(Ps))) # storage energy at next time step
         @constraint(m, 0 .<= E .<= E_max) # storage energy
         # power balance
         @constraint(m, 0 .== G_bus*Pg+S_bus*Ps-D_bus*Pd)

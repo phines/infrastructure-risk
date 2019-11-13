@@ -7,15 +7,15 @@ include("CRISP_network_gen.jl")
 
 function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
 
-    debug=1;
+    debug=true;#false;
     tolerance1 = 10^(-6);
     ## Num = number of failure scenarios to run through
     # initialize vector of costs from events
-    NumLinesOut = Array{Float64}(undef,Num,1);
-    LoadShed0 =  Array{Float64}(undef,Num,1);
-    MaxRestorationTime = Array{Float64}(undef,Num,1);
-    LoadServedTime = Array{Float64}(undef,Num,1);
-    ResilienceTri = Array{Float64}(undef,Num,1);
+    NumLinesOut = Vector{Float64}(undef,Num);
+    LoadShed0 =  Vector{Float64}(undef,Num);
+    MaxRestorationTime = Vector{Float64}(undef,Num);
+    LoadServedTime = Vector{Float64}(undef,Num);
+    ResilienceTri = Vector{Float64}(undef,Num);
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
@@ -49,8 +49,8 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
         Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
         if debug==1
             outnow = (out_folder[1:end-4]);
-            CSV.write("VACC\\results"*outnow*"_lines.csv", Lines_Init_State)
-            CSV.write("VACC\\results"*outnow*"_gens.csv", Gens_Init_State)
+            CSV.write("results"*outnow*"_lines.csv", Lines_Init_State)
+            CSV.write("results"*outnow*"_gens.csv", Gens_Init_State)
         end
         l_failures = Lines_Init_State[:,1];
         ps.branch.status[l_failures .==0] .= 0;
@@ -87,7 +87,7 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
         Restore = crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
         if debug==1
             outnow = (out_folder[1:end-4]);
-            CSV.write("VACC\\results"*outnow*"_restore.csv", Restore)
+            CSV.write("results"*outnow*"_restore.csv", Restore)
         end
         ## find the time to restore the grid to 99.9% load served
         K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
@@ -109,15 +109,6 @@ function Res_dist(Num,ps_folder,out_folder,dt;param_file = "")
     #case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], initial_load_shed = LoadShed0[:,1]);#, full_rest_time = MaxRestorationTime[:,1]);
 
     ## save data
-    CSV.write("VACC\\results\\$out_folder", case_res);
+    CSV.write("results/$out_folder", case_res);
     #CSV.write("results/$(out_folder[1:end-4])_lines.csv", case_lines);
 end
-
-#=
-using CSV
-include("VACC\\src\\CRISP_initiate.jl")
-include("VACC\\src\\CRISP_LSOPF_gen1.jl")
-include("VACC\\src\\CRISP_RLOPF_mh_3.jl")
-include("VACC\\src\\CRISP_RT.jl")
-include("VACC\\src\\CRISP_network_gen.jl")
-=#

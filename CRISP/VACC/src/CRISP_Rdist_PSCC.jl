@@ -27,8 +27,8 @@ function Resilience(N,ps_folder,out_folder,dt;param_file = "")
     for iterat in 1:Num
         ps = deepcopy(ps0); # reset network to original state
         # step 1
-        Lines_Init_State = CSV.File("../data/outage_data/out_case73_noPWS_lx2_n-1_lines$N.csv") |> DataFrame
-        Gens_Init_State = CSV.File("../data/outage_data/out_case73_noPWS_lx2_n-1_gens$N.csv") |> DataFrame
+        Lines_Init_State = CSV.File("data/outage_data/out_case73_noPWS_lx2_n-1_lines$N.csv") |> DataFrame
+        Gens_Init_State = CSV.File("data/outage_data/out_case73_noPWS_lx2_n-1_gens$N.csv") |> DataFrame
         l_failures = Lines_Init_State.state;
         ps.branch.status[l_failures .== 0] .= 0;
         NumLinesOut[iterat] = length(l_failures) - sum(l_failures)
@@ -46,16 +46,22 @@ function Resilience(N,ps_folder,out_folder,dt;param_file = "")
         ps_islands = build_islands(subgraph,ps)
         for i in 1:M
             psi = ps_subset(ps,ps_islands[i]);
+            crisp_dcpf_g_s!(psi);
             # run lsopf
             dt = 10; # first minute, affects ramp rate limits - rateB
             crisp_lsopf_g_s!(psi,dt);
             ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
             #ps.storage.E[ps_islands[i].storage] = psi.storage.E
+	    for sh in 1:length(psi.shunt.status)
+		if psi.shunt.status[sh] > 1
+			psi.shunt.status[sh] = 1.0
+		end
+	    end
             ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
         end
         println(iterat)
-        @assert total>=sum(ps.shunt.P .* ps.shunt.status)
+        @assert (total+tolerance1)>=sum(ps.shunt.P .* ps.shunt.status)
         @assert 2M*tolerance1 >= abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.gen.Pg)-sum(ps.storage.Ps))
         tolerance = 10^(-10);
         LoadShed0[iterat] = total-sum(ps.shunt.P .* ps.shunt.status);
@@ -66,7 +72,7 @@ function Resilience(N,ps_folder,out_folder,dt;param_file = "")
         Restore = crisp_Restoration(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
         if debug==1
             outnow = (out_folder[1:end-4]);
-            CSV.write("VACC\\results"*outnow*"_restore$iterat.csv", Restore)
+            CSV.write("results"*outnow*"_restore.csv", Restore)
         end
         ## find the time to restore the grid to 99.9% load served
         K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
@@ -88,7 +94,7 @@ function Resilience(N,ps_folder,out_folder,dt;param_file = "")
     #case_lines = DataFrame(lines_out = NumLinesOut[:,1], no_load_shed_time = LoadServedTime[:,1], initial_load_shed = LoadShed0[:,1]);#, full_rest_time = MaxRestorationTime[:,1]);
 
     ## save data
-    CSV.write("VACC\\results\\$out_folder", case_res);
+    CSV.write("results/$out_folder", case_res);
     #CSV.write("results/$(out_folder[1:end-4])_lines.csv", case_lines);
 end
 

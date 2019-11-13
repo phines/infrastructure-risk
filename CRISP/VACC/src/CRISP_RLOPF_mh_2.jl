@@ -197,7 +197,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         # variable bounds constraints
         @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
         @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
@@ -309,7 +309,6 @@ function crisp_mh_rlopf!(ps,dt,t_win)
                 end
             end
         end
-        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
         # objective
         println(size(Pd))
         println(size(C_time))
@@ -411,7 +410,7 @@ if n>1
     @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
     @constraint(m, [k=2:Ti], -RR .<= Pg[:,k]-Pg[:,k-1] .<= RR) # generator ramp rate lower
     @constraint(m, [k=1:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-    @constraint(m, [j=1:Ti-1], E[:,j+1] .== (E[:,j] + ((dt/60) .*Ps[:,j+1]))) # storage energy at next time step
+    @constraint(m, [j=1:Ti-1], E[:,j+1] .== (E[:,j] - ((dt/60) .*Ps[:,j+1]))) # storage energy at next time step
     @constraint(m, [i=2:Ti], 0 .<= E[:,i] .<= E_max) # storage energy
     @constraint(m, [k=1:Ti], Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
     # power balance
@@ -478,7 +477,7 @@ else
     @constraint(m, [k=1:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
     @constraint(m, [k=1:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
     @constraint(m, [k=1:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-    @constraint(m, [j=1:Ti-1], E[:,j+1] .== (E[:,j] + ((dt/60) .*Ps[:,j+1]))) # storage energy at next time step
+    @constraint(m, [j=1:Ti-1], E[:,j+1] .== (E[:,j] - ((dt/60) .*Ps[:,j+1]))) # storage energy at next time step
     @constraint(m, [i=2:Ti], 0 .<= E[:,i] .<= E_max) # storage energy
     # power balance
     @constraint(m, [k=1:Ti], 0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])

@@ -198,7 +198,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         # variable bounds constraints
         @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
         @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower
@@ -298,7 +298,7 @@ function crisp_mh_rlopf!(ps,dt,t_win)
         # variable bounds constraints
         @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0.01 .<= (E[:,k]) .<= E_max) # storage energy
         @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], ug[:,k].*Pg_min .<= Pg[:,k]) # generator power limits lower

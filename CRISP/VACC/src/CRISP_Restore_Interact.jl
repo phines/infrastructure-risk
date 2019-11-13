@@ -6,14 +6,15 @@ using JuMP
 using Gurobi
 #using Cbc;
 include("CRISP_network_gen.jl")
-
-function crisp_Restoration(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on;load_cost=0)
+include("CRISP_interact.jl")
+function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,comm,natg,nucp;load_cost=0)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
         load_cost = ones(length(ps.shunt.P));
     end
     ti = t0;
+    comm_count = 0;
     #save initial values
     load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
     perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
@@ -64,6 +65,17 @@ function crisp_Restoration(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,g
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
             ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
             #add_changes!(ps,psi,ps_islands[j]);
+        end
+        if comm
+            if ti >= 4*60 #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
+                communication_interactions(ps,comm_count,ti)
+            end
+        end
+        if natg
+            naturalgas_interactions(ps)
+        end
+        if nucp
+            nuclear_poissoning(ps)
         end
         # save current values
         cv.time .= ti;

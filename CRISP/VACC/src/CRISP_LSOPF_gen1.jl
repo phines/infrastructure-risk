@@ -1,7 +1,7 @@
 using JuMP
-using Clp
-using Cbc
-#using Gurobi
+#using Clp
+#using Cbc
+using Gurobi
 using SparseArrays
 using LinearAlgebra
 
@@ -45,12 +45,12 @@ function crisp_dcpf_g_s!(ps)
           sparse(T,T,+Xinv,n,n) + sparse(F,F,+Xinv,n,n)
     #find reference bus
     if isempty(ps.bus.id[ps.bus.bus_type.==3]) # note in Pavan's ps structure I beleive it's called 'kind' not 'bus_type'
-        if (isempty(ps.gen[gst]))  || (isempty(ps.shunt) && isempty(ps.storage))
+        if (isempty(ps.gen.Pg[gst]))  || (isempty(ps.shunt) && isempty(ps.storage))
             ps.branch.Pf[brst] .= 0
             ps.branch.Pt[brst] .= 0
             ps.branch.Qf[brst] .= 0
             ps.branch.Qt[brst] .= 0
-            if !isempty(ps.gen[gst])
+            if !isempty(ps.gen.Pg[gst])
                 ps.gen.Pg[gst] .= 0.0
             end
             if !isempty(ps.shunt)
@@ -60,7 +60,7 @@ function crisp_dcpf_g_s!(ps)
                 ps.storage.Ps .= 0.0
             end
             return ps #TODO
-        elseif !isempty(ps.gen[gst])
+        elseif !isempty(ps.gen.Pg[gst])
             maxGen = findmax(ps.gen.Pg)[2]
             busID = ps.gen[maxGen,:bus];
             isref = (busID.==ps.bus.id)
@@ -89,12 +89,12 @@ function crisp_dcpf_g_s!(ps)
             nonref = .~isref
         end
     else
-        if isempty(ps.gen[gst,:]) || (isempty(ps.shunt) && isempty(ps.storage))
+        if isempty(ps.gen.Pg[gst]) || (isempty(ps.shunt) && isempty(ps.storage))
             ps.branch.Pf[brst] .= 0
             ps.branch.Pt[brst] .= 0
             ps.branch.Qf[brst] .= 0
             ps.branch.Qt[brst] .= 0
-            if !isempty(ps.gen[gst])
+            if !isempty(ps.gen.Pg[gst])
                 ps.gen.Pg[gst] .= 0.0
             end
             if !isempty(ps.shunt)
@@ -160,7 +160,7 @@ end
 
 function crisp_lsopf_g_s!(ps,dt)
     # constants
-    tolerance = 1e-6
+    tolerance = 1e-4
     load_shed_cost_C = 100
     min_bat_E = 0.01;
     ### collect the data that we will need ###
@@ -172,14 +172,14 @@ function crisp_lsopf_g_s!(ps,dt)
     load_shed_cost = load_shed_cost_C.*ones(nd)
     D = bi[ps.shunt.bus]
     D_bus = sparse(D,collect(1:nd),1.,n,nd);
-    Pd = ps.shunt.P  ./ ps.baseMVA .* ps.shunt.status
+    Pd = ps.shunt.P  ./ ps.baseMVA
     if any(D.<1) || any(D.>n)
         error("Bad indices in shunt matrix")
     end
     #Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
     # gen data
     gst = (ps.gen.status.==1)
-    ng = size(ps.gen[gst],1)
+    ng = length(ps.gen.Pg[gst])
     G = bi[ps.gen.bus[gst]]
     G_bus = sparse(G,collect(1:ng),1.,n,ng);
     Pg = ps.gen.Pg[gst] ./ ps.baseMVA .* ps.gen.status[gst]
@@ -207,15 +207,15 @@ function crisp_lsopf_g_s!(ps,dt)
     F = bi[ps.branch.f[brst]]
     T = bi[ps.branch.t[brst]]
     flow0 = ps.branch.Pf[brst]./ps.baseMVA
-    flow_max = ps.branch.rateB[brst]./ps.baseMVA # this could also be rateB
+    flow_max = ps.branch.rateA[brst]./ps.baseMVA # this could also be rateB
     Xinv = (1 ./ ps.branch.X[brst])
     B = sparse(F,T,-Xinv,n,n) +
         sparse(T,F,-Xinv,n,n) +
         sparse(T,T,+Xinv,n,n) +
         sparse(F,F,+Xinv,n,n)
     ### Build the optimization model ###
-    #m = Model(with_optimizer(Gurobi.Optimizer))
-	m = Model(with_optimizer(Cbc.Optimizer))
+    m = Model(with_optimizer(Gurobi.Optimizer))
+    #m = Model(with_optimizer(Cbc.Optimizer))
         # variables
         @variable(m,dPd[1:nd])
         @variable(m,dPs[1:ns])
@@ -225,7 +225,7 @@ function crisp_lsopf_g_s!(ps,dt)
         # variable bounds
         @constraint(m,-Pd .<= dPd .<= 0)
         @constraint(m, Ps_min .<= Ps+dPs .<= Ps_max)
-        @constraint(m, min_bat_E .<= E + (Ps+dPs).*dt/60 .<= E_max)
+        @constraint(m, 0 .<= E - (Ps+dPs).*dt/60 .<= E_max)
         @constraint(m, ug.*(Pg_min) .<= Pg+ndPg+pdPg)
         @constraint(m, ug.*(Pg_max) .>= Pg+pdPg+ndPg)
         for g in 1:ng
@@ -249,7 +249,7 @@ function crisp_lsopf_g_s!(ps,dt)
             @constraint(m,sum(Pg+ndPg+pdPg)+sum(Ps+dPs)-sum(Pd+dPd) == 0);
         end
         # objective
-        @objective(m,Max,sum(load_shed_cost.*dPd)+sum(ug))) # serve as much load as possible and keep as much generation as possible
+        @objective(m,Max,sum(load_shed_cost.*dPd)+sum(ug)) # serve as much load as possible and keep as much generation as possible
     ### solve the model ###
     optimize!(m);
     # collect/return the outputs
@@ -265,7 +265,7 @@ function crisp_lsopf_g_s!(ps,dt)
     ps.storage.E += ps.storage.Ps.*dt;
     ps.gen.Pg[gst] += dPg_star; #changes ps structure
     #adding criteria that should produce errors if incorrect.
-    @assert abs(sum(ps.shunt.P)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
+    @assert abs(sum(ps.shunt.P.*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg[gst]))<=2*tolerance
     #@assert sum(ps.storage.E .< 0)==0
     #@assert 0.<=ps.shunt.P
     return ps

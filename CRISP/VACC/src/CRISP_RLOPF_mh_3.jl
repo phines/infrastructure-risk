@@ -30,7 +30,7 @@ function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,ge
     end
     # set time line
     #if recTime - t0 > (maximum(ps.gen.minDownTimeHr)*60)
-        #Time = t0+dt:dt:(t0+recTime+dt+(maximum(ps.gen.minUpTimeHr)*60))
+        #Time = (t0+dt):dt:(t0+recTime+dt+(maximum(ps.gen.minUpTimeHr)*60))
     #else
         Time = t0+dt:dt:(t0+recTime+dt+(maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60)
     #end
@@ -159,7 +159,7 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug)
         # variable bounds constraints
         @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .* (Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .* (Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0 .<= (E[:,k]) .<= E_max) # storage energy
         @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k] .* Pg_max) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], 0 .<= Pg[:,k]) # generator power limits lower
@@ -210,14 +210,14 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug)
         # variable bounds constraints
         @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax) # load served limits
         @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
-        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] + ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
+        @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .*(Ps[:,k])))) # storage energy at next time step
         @constraint(m, stEcon[k=2:Ti], 0.01 .<= (E[:,k]) .<= E_max) # storage energy
         @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,k].*Pg_max) # generator power limits upper
         @constraint(m, genPglcon[k=2:Ti], 0 .<= Pg[:,k]) # generator power limits lower
         #power balance
         @constraint(m, PBcon[k=2:Ti], 0.0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
-        #
-        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
+        #ramping constraints
+        @constraint(m, genPgRR[k=2:Ti],  -RR .<= Pg[:,k-1] .- Pg[:,k] .<= RR) # generator ramp rate
         # objective
         @objective(m, Max, 100*sum(Pd*C_time'));
         ## SOLVE! ##

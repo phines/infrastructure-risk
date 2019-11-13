@@ -57,8 +57,6 @@ gens_outage_recovery = RecTime(RecovTimeG,gens_state)
 return gens_outage_recovery
 end
 
-
-
 function init_out_zipf_p1(s,k,TotalLines;OrigNumLines=TotalLines)
 ratioL = TotalLines/OrigNumLines;
 # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
