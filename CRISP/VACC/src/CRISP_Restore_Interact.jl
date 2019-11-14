@@ -71,7 +71,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
         if comm
             if ti >= 4*60 #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
                 for l in 1:length(ps.branch.f)
-                    [l_recovery_times[l], comm_count[l]] = rescommunication_interactions(ps,comm_count[l],ti)
+                    [l_recovery_times[l], comm_count[l]] = communication_interactions(ps,comm_count[l],ti)
                 end
             end
         end
