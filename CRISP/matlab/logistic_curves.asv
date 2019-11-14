@@ -1,0 +1,20 @@
+t = 1:50;
+L = 1;
+
+f1 = L./(1+exp(-5.*(t-4)))
+f2 = L./(1+exp(-4.*(t-16)))
+f3 = L./(1+exp(-3.*(t-24)))
+f4 = L./(1+exp(-2.*(t-48)))
+f5 = L./(1+exp(-1.*(t-48)))
+
+figure
+hold on
+plot(t,f1)
+plot(t,f2)
+plot(t,f3)
+plot(t,f4)
+plot(t,f5)
+xlabel('time')
+ylabel('Prob(comm_fail)')
+legend('param 5 + 4', '4 + ', '3', '2', '1')
+hold off

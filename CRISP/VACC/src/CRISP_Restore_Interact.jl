@@ -14,7 +14,8 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
         load_cost = ones(length(ps.shunt.P));
     end
     ti = t0;
-    comm_count = 0;
+    comm_count = zeros(length(ps.branch.t));
+    comm_count[ps.branch.status .== 1] .= 100;
     #save initial values
     load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
     perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
@@ -47,6 +48,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
         ti = Time[i]-t0;
         # remove failures as the recovery time is reached
         ps.branch.status[ti .>= l_recovery_times] .= 1;
+        comm_count[ti .>= l_recovery_times] .= 100;
         ps.gen.status[ti .>= g_recovery_times] .= 1;
         # find the number of islands in ps
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
@@ -68,11 +70,13 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
         end
         if comm
             if ti >= 4*60 #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
-                communication_interactions(ps,comm_count,ti)
+                for l in 1:length(ps.branch.f)
+                    communication_interactions(ps,comm_count[l],ti)
+                end
             end
         end
         if natg
-            naturalgas_interactions(ps)
+            natural_gas_interactions(ps,)
         end
         if nucp
             nuclear_poissoning(ps)

@@ -20,3 +20,11 @@ function logistic(param,t;L=1)
     f = L/(1+exp(-param[1]*(t-param[2])))
     return f
 end
+
+function natural_gas_interactions(ps)
+    return ps
+end
+
+function nuclear_poissoning(ps)
+    return ps
+end
