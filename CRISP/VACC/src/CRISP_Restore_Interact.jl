@@ -7,7 +7,7 @@ using Gurobi
 #using Cbc;
 include("CRISP_network_gen.jl")
 include("CRISP_interact.jl")
-function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,comm,natg,nucp;load_cost=0)
+function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,comm,nucp;load_cost=0)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
@@ -74,9 +74,6 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
                     [l_recovery_times[l], comm_count[l]] = communication_interactions(ps,comm_count[l],ti)
                 end
             end
-        end
-        if natg
-            natural_gas_interactions(ps,)
         end
         if nucp
             nuclear_poissoning(ps)

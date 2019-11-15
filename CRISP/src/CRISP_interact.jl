@@ -8,14 +8,26 @@ function communication_interactions(ps,restoration_times,comm_battery_limits,t)
     B = ps.bus.id;
     F = ps.branch.f[l];
     T = ps.branch.t[l];
-    BL = falses(length(comm_battery_limits));
+    CBLF = zeros(length(F))
+    CBLT = zeros(length(T))
+    LSF = zeros(length(F))
+    LST = zeros(length(T))
     for i in 1:length(F)
-        BL[F[i] .== B] .= true;
-        BL[T[i] .== B] .= true;
-    end
-
-    if sum(comm_battery_limits[BL] .== t) > 0
-        rand(rng,1) <= load_shed
+        CBLF[i] = comm_battery_limits[F[i] .== B];
+        CBLT[i] = comm_battery_limits[T[i] .== B];
+        LSF[i] += ps.load.status[ps.load.bus .== F[i]]
+        LST[i] += ps.load.status[ps.load.bus .== T[i]]
+        if CBLF[i] == t
+            g = rand(rng,1) < LSF
+            if g
+                restoraion_times[i] = restoraion_times[i].*factor
+            end
+        end
+        if CBLT[i] == t & !g
+            if rand(rng,1) < LST
+                restoraion_times[i] = restoraion_times[i].*factor
+            end
+        end
     end
     return restoration_times
 end
@@ -38,6 +50,8 @@ function logistic(param,t;L=1)
 end
 
 function natural_gas_interactions(ps)
+
+
     return ps
 end
 
