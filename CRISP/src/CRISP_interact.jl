@@ -54,11 +54,10 @@ end
 
 function natural_gas_interactions(ps)
 
-
     return ps
 end
 
-function nuclear_poissoning(ps,ug; time_range = (4*24):(7*24))
-    rand
-    return ps
+function nuclear_poissoning(ps,n; time_range = (4*24):(7*24))
+    r = rand(rng,tim_range,n)
+    return r
 end

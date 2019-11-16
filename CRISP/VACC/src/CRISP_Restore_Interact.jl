@@ -75,9 +75,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
                 end
             end
         end
-        if nucp
-            nuclear_poissoning(ps)
-        end
+
         # save current values
         cv.time .= ti;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
@@ -229,9 +227,16 @@ function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time)
     timeup = (ps.gen.minDownTimeHr .*60)
     ug = falses(ng,length(Time)+ext_stps+1)
     gen_time = zeros(ng);
-    gen_time[g2] .+= timedown[g2];
-    gen_time[gs] .+= timeup[gs];
-    gen_time[gst] .+= gens_recovery_time[gst];
+    gen_time[g2] .+= timedown[g2]
+    gen_time[gs] .+= timeup[gs]
+    gen_time[gst] .+= gens_recovery_time[gst]
+    if nucp
+        nucs = (gen_time[ps.gen.Fuel .== "Nuclear")
+        nucs_off = (nucs .& gst) || (nucs .& gs .& g1)
+        n_nuc = sum(nucs_off)
+        extra_nuc = nuclear_poissoning(ps,n_nuc)
+        gen_time[nucs_off] .+=extra_nuc
+    end
     for t in 1:length(Time)+ext_stps+1
         gen_time .-= dt
         for g in 1:ng
