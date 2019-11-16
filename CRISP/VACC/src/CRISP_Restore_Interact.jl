@@ -235,7 +235,7 @@ function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time)
         nucs_off = (nucs .& gst) || (nucs .& gs .& g1)
         n_nuc = sum(nucs_off)
         extra_nuc = nuclear_poissoning(ps,n_nuc)
-        gen_time[nucs_off] .+=extra_nuc
+        gen_time[nucs_off] .+=extra_nuc;
     end
     for t in 1:length(Time)+ext_stps+1
         gen_time .-= dt
