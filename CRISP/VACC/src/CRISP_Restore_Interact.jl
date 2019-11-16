@@ -34,7 +34,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
     EndTime = (t0+recTime+((maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60));
     Time = t0:dt:EndTime
     # find generator status
-    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times,nucp)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
@@ -210,17 +210,17 @@ function crisp_mh_rlopf!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost)
     return ps
 end
 
-function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time)
+function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time,nucp)
     # constants
     tolerance = 1e-6
     ### collect the data that we will need ###
-    dt = Time[2]-Time[1];
-    Time = Time .- Time[1] .+ dt;
-    ext_stps = Int64(t_window/dt);
+    dt = Time[2]-Time[1]
+    Time = Time .- Time[1] .+ dt
+    ext_stps = Int64(t_window/dt)
     # gen data
-    gs = (ps.gen.Pg .== 0);
-    gst = (ps.gen.status .!= 1);
-    g1 = (ps.gen.status .== 1);
+    gs = (ps.gen.Pg .== 0)
+    gst = (ps.gen.status .!= 1)
+    g1 = (ps.gen.status .== 1)
     g2 = gen_on .& gs .& g1;
     ng = size(ps.gen.Pg,1)
     timedown = (ps.gen.minDownTimeHr .*60)
