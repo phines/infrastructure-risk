@@ -3,7 +3,7 @@ using Random
 include("CRISP_network_gen.jl")
 # interaction functions
 
-function communication_interactions(ps,restoration_times,comm_battery_limits,t)
+function communication_interactions(ps,restoration_times,comm_battery_limits,t,factor)
     l = restoration_times > 0;
     B = ps.bus.id;
     F = ps.branch.f[l];
@@ -31,6 +31,9 @@ function communication_interactions(ps,restoration_times,comm_battery_limits,t)
     end
     return restoration_times
 end
+function comm_battery_limits (n,a,b)
+    return comm_bl = rand(rng,a:b,n);
+end
 
 function communication_logistic_interactions(ps,restoration_times,comm_count,t;
                         n_sigmoids = 5,param=[1 2 3 4 5; 4 16 24 48 72])
@@ -55,6 +58,7 @@ function natural_gas_interactions(ps)
     return ps
 end
 
-function nuclear_poissoning(ps)
+function nuclear_poissoning(ps,ug; time_range = (4*24):(7*24))
+    rand
     return ps
 end
