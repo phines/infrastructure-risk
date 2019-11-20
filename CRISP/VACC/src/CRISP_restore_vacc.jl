@@ -3,7 +3,7 @@ using JuMP
 using Gurobi
 using Cbc;
 include("CRISP_network_gen.jl")
-
+include("CRISP_interact.jl")
 # combined all VACC restoration functions into one File
 
 ## CRISP_RLOPF_gen_stor.jl
@@ -1688,7 +1688,6 @@ end
 
 
 ## CRISP_Restore_Interact.jl
-include("CRISP_interact.jl")
 function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,comm,nucp;load_cost=0)
     # constants
     tolerance = 10^(-6);
@@ -1716,7 +1715,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
     EndTime = (t0+recTime+((maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60));
     Time = t0:dt:EndTime
     # find generator status
-    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times,nucp)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
@@ -1743,7 +1742,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
             Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
-            crisp_mh_rlopf_var!(psi,dt,t_window,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+            crisp_mh_rlopf!(psi,dt,t_window,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
