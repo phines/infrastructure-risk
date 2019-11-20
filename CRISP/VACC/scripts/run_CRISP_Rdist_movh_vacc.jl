@@ -1,4 +1,5 @@
-include("../src/CRISP_Rdist_gen_movh_vacc.jl")
+include("../src/CRISP_Rdist_vacc.jl")
+#include("../src/CRISP_Rdist_gen_movh_vacc.jl")
 ## folder of case data
 #case = "data/saved_ps/case39_n-1_gen"
 #case1 = "data/saved_ps/case39_n-1_gen+S5"

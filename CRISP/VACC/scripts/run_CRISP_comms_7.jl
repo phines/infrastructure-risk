@@ -1,4 +1,5 @@
-include("../src/CRISP_Rdist_PSCC_comms.jl")
+include("../src/CRISP_Rdist_vacc.jl")
+#include("../src/CRISP_Rdist_PSCC_comms.jl")
 ## folder of case data
 case = "data/saved_ps/case73_noPWS_lx2_n-1+PV20+S20"
 events = "data/outage_data/communication_factor/out_case73_noPWS_lx2_n-1"
