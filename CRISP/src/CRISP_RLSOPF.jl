@@ -295,7 +295,7 @@ function RLSOPF_g_orig!(ps,l_failures,g_failures,l_recovery_times,g_recovery_tim
         if M==1
             crisp_dcpf_g!(ps);
             # run lsopf
-            crisp_rlopf_g!(ps,Pd_max);
+            crisp_rlopf_g_orig!(ps,Pd_max);
             crisp_dcpf_g!(ps);
         else
             ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
@@ -306,7 +306,7 @@ function RLSOPF_g_orig!(ps,l_failures,g_failures,l_recovery_times,g_recovery_tim
                     # run the dcpf
                     crisp_dcpf_g!(psi);
                     # run lsopf
-                    crisp_rlopf_g!(psi,Pd_max[ps_islands[j].shunt]);
+                    crisp_rlopf_g_orig!(psi,Pd_max[ps_islands[j].shunt]);
                     # apply the results
                     ps.gen[ps_islands[j].gen,:Pg]  = psi.gen.Pg;
                     ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P;
@@ -818,10 +818,10 @@ function RLSOPF_g_s!(ps,dt,l_failures,g_failures,l_recovery_times,g_recovery_tim
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         if M==1
-            crisp_dcpf_g_s!(ps);
+            crisp_dcpf_g_s1!(ps);
             # run lsopf
-            crisp_rlopf_g_s!(ps,Pd_max,dt);
-            crisp_dcpf_g_s!(ps);
+            crisp_rlopf_g_s1!(ps,Pd_max,dt);
+            crisp_dcpf_g_s1!(ps);
         else
             ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
             ## for every island that changed (eventually)
@@ -829,15 +829,15 @@ function RLSOPF_g_s!(ps,dt,l_failures,g_failures,l_recovery_times,g_recovery_tim
             for j in 1:M
                 psi = ps_subset(ps,ps_islands[j]);
                     # run the dcpf
-                    crisp_dcpf_g_s!(psi);
+                    crisp_dcpf_g_s1!(psi);
                     # run lsopf
-                    crisp_rlopf_g_s!(psi,Pd_max[ps_islands[j].shunt],dt);
+                    crisp_rlopf_g_s1!(psi,Pd_max[ps_islands[j].shunt],dt);
                     # apply the results
                     ps.gen[ps_islands[j].gen,:Pg] = psi.gen.Pg
                     ps.shunt[ps_islands[j].shunt,:P] = psi.shunt.P
                     ps.storage[ps_islands[j].storage,:E] = psi.storage.E
                     ps.storage[ps_islands[j].storage,:Ps] = psi.storage.Ps
-                    crisp_dcpf_g_s!(psi);
+                    crisp_dcpf_g_s1!(psi);
             end
         end
         @assert abs(sum(ps.gen.Pg)+sum(ps.storage.Ps)-sum(ps.shunt.P))<=tolerance
