@@ -1,5 +1,7 @@
-include("../src/CRISP_Rdist_PSCC.jl")
+include("../src/CRISP_Rdist_vacc.jl")
+#include("../src/CRISP_Rdist_PSCC.jl")
 ## folder of case data
+events = "data/outage_data/out_case73_noPWS_lx2_n-1"
 case = "data/saved_ps/case73_noPWS_lx2_n-1+PV20"
 out = "/experiments/mh/set/case73_noPWS_lx2_n-1+PV20"
 if isdir("results"*out)
@@ -19,5 +21,5 @@ for i in 0:N
 	filename = "res_out_$(case[20:end])";
 	out_folder = out*"/$filename-$(iter+i).csv"
 	# run to save csv of resilience cost distribution to the specified out_folder
-	res = Resilience((iter+i),case,out_folder,dt)
+	res = Resilience((iter+i),case,out_folder,events,dt)
 end
