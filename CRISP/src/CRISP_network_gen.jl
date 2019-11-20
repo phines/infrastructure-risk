@@ -321,7 +321,7 @@ function ps_subset(ps,ps_island)
     return psi
 end
 
-function add_changes!(ps,psi,ps_island);
+function add_changes_g_s!(ps,psi,ps_island);
     ps.gen.Pg[ps_island.gen] = psi.gen.Pg
     if sum(names(ps.gen).==:time_on) == 0
         ps.gen.time_off[ps_island.gen] = psi.gen.time_off
@@ -330,6 +330,11 @@ function add_changes!(ps,psi,ps_island);
     ps.shunt.status[ps_island.shunt] = psi.shunt.status
     ps.storage.Ps[ps_island.storage] = psi.storage.Ps
     ps.storage.E[ps_island.storage] = psi.storage.E
+end
+
+function add_changes!(ps,psi,ps_island);
+    ps.gen.Pg[ps_island.gen] = psi.gen.Pg
+    ps.shunt.P[ps_island.shunt] = psi.shunt.P
 end
 
 function ps_visualize(ps,filename)
