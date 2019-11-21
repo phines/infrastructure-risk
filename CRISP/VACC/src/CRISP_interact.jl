@@ -2,7 +2,10 @@ using SpecialFunctions
 using Random
 include("CRISP_network_gen.jl")
 # interaction functions
-function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;range_a=14*24,range_b=90*24)
+#constants
+two_weeks = 14*24;
+three_months = 90*24;
+function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State ; range_a=two_weeks,range_b=three_months)
     if rand(rng,1) >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
         println("ng_fails = 1")
         ng_rest_time = rand(rng,collect(range_a:range_b),1)
