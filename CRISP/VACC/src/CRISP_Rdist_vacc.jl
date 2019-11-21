@@ -6,7 +6,7 @@ include("CRISP_restore_vacc.jl")
 include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
-function Resilience_interact(N,ps_folder,out_folder,events,dt;param_file = "")
+function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi;param_file = "")
     #constants
     debug=1;
     tolerance1 = 10^(-4);
@@ -28,6 +28,9 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt;param_file = "")
     # step 1
     Lines_Init_State = CSV.File(events*"_lines$N.csv") |> DataFrame
     Gens_Init_State = CSV.File(events*"_gens$N.csv") |> DataFrame
+    if ngi
+        Gens_Init_State = natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State)
+    end
     l_failures = Lines_Init_State.state;
     ps.branch.status[l_failures .== 0] .= 0;
     NumLinesOut[iterat] = length(l_failures) - sum(l_failures)
@@ -68,7 +71,8 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt;param_file = "")
     dt = 60
     ti = 60*48;
     t0 = 10
-    Restore = crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
+    Restore = crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,
+              t_window,t0,gen_on,comm,nucp)
     if debug==1
         outnow = (out_folder[1:end-4]);
         CSV.write("results"*outnow*"_restore.csv", Restore)

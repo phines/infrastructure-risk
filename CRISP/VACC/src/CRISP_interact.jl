@@ -2,6 +2,32 @@ using SpecialFunctions
 using Random
 include("CRISP_network_gen.jl")
 # interaction functions
+function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;range_a=14*24,range_b=90*24)
+    if rand(rng,1) >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
+        println("ng_fails = 1")
+        ng_rest_time = rand(rng,collect(range_a:range_b),1)
+        ng = size(ps.gen,1)
+        state = Gens_Init_State.state
+        recovery_times = Gens_Init_State.recovery_time
+        gen = collect(1:ng)
+        ng_gen = gen[ps.gen.Fuel .== "Natural Gas"]
+        for g in ng_gen
+            state[g] .= 0
+            recovery_times[g] .= ng_rest_time
+        end
+    end
+    return Gens_Init_NG_State = DataFrame(state = state, recovery_time = recovery_times)
+end
+
+function nuclear_poissoning(ps,n; time_range = (4*24):(7*24))
+    r = rand(rng,tim_range,n)
+    return r
+end
+
+function compound_rest_times!(ps,ti,restoration_times)
+    loadshed = 0; #TODO
+    return restoration_times
+end
 
 function communication_interactions(ps,restoration_times,comm_battery_limits,t,factor)
     l = restoration_times > 0;
@@ -31,12 +57,14 @@ function communication_interactions(ps,restoration_times,comm_battery_limits,t,f
     end
     return restoration_times
 end
-function comm_battery_limits (n,a,b)
+
+function comm_battery_lim(n,a,b)
+    #find the battery limits of comms, a and b are the range, and n are the number of buses.
     return comm_bl = rand(rng,a:b,n);
 end
 
 function communication_logistic_interactions(ps,restoration_times,comm_count,t;
-                        n_sigmoids = 5,param=[1 2 3 4 5; 4 16 24 48 72])
+                    n_sigmoids = 5,param=[0.1 0.2 0.3 0.4 0.5; 4 16 24 48 72])
     if comm_count > n_sigmoids
     else
         f = logistic(param[:,comm_count],t)
@@ -50,14 +78,4 @@ end
 function logistic(param,t;L=1)
     f = L/(1+exp(-param[1]*(t-param[2])))
     return f
-end
-
-function natural_gas_interactions(ps)
-
-    return ps
-end
-
-function nuclear_poissoning(ps,n; time_range = (4*24):(7*24))
-    r = rand(rng,tim_range,n)
-    return r
 end

@@ -1688,15 +1688,19 @@ end
 
 
 ## CRISP_Restore_Interact.jl
-function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,comm,nucp;load_cost=0)
+function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
+    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,comm_countbl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
         load_cost = ones(length(ps.shunt.P));
     end
     ti = t0;
-    comm_count = zeros(length(ps.branch.t));
-    comm_count[ps.branch.status .== 1] .= 100;
+    if comm
+        #comm_count = zeros(length(ps.branch.t));
+        #comm_count[ps.branch.status .== 1] .= 100;
+        comm_battery_limits = comm_battery_lim(size(ps.bus,1),com_bl_a,com_bl_b)
+    end
     #save initial values
     load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
     perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
@@ -1750,13 +1754,15 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             #add_changes!(ps,psi,ps_islands[j]);
         end
         if comm
-            if ti >= 4*60 #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
-                for l in 1:length(ps.branch.f)
-                    [l_recovery_times[l], comm_count[l]] = communication_interactions(ps,comm_count[l],ti)
-                end
+            if ti >= com_bl_a*60 & ti<= com_bl_b*60 #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
+                l_recovery_times = communication_interactions(ps,restoration_times,comm_battery_limits,ti,c_factor)
             end
         end
-
+        if crt
+            if abs(ti./comp_t - round(ti./comp_t)) <= tolerance
+                compound_rest_times!(ps,ti,restoration_times)
+            end
+        end
         # save current values
         cv.time .= ti;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
