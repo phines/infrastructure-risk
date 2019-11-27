@@ -3,6 +3,8 @@ using Random
 include("CRISP_network_gen.jl")
 # interaction functions
 #constants
+four_days = 4*24
+week = 7*24
 two_weeks = 14*24;
 three_months = 90*24;
 function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State ; range_a=two_weeks,range_b=three_months)
@@ -22,7 +24,7 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State ; range_a
     return Gens_Init_NG_State = DataFrame(state = state, recovery_time = recovery_times)
 end
 
-function nuclear_poissoning(ps,n; time_range = (4*24):(7*24))
+function nuclear_poissoning(ps,n; time_range = four_days:week)
     r = rand(rng,tim_range,n)
     return r
 end
