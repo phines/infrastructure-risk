@@ -30,7 +30,7 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max ;t0 = 10, load_cost=0)
         # apply to network
         ps.branch[:,:status] = failures;
         #check for islands
-        subgraph = find_subgraphs(ps);# add Int64 here hide info here
+        subgraph = find_subgraphs0(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         if M==1
             crisp_dcpf!(ps);
@@ -39,11 +39,11 @@ function RLSOPF!(totalp,ps,failures,recovery_times,Pd_max ;t0 = 10, load_cost=0)
             crisp_rlopf!(ps,Pd_max);
             crisp_dcpf!(ps);
         else
-            ps_islands = build_islands(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
+            ps_islands = build_islands0(subgraph,ps);# at some point check for changes in islands and don't run power flows if no change
             ## for every island that changed (eventually)
 
             for j in 1:M
-                psi = ps_subset(ps,ps_islands[j]);
+                psi = ps_subset0(ps,ps_islands[j]);
                     # run the dcpf
                     crisp_dcpf!(psi);
                     # run lsopf

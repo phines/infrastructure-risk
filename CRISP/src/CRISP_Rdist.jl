@@ -21,7 +21,7 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
-    crisp_dcpf_g_s!(ps)
+    crisp_dcpf_g1_s!(ps)
     total = sum(ps.shunt.P);
     Pd_max = deepcopy(ps.shunt.P);
     gen_on = ps.gen.Pg .!= 0;
@@ -48,7 +48,7 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;
     ps_islands = build_islands(subgraph,ps)
     for i in 1:M
         psi = ps_subset(ps,ps_islands[i]);
-        crisp_dcpf_g_s!(psi);
+        crisp_dcpf_g1_s!(psi);
         # run lsopf
         dt = 10; # first minute, affects ramp rate limits - rateB
         crisp_lsopf_g1_s!(psi,dt);
@@ -112,7 +112,7 @@ function Resilience(N,ps_folder,out_folder,events,dt;param_file = "")
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
-    crisp_dcpf_g_s!(ps)
+    crisp_dcpf_g1_s!(ps)
     total = sum(ps.shunt.P);
     Pd_max = deepcopy(ps.shunt.P);
     gen_on = ps.gen.Pg .!= 0;
@@ -139,7 +139,7 @@ function Resilience(N,ps_folder,out_folder,events,dt;param_file = "")
         ps_islands = build_islands(subgraph,ps)
         for i in 1:M
             psi = ps_subset(ps,ps_islands[i]);
-            crisp_dcpf_g_s!(psi);
+            crisp_dcpf_g1_s!(psi);
             # run lsopf
             dt = 10; # first minute, affects ramp rate limits - rateB
             crisp_lsopf_g1_s!(psi,dt);
@@ -200,7 +200,7 @@ include("CRISP_RLOPF_mh_varLoad.jl")
 include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 =#
-function Resilience_1(Num,ps_folder,out_folder,dt;param_file = "")
+function Resilience_mh_var(Num,ps_folder,out_folder,dt;param_file = "")
 
     debug=1;
     tolerance1 = 10^(-6);
@@ -214,7 +214,7 @@ function Resilience_1(Num,ps_folder,out_folder,dt;param_file = "")
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
-    crisp_dcpf_g_s!(ps)
+    crisp_dcpf_g1_s!(ps)
     total = sum(ps.shunt.P);
     Pd_max = deepcopy(ps.shunt.P);
     gen_on = ps.gen.Pg .!= 0;
@@ -264,7 +264,7 @@ function Resilience_1(Num,ps_folder,out_folder,dt;param_file = "")
             psi = ps_subset(ps,ps_islands[i]);
             # run lsopf
             dt = 10;
-            crisp_lsopf_g_s!(psi,dt);
+            crisp_lsopf_g1_s!(psi,dt);
             ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
             #ps.storage.E[ps_islands[i].storage] = psi.storage.E
@@ -859,7 +859,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
     LoadServedTime = Array{Float64}(undef,Num,1);
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
-    ps = import_ps("$ps_folder")
+    ps = import_ps0("$ps_folder")
     ps.shunt.P .= 2*ps.shunt.P;
     crisp_dcpf!(ps)
     total = sum(ps.shunt[:P]);
@@ -894,12 +894,12 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
             println(iterat)
         else
             #check for islands
-            subgraph = find_subgraphs(ps);
+            subgraph = find_subgraphs0(ps);
             M = Int64(findmax(subgraph)[1]);
             if M>1
-                ps_islands = build_islands(subgraph,ps);
+                ps_islands = build_islands0(subgraph,ps);
                 for i in 1:M
-                    psi = ps_subset(ps,ps_islands[i]);
+                    psi = ps_subset0(ps,ps_islands[i]);
                     # run the dcpf
                     crisp_dcpf!(psi);
                     # run lsopf
@@ -951,7 +951,7 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
     # initialize vector of costs from events
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
-    ps = import_ps("$ps_folder")
+    ps = import_ps0("$ps_folder")
     crisp_dcpf!(ps)
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
@@ -980,11 +980,11 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
             println(iterat)
         else
             #check for islands
-            subgraph = find_subgraphs(ps);
+            subgraph = find_subgraphs0(ps);
             M = Int64(findmax(subgraph)[1]);
-            ps_islands = build_islands(subgraph,ps);
+            ps_islands = build_islands0(subgraph,ps);
             for i in 1:M
-                psi = ps_subset(ps,ps_islands[i]);
+                psi = ps_subset0(ps,ps_islands[i]);
                 # run the dcpf
                 crisp_dcpf!(psi);
                 # run lsopf
@@ -1022,7 +1022,7 @@ function Res_dist_0O(Num,ps_folder,out_folder;param_file = "")
     # initialize vector of costs from events
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
-    ps = import_ps("$ps_folder")
+    ps = import_ps0("$ps_folder")
     crisp_dcpf!(ps)
     total = sum(ps.shunt[:P]);
     Pd_max = deepcopy(ps.shunt[:P]);
@@ -1051,12 +1051,12 @@ function Res_dist_0O(Num,ps_folder,out_folder;param_file = "")
             println(iterat)
         else
             #check for islands
-            subgraph = find_subgraphs(ps);
+            subgraph = find_subgraphs0(ps);
             M = Int64(findmax(subgraph)[1]);
             if M>1
-                ps_islands = build_islands(subgraph,ps);
+                ps_islands = build_islands0(subgraph,ps);
                 for i in 1:M
-                    psi = ps_subset(ps,ps_islands[i]);
+                    psi = ps_subset0(ps,ps_islands[i]);
                     # run the dcpf
                     crisp_dcpf!(psi);
                     # run lsopf
