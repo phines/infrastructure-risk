@@ -66,18 +66,17 @@
 %FIXED
 costs = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1.csv');
 costs = costs(:,1)
-% costs1 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1.csv');
-costs1 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1.csv');
 costs1 = costs1(:,1);
-% costs2 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
-% costs2 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
+% costs1 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+S20.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV5.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
 costs2 = costs2(:,1);
-% costs3 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
-% costs3 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
-costs3 = costs3(:,1);
-
+% costs2 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV5+S20.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV20.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\casc2\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
+costs3 = costs3(1,:);
+% costs3 = xlsread('..\VACC\results\experiments\mh\casc2\res_case73_noPWS_lx2_n-1+PV20+S20.csv');
 costs(isnan(costs))=0;
 costs1(isnan(costs1))=0;
 costs2(isnan(costs2))=0;

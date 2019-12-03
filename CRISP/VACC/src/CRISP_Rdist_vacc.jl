@@ -6,7 +6,7 @@ include("CRISP_restore_vacc.jl")
 include("CRISP_RT.jl")
 include("CRISP_network_gen.jl")
 
-function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi;param_file = "")
+function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param_file = "")
     #constants
     debug=1;
     tolerance1 = 10^(-4);
@@ -72,7 +72,7 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi;para
     ti = 60*48;
     t0 = 10
     Restore = crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,
-              t_window,t0,gen_on,comm,nucp)
+              t_window,t0,gen_on,comm,nucp,ngi,crt)
     if debug==1
         outnow = (out_folder[1:end-4]);
         CSV.write("results"*outnow*"_restore.csv", Restore)
