@@ -933,7 +933,7 @@ function Res_dist(Num,ps_folder,out_folder;param_file = "")
                 R = Restore.time[K];
                 LoadServedTime[iterat] = R[1] - Restore.time[2];
                 ## run step 4
-                ResilienceTri[iterat] = crisp_res(Restore);
+                ResilienceTri[iterat] = crisp_res0(Restore);
             end
         end
     end
@@ -1005,7 +1005,7 @@ function Res_dist_test2(Num,ps_folder,out_folder;param_file = "")
                 ## run step 3
                 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
                 ## run step 4
-                ResilienceTri[iterat] = crisp_res(Restore);
+                ResilienceTri[iterat] = crisp_res0(Restore);
             end
         end
     end
@@ -1082,7 +1082,7 @@ function Res_dist_0O(Num,ps_folder,out_folder;param_file = "")
                 ## run step 3
                 Restore = RLSOPF!(total,ps,failures,recovery_times,Pd_max);#,load_cost) # data frame [times, load shed in cost per hour]
                 ## run step 4
-                ResilienceTri[iterat] = crisp_res(Restore);
+                ResilienceTri[iterat] = crisp_res0(Restore);
             end
         end
     end
