@@ -1686,14 +1686,13 @@ function vary_gen_cap(ps,Time,t_window)
     return Pg_max
 end
 
-
 ## CRISP_Restore_Interact.jl
-function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
-    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,comm_countbl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60)
+function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window
+    				,t0,gen_on,comm,nucp,ngi,crt;load_cost=0;comm_countbl_a=4;com_bl_b = 24;c_factor=1.5;comp_t=8*60)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
-        load_cost = ones(length(ps.shunt.P));
+        load_cost = ones(size(ps.shunt,1));
     end
     ti = t0;
     if comm
