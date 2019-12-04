@@ -29,8 +29,17 @@ function nuclear_poissoning(ps,n; time_range = four_days:week)
     return r
 end
 
-function compound_rest_times!(ps,ti,restoration_times)
-    loadshed = 0; #TODO
+function compound_rest_times!(ps,Pdmax,restoration_times,factor)
+    tolerance = 10^(-8)
+    loadshed = ps.shunt.status.*Pdmax[:,(ti/60)]
+    prob_check = loadshed .>= rand(rng,length(loadshed))
+    buses_effected = ps.shunt.bus[prob_check]
+    for b in buses_effected
+        lines_f = ps.branch.f .== b
+        restoration_times[lines_f] = restoration_times[lines_f].*factor
+        lines_t = ps.branch.t .== b
+        restoration_times[lines_t] = restoration_times[lines_t].*factor
+    end
     return restoration_times
 end
 
