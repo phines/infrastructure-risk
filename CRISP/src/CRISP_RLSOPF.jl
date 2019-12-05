@@ -402,8 +402,8 @@ function crisp_rlopf_g_orig!(ps,Pd_max)
 end
 
 ## CRISP_RLSOPF_gen.jl
-include("CRISP_network_gen.jl")
-include("CRISP_LSOPF_gen.jl")
+#include("CRISP_network_gen.jl")
+#include("CRISP_LSOPF_gen.jl")
 
 function RLSOPF_g!(ps,l_failures,g_failures,l_recovery_times,g_recovery_times,Pd_max;t_step = 10, t0 = 10, load_cost=0)#time is in minutes
     #add columns to keep track of the time each generator is on or off
@@ -1110,9 +1110,8 @@ function crisp_rl_dcopf_g_s!(ps,Pd_max,dt)
 end
 
 ## CRISP_RLOPF_gen_stor.jl
-include("CRISP_network_gen.jl")
-include("CRISP_LSOPF_gen_stor.jl")
-
+#include("CRISP_network_gen.jl")
+#include("CRISP_LSOPF_gen_stor.jl")
 
 function crisp_Restore(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_cost=0)
     # constants
@@ -1360,13 +1359,10 @@ end
 
 
 ## CRISP_RLOPF_movh.jl
-include("CRISP_network_gen.jl")
-
-##CRISP_RLOPF_movh
+#include("CRISP_network_gen.jl")
 # moving horizon model of restoration process after blackout
 # includes generator warm up and shut down times and storage
 # still needs variable weather and load data to have appropriate hourly responses
-
 
 function crisp_Restore_mh(ps,l_recovery_times,g_recovery_times,dt,t_window,t0;load_cost=0)
     # constants

@@ -8,8 +8,8 @@ using SpecialFunctions
 using Random
 using CSV
 using DataFrames
-include("CRISP_network_gen.jl")
-include("CRISP_LSOPF_gen1.jl")
+include("CRISP_network.jl")
+include("CRISP_LSOPF.jl")
 
 function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     #constants
@@ -21,7 +21,7 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
-    crisp_dcpf_g_s!(ps)
+    crisp_dcpf_g1_s!(ps)
     if isempty(param_file)
         # parameters of distributions for line outages and recovery times
         s_line = 2.56;#lines_dist[1];
@@ -42,7 +42,7 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
                 for i in 1:M
                     psi = ps_subset(ps,ps_islands[i]);
                     # run lsopf
-                    crisp_lsopf_g_s!(psi,dt);
+                    crisp_lsopf_g1_s!(psi,dt);
                     ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
                     ps.shunt[ps_islands[i].shunt,:status] = psi.shunt.status
                     ps.storage[ps_islands[i].storage,:E] = psi.storage.E

@@ -1,6 +1,6 @@
 using SpecialFunctions
 using Random
-include("CRISP_network_gen.jl")
+include("CRISP_network.jl")
 # interaction functions
 #constants
 four_days = 4*24
