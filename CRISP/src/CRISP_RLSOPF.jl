@@ -2523,7 +2523,7 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
     lines_out = length(ps.branch.status) - sum(ps.branch.status);
     gens_out = length(ps.gen.status) - sum(ps.gen.status);
     Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
-    lines_out = lines_out, gens_out = gens_out)
+                        lines_out = lines_out, gens_out = gens_out)
     cv = deepcopy(Restore);
     # find longest recovery
     recTime = maximum([maximum(l_recovery_times) maximum(g_recovery_times)]);
@@ -2536,17 +2536,21 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
     Time = t0:dt:EndTime
     # find generator status
     ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    println("ug = ");println(ug)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
+    println("ul = ");println(ul)
     # varying load over the course of the optimization
     Pd_max = vary_load(ps,Time,t_window)
+    println("Pd_max = ");println(Pd_max)
     # varying generation capacity over the optimization
     Pg_max = vary_gen_cap(ps,Time,t_window)
+    println("Pg_max = ");println(Pg_max)
     # number of time steps within the time window
     t_win_step = Int64(t_window/dt);
     for i in 1:length(Time)
         # update time
-        ti = Time[i]-t0;
+        ti = Time[i+2]-t0;
         # remove failures as the recovery time is reached
         ps.branch.status[ti .>= l_recovery_times] .= 1;
         ps.gen.status[ti .>= g_recovery_times] .= 1;
@@ -2569,7 +2573,7 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
             #add_changes!(ps,psi,ps_islands[j]);
         end
         # save current values
-        cv.time .= ti;
+        cv.time .= ti+t0;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
         cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
