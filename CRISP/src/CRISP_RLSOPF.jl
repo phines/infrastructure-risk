@@ -2550,7 +2550,7 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
     t_win_step = Int64(t_window/dt);
     for i in 1:length(Time)
         # update time
-        ti = Time[i+2]-t0;
+        ti = Time[i]-t0;
         # remove failures as the recovery time is reached
         ps.branch.status[ti .>= l_recovery_times] .= 1;
         ps.gen.status[ti .>= g_recovery_times] .= 1;
