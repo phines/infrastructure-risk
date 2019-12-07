@@ -2504,7 +2504,39 @@ function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time)
     return ug
 end
 
-
+function gen_ug_inter(ps,Time,t_window,gen_on,gens_recovery_time,nucp,ngi)
+# constants
+tolerance = 1e-6
+### collect the data that we will need ###
+dt = Time[2]-Time[1];
+Time = Time .- Time[1] .+ dt;
+ext_stps = Int64(t_window/dt);
+# gen data
+gs = (ps.gen.Pg .== 0);
+gst = (ps.gen.status .!= 1);
+g1 = (ps.gen.status .== 1);
+g2 = gen_on .& gs .& g1;
+ng = size(ps.gen.Pg,1)
+timedown = (ps.gen.minDownTimeHr .*60)
+timeup = (ps.gen.minDownTimeHr .*60)
+ug = falses(ng,length(Time)+ext_stps+1)
+gen_time = zeros(ng);
+gen_time[g2] .+= timedown[g2];
+gen_time[gs] .+= timeup[gs];
+gen_time[gst] .+= gens_recovery_time[gst];
+for t in 1:length(Time)+ext_stps+1
+    gen_time .-= dt
+    for g in 1:ng
+        if gen_time[g] <= 0
+            ug[g,t] = true;
+        else
+            ug[g,t] = false;
+        end
+    end
+end
+@assert sum(ug[:,end].!=true).==0
+return ug
+end
 ## CRISP_RLOPF_mh_varLoad
 # moving horizon model of restoration process after blackout
 # includes generator warm up and shut down times and storage
@@ -2791,8 +2823,9 @@ end
 
 
 ## CRISP_Restore_Interact.jl
+include("CRISP_interact.jl")
 function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
-    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,comm_countbl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60)
+    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
@@ -2822,7 +2855,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
     EndTime = (t0+recTime+((maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60));
     Time = t0:dt:EndTime
     # find generator status
-    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times,nucp)
+    ug = gen_ug_inter(ps,Time,t_window,gen_on,g_recovery_times,nucp,ngi)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
@@ -2836,7 +2869,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
         ti = Time[i]-t0;
         # remove failures as the recovery time is reached
         ps.branch.status[ti .>= l_recovery_times] .= 1;
-        comm_count[ti .>= l_recovery_times] .= 100;
+        #comm_count[ti .>= l_recovery_times] .= 100;
         ps.gen.status[ti .>= g_recovery_times] .= 1;
         # find the number of islands in ps
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
@@ -2849,7 +2882,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
             Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
-            crisp_mh_rlopf!(psi,dt,t_window,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+            crisp_mh_rlopf_var!(psi,dt,t_window,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
