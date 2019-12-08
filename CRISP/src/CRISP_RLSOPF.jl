@@ -2890,8 +2890,8 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             #add_changes!(ps,psi,ps_islands[j]);
         end
         if comm
-            if ti >= com_bl_a*60 & ti<= com_bl_b*60 #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
-                l_recovery_times = communication_interactions(ps,restoration_times,comm_battery_limits,ti,c_factor)
+            if (ti >= com_bl_a*60) .& (ti<= com_bl_b*60) #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
+                l_recovery_times = communication_interactions(ps,l_recovery_times,comm_battery_limits,ti,c_factor)
             end
         end
         if crt

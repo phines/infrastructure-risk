@@ -44,26 +44,29 @@ function compound_rest_times!(ps,Pdmax,restoration_times,factor)
 end
 
 function communication_interactions(ps,restoration_times,comm_battery_limits,t,factor)
-    l = restoration_times > 0;
-    B = ps.bus.id;
-    F = ps.branch.f[l];
-    T = ps.branch.t[l];
-    CBLF = zeros(length(F))
-    CBLT = zeros(length(T))
-    LSF = zeros(length(F))
-    LST = zeros(length(T))
+    l = restoration_times .> 0
+    B = Int64.(ps.bus.id)
+    F = Int64.(ps.branch.f[l])
+    T = Int64.(ps.branch.t[l])
+    CBLF = Int64.(zeros(length(F)))
+    CBLT = Int64.(zeros(length(T)))
+    LSF = Int64.(zeros(length(F)))
+    LST = Int64.(zeros(length(T)))
     for i in 1:length(F)
-        CBLF[i] = comm_battery_limits[F[i] .== B];
-        CBLT[i] = comm_battery_limits[T[i] .== B];
-        LSF[i] += ps.load.status[ps.load.bus .== F[i]]
-        LST[i] += ps.load.status[ps.load.bus .== T[i]]
+        CBLF[i] = comm_battery_limits[F[i] .== B][1]
+        CBLT[i] = comm_battery_limits[T[i] .== B][1]
+        if sum(ps.shunt.bus .== F[i]) >= 1
+            LSF[i] += ps.shunt.status[ps.shunt.bus .== F[i]][1]
+        end
+        if sum(ps.shunt.bus .== T[i]) >= 1
+            LST[i] += ps.shunt.status[ps.shunt.bus .== T[i]][1]
+        end
         if CBLF[i] == t
             g = rand(rng,1) < LSF
             if g
                 restoraion_times[i] = restoraion_times[i].*factor
             end
-        end
-        if CBLT[i] == t & !g
+        elseif CBLT[i] == t
             if rand(rng,1) < LST
                 restoraion_times[i] = restoraion_times[i].*factor
             end
