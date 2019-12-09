@@ -7,6 +7,7 @@ include("CRISP_network.jl")
 
 
 function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param_file = "")
+    rng = MersenneTwister(100+N)
     #constants
     debug=1;
     tolerance1 = 10^(-4);
@@ -33,7 +34,6 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;
     end
     l_failures = Lines_Init_State.state;
     ps.branch.status[l_failures .== 0] .= 0;
-    NumLinesOut[iterat] = length(l_failures) - sum(l_failures)
     l_recovery_times = Lines_Init_State.recovery_time;
     # generator states and recovery times
     g_failures = ones(size(ps.gen,1));
@@ -50,10 +50,10 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;
         psi = ps_subset(ps,ps_islands[i]);
         crisp_dcpf_g1_s!(psi);
         # run lsopf
-        dt = 10; # first minute, affects ramp rate limits - rateB
-        crisp_lsopf_g1_s!(psi,dt);
+        #dt = 10; # first minute, affects ramp rate limits - rateB
+        #crisp_lsopf_g1_s!(psi,dt);
         ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
-        ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
+        #ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
         #ps.storage.E[ps_islands[i].storage] = psi.storage.E
 	    for sh in 1:length(psi.shunt.status)
 		    if psi.shunt.status[sh] > 1
@@ -62,17 +62,12 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;
 	    end
         ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
     end
-    println(iterat)
-    @assert total>=sum(ps.shunt.P .* ps.shunt.status)
-    @assert 2M*tolerance1 >= abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.gen.Pg)-sum(ps.storage.Ps))
-    tolerance = 10^(-10);
-    LoadShed0 = total-sum(ps.shunt.P .* ps.shunt.status);
     ## run step 3
     dt = 60
     ti = 60*48;
     t0 = 10
     Restore = crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,
-              t_window,t0,gen_on,comm,nucp,ngi,crt)
+              ti,t0,gen_on,comm,nucp,ngi,crt)
     if debug==1
         outnow = (out_folder[1:end-4]);
         CSV.write("results"*outnow*"_restore.csv", Restore)
@@ -86,13 +81,12 @@ function Resilience_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;
         LoadServedTime = t0;
     else
         R = Restore.time[K];
-        LoadServedTime[iterat] = R[1] - Restore.time[2];
         ## run step 4
         ResilienceTri = crisp_res(Restore);
         println(ResilienceTri)
     end
     ## make dataframes
-    case_res = DataFrame(resilience = ResilienceTri[:,1]);
+    case_res = DataFrame(resilience = ResilienceTri);
     ## save data
     CSV.write("results/$out_folder", case_res);
 end
@@ -140,12 +134,7 @@ function Resilience(N,ps_folder,out_folder,events,dt;param_file = "")
         for i in 1:M
             psi = ps_subset(ps,ps_islands[i]);
             crisp_dcpf_g1_s!(psi);
-            # run lsopf
-            dt = 10; # first minute, affects ramp rate limits - rateB
-            crisp_lsopf_g1_s!(psi,dt);
             ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
-            ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
-            #ps.storage.E[ps_islands[i].storage] = psi.storage.E
 	    for sh in 1:length(psi.shunt.status)
 		if psi.shunt.status[sh] > 1
 			psi.shunt.status[sh] = 1.0
@@ -153,16 +142,12 @@ function Resilience(N,ps_folder,out_folder,events,dt;param_file = "")
 	    end
             ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
         end
-        println(iterat)
-        @assert total>=sum(ps.shunt.P .* ps.shunt.status)
-        @assert 2M*tolerance1 >= abs(sum(ps.shunt.P .*ps.shunt.status)-sum(ps.gen.Pg)-sum(ps.storage.Ps))
-        tolerance = 10^(-10);
-        LoadShed0[iterat] = total-sum(ps.shunt.P .* ps.shunt.status);
         ## run step 3
         dt = 60
         ti = 60*48;
         t0 = 10
         Restore = crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
+        LoadShed0[iterat] = Restore.load_shed[2];
         if debug==1
             outnow = (out_folder[1:end-4]);
             CSV.write("results"*outnow*"_restore.csv", Restore)

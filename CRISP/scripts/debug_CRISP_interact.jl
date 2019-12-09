@@ -2,7 +2,7 @@ using Glob
 using CSV
 using DataFrames
 fold = "casc2/"
-fold2 = "casc2+comms/"
+fold2 = "casc2+compi/"
 l = length(fold);
 Files = glob("VACC/results/experiments/mh/"*fold*"res_*")
 #include("src/CRISP_Rdist_PSCC_comms.jl")
@@ -17,7 +17,7 @@ for path in Files
 	out = "/experiments/"*fold2*path[(33+l):end-4]
 	#time steps
 	dt = 60 #minutes
-	for m in 872
+	for m in 872:890
 		#save restoration data to folder within results folder:
 		filename = "res_out_"*path[(34+l):end-4];
 		out_folder = out*"/$filename-$m.csv"
@@ -27,8 +27,12 @@ for path in Files
 		end
 		# run to save csv of resilience cost distribution to the specified out_folder
 		#res = Resilience(m,case,out_folder,events,dt)
-		N=m;ps_folder=case;param_file = "";
-
+		comm = false
+		nucp = false
+		ngi = true
+		crt = false
+		res = Resilience_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+#=		N=m;ps_folder=case;param_file = "";
 		#constants
 	    debug=1;
 	    tolerance1 = 10^(-4);
@@ -88,16 +92,13 @@ for path in Files
 		#println("number of islands")
 		#println(M)
 		dt = 60
-        ti = 60*48;
+        ti = 60*48
         t0 = 10
-		comm = true
-		nucp = false
-		ngi = false
-		crt = false
+
 		Restore = crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,
 	              ti,t0,gen_on,comm,nucp,ngi,crt)
 		outnow = (out_folder[1:end-4])
 		CSV.write("results"*outnow*"_restore_nolsopf.csv", Restore)
-
+=#
 	end
 end

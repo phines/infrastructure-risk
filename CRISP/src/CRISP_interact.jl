@@ -7,8 +7,9 @@ four_days = 4*24
 week = 7*24
 two_weeks = 14*24;
 three_months = 90*24;
-function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State ; range_a=two_weeks,range_b=three_months)
-    if rand(rng,1) >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
+function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
+                                range_a=two_weeks,range_b=three_months)
+    if rand(rng,1)[1] >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
         println("ng_fails = 1")
         ng_rest_time = rand(rng,collect(range_a:range_b),1)
         ng = size(ps.gen,1)
@@ -20,8 +21,10 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State ; range_a
             state[g] .= 0
             recovery_times[g] .= ng_rest_time
         end
+        return Gens_Init_NG_State = DataFrame(state = state, recovery_time = recovery_times)
+    else
+        return Gens_Init_State
     end
-    return Gens_Init_NG_State = DataFrame(state = state, recovery_time = recovery_times)
 end
 
 function nuclear_poissoning(ps,n; time_range = four_days:week)
@@ -29,9 +32,10 @@ function nuclear_poissoning(ps,n; time_range = four_days:week)
     return r
 end
 
-function compound_rest_times!(ps,Pdmax,restoration_times,factor)
+function compound_rest_times!(ps,Pdmax,restoration_times,factor,ti)
     tolerance = 10^(-8)
-    loadshed = ps.shunt.status.*Pdmax[:,(ti/60)]
+    println(ti)
+    loadshed = ps.shunt.status.*Pdmax
     prob_check = loadshed .>= rand(rng,length(loadshed))
     buses_effected = ps.shunt.bus[prob_check]
     for b in buses_effected

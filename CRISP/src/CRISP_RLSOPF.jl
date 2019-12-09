@@ -2825,7 +2825,7 @@ end
 ## CRISP_Restore_Interact.jl
 include("CRISP_interact.jl")
 function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
-    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60)
+    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60,factor=1.5)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
@@ -2895,12 +2895,12 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             end
         end
         if crt
-            if abs(ti./comp_t - round(ti./comp_t)) <= tolerance
-                compound_rest_times!(ps,ti,restoration_times)
+            if (abs(ti./comp_t - round(ti./comp_t)) <= tolerance) & (ti > 0)
+                compound_rest_times!(ps,Pd_max[:,i+1],l_recovery_times,factor,ti)
             end
         end
         # save current values
-        cv.time .= ti;
+        cv.time .= ti+t0;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
         cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
