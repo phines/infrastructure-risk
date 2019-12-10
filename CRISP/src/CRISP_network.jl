@@ -9,20 +9,20 @@ using CSV
 include("ipga_topology.jl")
 #import ps from csv files
 function import_ps(filename)
-    psBusData = CSV.File("$filename\\bus.csv")  |> DataFrame
+    psBusData = CSV.File("$filename/bus.csv")  |> DataFrame
     n = length(psBusData.id);
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));
-    #psBusIndex = CSV.read("$filename\\bi.csv",allowmissing=:none)
-    psBranchData = CSV.File("$filename\\branch.csv")  |> DataFrame;
-    psGenData = CSV.File("$filename\\gen.csv",
+    #psBusIndex = CSV.read("$filename/bi.csv",allowmissing=:none)
+    psBranchData = CSV.File("$filename/branch.csv")  |> DataFrame;
+    psGenData = CSV.File("$filename/gen.csv",
                types = [Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, String,
                Float64, Float64, Float64, Float64, String, Float64, String, String, String, String, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                String, Float64, String, String, String, String]) |> DataFrame;
-    psShuntData = CSV.File("$filename\\shunt.csv")  |> DataFrame;
-    mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
+    psShuntData = CSV.File("$filename/shunt.csv")  |> DataFrame;
+    mpBaseMVA =  100; # CSV.read("$filename/baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
     psBranchData.Pf = psBranchData.Pf .* 1.0;
@@ -35,7 +35,7 @@ function import_ps(filename)
     psGenData.Pmin = psGenData.Pmin .* 1.0;
     psShuntData.P = psShuntData.P .* 1.0;
     psShuntData.status = psShuntData.status .* 1.0;
-    if isfile("$filename\\storage.csv") psStorageData = CSV.File("$filename\\storage.csv")   |> DataFrame;;
+    if isfile("$filename/storage.csv") psStorageData = CSV.File("$filename/storage.csv")   |> DataFrame;;
         psStorageData.Ps = psStorageData.Ps .* 1.0;
         psStorageData.E = psStorageData.E .* 1.0;
         psStorageData.Psmax = psStorageData.Psmax .* 1.0;
@@ -49,16 +49,16 @@ end
 
 # exports ps structure to several csv files
 function export_ps(ps,filename)
-    if !isempty(ps.bus) CSV.write("$filename\\bus.csv",ps.bus) end
-    if !isempty(ps.branch) CSV.write("$filename\\branch.csv",ps.branch) end
-    if !isempty(ps.gen) CSV.write("$filename\\gen.csv",ps.gen) end
-    if !isempty(ps.shunt) CSV.write("$filename\\shunt.csv",ps.shunt) end
-    if !isempty(ps.baseMVA) CSV.write("$filename\\baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
-    if !isempty(ps.storage) CSV.write("$filename\\storage.csv",ps.storage) end
+    if !isempty(ps.bus) CSV.write("$filename/bus.csv",ps.bus) end
+    if !isempty(ps.branch) CSV.write("$filename/branch.csv",ps.branch) end
+    if !isempty(ps.gen) CSV.write("$filename/gen.csv",ps.gen) end
+    if !isempty(ps.shunt) CSV.write("$filename/shunt.csv",ps.shunt) end
+    if !isempty(ps.baseMVA) CSV.write("$filename/baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
+    if !isempty(ps.storage) CSV.write("$filename/storage.csv",ps.storage) end
     #if !isempty(ps.bi)
         #n = length(ps.bus.id);
         #bi = sparse(ps.bus.id,fill(1,n),collect(1:n));
-        #CSV.write("$filename\\bi.csv",bi)
+        #CSV.write("$filename/bi.csv",bi)
     #end
 end
 
@@ -336,12 +336,12 @@ end
 
 #import ps from csv files
 function import_ps0(filename)
-    #psBusIndex = CSV.File("$filename\\bi.csv") |> DataFrame
-    psBusData = CSV.File("$filename\\bus.csv") |> DataFrame
-    psBranchData = CSV.File("$filename\\branch.csv") |> DataFrame
-    psGenData = CSV.File("$filename\\gen.csv") |> DataFrame
-    psShuntData = CSV.File("$filename\\shunt.csv") |> DataFrame
-    mpBaseMVA =  100; # CSV.read("$filename\\baseMVA.csv")[1,1];
+    #psBusIndex = CSV.File("$filename/bi.csv") |> DataFrame
+    psBusData = CSV.File("$filename/bus.csv") |> DataFrame
+    psBranchData = CSV.File("$filename/branch.csv") |> DataFrame
+    psGenData = CSV.File("$filename/gen.csv") |> DataFrame
+    psShuntData = CSV.File("$filename/shunt.csv") |> DataFrame
+    mpBaseMVA =  100; # CSV.read("$filename/baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
     psBranchData.Pf = psBranchData.Pf.*1.0;
