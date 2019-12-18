@@ -14,13 +14,17 @@ function import_ps(filename)
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));
     #psBusIndex = CSV.read("$filename/bi.csv",allowmissing=:none)
     psBranchData = CSV.File("$filename/branch.csv")  |> DataFrame;
-    psGenData = CSV.File("$filename/gen.csv",
+    if occursin("case73_",filename)
+        psGenData = CSV.File("$filename/gen.csv",
                types = [Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, String,
                Float64, Float64, Float64, Float64, String, Float64, String, String, String, String, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                String, Float64, String, String, String, String]) |> DataFrame;
+    else
+        psGenData = CSV.File("$filename/gen.csv") |> DataFrame;
+    end
     psShuntData = CSV.File("$filename/shunt.csv")  |> DataFrame;
     mpBaseMVA =  100; # CSV.read("$filename/baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end

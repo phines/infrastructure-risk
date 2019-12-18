@@ -7,13 +7,13 @@ include("..\\src\\CRISP_RLSOPF.jl")
 include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 ## load the case data
-ps = import_ps("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\data\\case39\\")
+ps = import_ps("data/saved_ps/case2736sp_relaxedQ_ps")
 crisp_dcpf!(ps)
 total = sum(ps.shunt[:P]);
 Pd_max = deepcopy(ps.shunt[:P]);
 
 #save restoration picture to:
-filename = "Fixed_case39_9";
+filename = "Polish_Case";
 
 #pull failures from csv file
 Lines_Init_State = CSV.read("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\results\\Extreme_initial_outages_case39_9.csv");
