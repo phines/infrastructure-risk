@@ -6,7 +6,6 @@ include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
 function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param_file = "")
-    rng = MersenneTwister(100+N)
     #constants
     debug=1;
     tolerance1 = 10^(-4);
