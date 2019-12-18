@@ -2593,7 +2593,7 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
         ps.storage.E[ps_islands[j].storage] = psi.storage.E
         ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
     end
-    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    #ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
     # save current values
     cv.time .= ti;
     cv.load_shed .= sum(load_cost.*(Pd_max[:,1] - Pd_max[:,1].*ps.shunt.status));
@@ -2642,7 +2642,7 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
     return Restore
 end
 
-function crisp_mh_rlopf_var!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost)
+function crisp_mh_rlopf_var!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost;w_g=0.1)
     timeline = 0:dt:t_win
     Ti = size(timeline,1)
     # constants
@@ -2743,7 +2743,7 @@ function crisp_mh_rlopf_var!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost)
     #ramping constraints
     @constraint(m, genPgRR[k=2:Ti], -RR .<= Pg[:,k-1] .- Pg[:,k] .<= RR) # generator ramp rate
     # objective
-    @objective(m, Max, sum(Pd*C_time')) #TODO: constants
+    @objective(m, Max, sum(Pd*C_time')+sum(w_g.*Pg)) #TODO: constants
     ## SOLVE! ##
     optimize!(m)
     sol_Pd=value.(Pd)[:,2]
@@ -2926,6 +2926,83 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
                 compound_rest_times!(ps,Pd_max[:,i+1],l_recovery_times,factor,ti)
             end
         end
+        # save current values
+        cv.time .= ti+t0;
+        cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
+        cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
+        append!(Restore,cv)
+        @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
+    end
+    return Restore
+end
+
+## CRISP_Restore_Interact.jl
+function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
+    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60,factor=1.5)
+    # constants
+    tolerance = 10^(-6);
+    if sum(load_cost)==0
+        load_cost = ones(length(ps.shunt.P));
+    end
+    ti = t0;
+    if comm
+        comm_battery_limits = comm_battery_lim(size(ps.bus,1),com_bl_a,com_bl_b)
+    end
+    #save initial values
+    load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
+    perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
+    lines_out = length(ps.branch.status) - sum(ps.branch.status);
+    gens_out = length(ps.gen.status) - sum(ps.gen.status);
+    Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
+    lines_out = lines_out, gens_out = gens_out)
+    cv = deepcopy(Restore);
+
+    # find generator status
+    ug = gen_ug_inter(ps,Time,t_window,gen_on,g_recovery_times,nucp,ngi)
+    for i in 1:length(Time)
+        # update time
+        ti = Time[i]-t0;
+        # remove failures as the recovery time is reached
+        ps.branch.status[ti .>= l_recovery_times] .= 1;
+        #comm_count[ti .>= l_recovery_times] .= 100;
+        ps.gen.status[ti .>= g_recovery_times] .= 1;
+        # find the number of islands in ps
+        subgraph = find_subgraphs(ps);# add Int64 here hide info here
+        M = Int64(findmax(subgraph)[1]);
+        ps_islands = build_islands(subgraph,ps)
+        for j in 1:M
+            psi = ps_subset(ps,ps_islands[j])
+            i_subset = 1:2
+            ugi = ug[ps_islands[j].gen,i_subset]
+            uli = ul[ps_islands[j].branch,i_subset]
+            Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
+            Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
+            crisp_mh_lsopf_var!(psi,dt,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+            ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
+            ps.storage.E[ps_islands[j].storage] = psi.storage.E
+            ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
+        end
+        if comm
+            if (ti >= com_bl_a*60) .& (ti<= com_bl_b*60) #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
+                l_recovery_times = communication_interactions(ps,l_recovery_times,comm_battery_limits,ti,c_factor)
+            end
+        end
+        if crt
+            if (abs(ti./comp_t - round(ti./comp_t)) <= tolerance) & (ti > 0)
+                compound_rest_times!(ps,Pd_max[:,i+1],l_recovery_times,factor,ti)
+            end
+        end
+        rec_t = recovery_times[recovery_times.!=0];
+        times = sort(rec_t);
+        load_shed = zeros(length(times)+2);
+        load_shed[1] = 0;
+        lines_out = zeros(length(times)+2);
+        lines_out[2] = length(failures) - sum(failures);
+        # set load shed for the step just before restoration process
+        load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
         # save current values
         cv.time .= ti+t0;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));

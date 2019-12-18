@@ -1983,7 +1983,7 @@ function crisp_lsopf_g1_s!(ps,dt)
     return ps
 end
 
-function crisp_mh_lsopf_var!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt)
+function crisp_mh_lsopf_var!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=0.1)
     timeline = 0:dt:t_win
     Ti = size(timeline,1)
     # constants
@@ -2070,7 +2070,7 @@ function crisp_mh_lsopf_var!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt)
         @constraint(m, PBnoTheta, 0.0 .== G_bus*Pg[:]+S_bus*Ps[:]-D_bus*Pd[:])
     end
     # objective
-    @objective(m, Max, sum(Pd.*load_shed_cost)) #TODO: constants
+    @objective(m, Max, sum(Pd.*load_shed_cost) + sum(w_g.*Pg)) #TODO: constants
     ## SOLVE! ##
     optimize!(m)
     sol_Pd=value.(Pd)[:]

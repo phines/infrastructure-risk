@@ -31,7 +31,7 @@ for path in Files
 		nucp = false
 		ngi = true
 		crt = false
-		res = Resilience_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+		res = crisp_RLOPF_inter(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
 #=		N=m;ps_folder=case;param_file = "";
 		#constants
 	    debug=1;
