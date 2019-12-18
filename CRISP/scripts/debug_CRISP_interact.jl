@@ -2,6 +2,7 @@ using Glob
 using CSV
 using DataFrames
 using Random
+rng = MersenneTwister(100+872)
 fold = "casc2/"
 fold2 = "casc2+compi/"
 l = length(fold);
@@ -28,7 +29,7 @@ for path in Files
 		end
 		# run to save csv of resilience cost distribution to the specified out_folder
 		#res = Resilience(m,case,out_folder,events,dt)
-		rng = MersenneTwister(100+m);
+		#rng = MersenneTwister(100+m);
 		comm = false
 		nucp = false
 		ngi = true
