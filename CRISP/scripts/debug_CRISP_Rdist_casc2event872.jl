@@ -2,7 +2,7 @@ using Glob
 using CSV
 using DataFrames
 fold = "casc2/"
-fold2 = "casc\\"
+fold2 = "casc/"
 l = length(fold);
 Files = glob("VACC/results/experiments/mh/"*fold*"res_*")
 #include("src/CRISP_Rdist_PSCC_comms.jl")
@@ -13,7 +13,7 @@ include("../src/CRISP_Rdist.jl")
 events = "data/outage_data/"*fold*"out_case73_noPWS_lx2_n-1"
 for path in Files
 	## folder of case data
-	case = "data\\saved_ps\\"*path[(33+l):end-4]
+	case = "data/saved_ps/"*path[(33+l):end-4]
 	out = "/experiments/"*fold*path[(33+l):end-4]
 	#time steps
 	dt = 60 #minutes
@@ -64,24 +64,24 @@ for path in Files
         g_recovery_times = zeros(size(ps.gen,1));
         g_recovery_times[1:length(Gens_Init_State.recovery_time)] = Gens_Init_State.recovery_time;
 		#check for islands
-        subgraph = find_subgraphs(ps);
-        M = Int64(findmax(subgraph)[1]);
-        ps_islands = build_islands(subgraph,ps)
-		for i in 1:M
-            psi = ps_subset(ps,ps_islands[i]);
-            crisp_dcpf_g1_s!(psi);
+        #subgraph = find_subgraphs(ps);
+        #M = Int64(findmax(subgraph)[1]);
+        #ps_islands = build_islands(subgraph,ps)
+		#for i in 1:M
+            #psi = ps_subset(ps,ps_islands[i]);
+            #crisp_dcpf_g1_s!(psi);
             # run lsopf
-            dt = 10; # first minute, affects ramp rate limits - rateB
+            #dt = 10; # first minute, affects ramp rate limits - rateB
             #crisp_lsopf_g1_s!(psi,dt);
-            ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
+            #ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
             #ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
             #ps.storage.E[ps_islands[i].storage] = psi.storage.E
-	    	for sh in 1:length(psi.shunt.status)
-				if psi.shunt.status[sh] > 1
-					psi.shunt.status[sh] = 1.0
-				end
-	    	end
-		end
+	    	#for sh in 1:length(psi.shunt.status)
+				#if psi.shunt.status[sh] > 1
+					#psi.shunt.status[sh] = 1.0
+				#end
+	    	#end
+		#end
 		#println(case)
 		#println(sum(ps.gen.status.==0))
 		#println(sum(ps.gen.Pg.==0))
@@ -92,7 +92,7 @@ for path in Files
         t0 = 10
 		Restore = crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
 		outnow = (out_folder[1:end-4])
-		CSV.write("results"*outnow*"_restore_nolsopf.csv", Restore)
+		CSV.write("results"*outnow*"_restore_newlsopf.csv", Restore)
 
 	end
 end

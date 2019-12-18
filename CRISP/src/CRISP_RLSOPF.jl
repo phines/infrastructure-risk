@@ -2596,8 +2596,8 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
     ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
     # save current values
     cv.time .= ti;
-    cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
-    cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
+    cv.load_shed .= sum(load_cost.*(Pd_max[:,1] - Pd_max[:,1].*ps.shunt.status));
+    cv.perc_load_served .= (sum(load_cost.*Pd_max[:,1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,1]);
     cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
     cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
     append!(Restore,cv)
@@ -2750,8 +2750,6 @@ function crisp_mh_rlopf_var!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost)
     sol_Ps=value.(Ps)[:,2]
     sol_Pg=value.(Pg)[:,2]
     sol_E=value.(E)[:,2]
-    @assert abs(sum(Pd_max[:,2].*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
-    @assert sum(ps.storage.E .< -tolerance)==0
     dPd_star = (Vector(sol_Pd).*ps.baseMVA)./Pd_max[:,2] # % load served
     dPs_star = Vector(sol_Ps).*ps.baseMVA
     dPg_star = Vector(sol_Pg).*ps.baseMVA
@@ -2761,6 +2759,8 @@ function crisp_mh_rlopf_var!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost)
     ps.storage.Ps = dPs_star;
     ps.storage.E = dE_star;
     ps.gen.Pg = dPg_star;
+    @assert abs(sum(Pd_max[:,2].*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
+    @assert sum(ps.storage.E .< -tolerance)==0
     return ps
 end
 
