@@ -41,7 +41,7 @@ function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param
     ps.gen.Pg[g_failures .== 0] .= 0;
     g_recovery_times = zeros(size(ps.gen,1));
     g_recovery_times[1:length(Gens_Init_State.recovery_time)] = Gens_Init_State.recovery_time;
-    #check for islands
+    #=#check for islands
     subgraph = find_subgraphs(ps);
     M = Int64(findmax(subgraph)[1]);
     ps_islands = build_islands(subgraph,ps)
@@ -60,13 +60,14 @@ function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param
 		    end
 	    end
         ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
-    end
+    end=#
     ## run step 3
     dt = 60
     ti = 60*48;
     t0 = 10
-    Restore = crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,
+    Restore = crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,
               ti,t0,gen_on,comm,nucp,ngi,crt)
+              println(Restore)
     if debug==1
         outnow = (out_folder[1:end-4]);
         CSV.write("results"*outnow*"_restore.csv", Restore)

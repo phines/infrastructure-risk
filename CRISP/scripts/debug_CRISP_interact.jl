@@ -1,6 +1,7 @@
 using Glob
 using CSV
 using DataFrames
+using Random
 fold = "casc2/"
 fold2 = "casc2+compi/"
 l = length(fold);
@@ -13,11 +14,11 @@ include("../src/CRISP_Rdist.jl")
 events = "data/outage_data/"*fold*"out_case73_noPWS_lx2_n-1"
 for path in Files
 	## folder of case data
-	case = "data\\saved_ps\\"*path[(33+l):end-4]
+	case = "data/saved_ps/"*path[(33+l):end-4]
 	out = "/experiments/"*fold2*path[(33+l):end-4]
 	#time steps
 	dt = 60 #minutes
-	for m in 872:890
+	for m in 872
 		#save restoration data to folder within results folder:
 		filename = "res_out_"*path[(34+l):end-4];
 		out_folder = out*"/$filename-$m.csv"
@@ -27,11 +28,12 @@ for path in Files
 		end
 		# run to save csv of resilience cost distribution to the specified out_folder
 		#res = Resilience(m,case,out_folder,events,dt)
+		rng = MersenneTwister(100+m);
 		comm = false
 		nucp = false
 		ngi = true
 		crt = false
-		res = crisp_RLOPF_inter(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+		res = Rdist_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
 #=		N=m;ps_folder=case;param_file = "";
 		#constants
 	    debug=1;

@@ -2633,10 +2633,6 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
         cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
-	println(Pd_max[:,i+1] .* ps.shunt.status)
-	println(ps.storage.Ps)
-	println(ps.gen.Pg)
-	println(abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg)))
         @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
     return Restore
@@ -2950,6 +2946,10 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
     if comm
         comm_battery_limits = comm_battery_lim(size(ps.bus,1),com_bl_a,com_bl_b)
     end
+    recTime = maximum([maximum(l_recovery_times) maximum(g_recovery_times)]);
+    # set time line
+    EndTime = (t0+recTime+((maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60));
+    Time = t0:dt:EndTime
     #save initial values
     load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
     perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
@@ -2958,9 +2958,14 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
     Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
     lines_out = lines_out, gens_out = gens_out)
     cv = deepcopy(Restore);
-
     # find generator status
     ug = gen_ug_inter(ps,Time,t_window,gen_on,g_recovery_times,nucp,ngi)
+    # find line status
+    ul = line_stats(ps,Time,t_window,l_recovery_times)
+    # varying load over the course of the optimization
+    Pd_max = vary_load(ps,Time,t_window)
+    # varying generation capacity over the optimization
+    Pg_max = vary_gen_cap(ps,Time,t_window)
     for i in 1:length(Time)
         # update time
         ti = Time[i]-t0;
@@ -2974,7 +2979,7 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
         ps_islands = build_islands(subgraph,ps)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
-            i_subset = 1:2
+            i_subset = i:i+1
             ugi = ug[ps_islands[j].gen,i_subset]
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
@@ -2995,14 +3000,14 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
                 compound_rest_times!(ps,Pd_max[:,i+1],l_recovery_times,factor,ti)
             end
         end
-        rec_t = recovery_times[recovery_times.!=0];
+    #=    rec_t = l_recovery_times[l_recovery_times.!=0];
         times = sort(rec_t);
         load_shed = zeros(length(times)+2);
         load_shed[1] = 0;
         lines_out = zeros(length(times)+2);
         lines_out[2] = length(failures) - sum(failures);
         # set load shed for the step just before restoration process
-        load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P]));
+        load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P])); =#
         # save current values
         cv.time .= ti+t0;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));

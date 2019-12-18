@@ -93,6 +93,5 @@ for path in Files
 		Restore = crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
 		outnow = (out_folder[1:end-4])
 		CSV.write("results"*outnow*"_restore_newlsopf_obj_Pg.csv", Restore)
-
 	end
 end
