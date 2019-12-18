@@ -1983,4 +1983,125 @@ function crisp_lsopf_g1_s!(ps,dt)
     return ps
 end
 
+function crisp_mh_lsopf_var!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt)
+    timeline = 0:dt:t_win
+    Ti = size(timeline,1)
+    # constants
+    tolerance = 1e-4
+    ### collect the data that we will need ###
+    # bus data
+    n = size(ps.bus,1) # the number of buses
+    bi = ps.bi
+    # load data
+    nd = size(ps.shunt,1)
+    D = bi[ps.shunt.bus]
+    D_bus = sparse(D,collect(1:nd),1.,n,nd)
+    Pdmax = (Pd_max ./ ps.baseMVA)
+    Pd1 = (Pd_max[:,1] ./ ps.baseMVA) .* ps.shunt.status
+    if any(D.<1) || any(D.>n)
+        error("Bad indices in shunt matrix")
+    end
+    # gen data
+    ng = size(ps.gen.Pg,1)
+    G = bi[ps.gen.bus]
+    G_bus = sparse(G,collect(1:ng),1.,n,ng)
+    Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
+    Pg_max = (Pg_max1 ./ ps.baseMVA)
+    RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA
+    if any(G.<1) || any(G.>n)
+        error("Bad indices in gen matrix")
+    end
+    # branch data
+    nb = size(ps.branch,1)
+    flow_max = ps.branch.rateA./ps.baseMVA # this could also be rateB
+    # storage data
+    min_bat_E = 0;
+    ns = size(ps.storage,1)
+    S = bi[ps.storage.bus]
+    S_bus = sparse(S,collect(1:ns),1.,n,ns)
+    Ps1 = (ps.storage.Ps ./ ps.baseMVA) .* ps.storage.status
+    E1 = (ps.storage.E ./ ps.baseMVA) .* ps.storage.status
+    E_max = (ps.storage.Emax ./ ps.baseMVA) .* ps.storage.status
+    Ps_max = (ps.storage.Psmax ./ ps.baseMVA) .* ps.storage.status
+    Ps_min = (ps.storage.Psmin ./ ps.baseMVA) .* ps.storage.status
+    if any(S.<1) || any(S.>n)
+        error("Bad indices in storage matrix")
+    end
+    # vector that depreciates the value of later elements in objective
+    C_time = exp.(0:-1:(-Ti+1))';
+    m = Model(with_optimizer(Gurobi.Optimizer))
+    #m = Model(with_optimizer(Cbc.Optimizer))
+    # variables
+    @variable(m, Pd[1:nd, 1:Ti]) # demand
+    @variable(m, Pg[1:ng, 1:Ti]) # generation
+    @variable(m, Ps[1:ns, 1:Ti]) # power flow into or out of storage (negative flow = charging)
+    @variable(m, E[1:ns, 1:Ti]) # energy level in battery
+    # first time step constraints
+    for k in 1
+        for d in 1:nd
+            fix(Pd[d,k], Pd1[d], force = true) #Pd1[d]
+        end
+        for s in 1:ns
+            fix(Ps[s,k], Ps1[s], force = true)
+            fix(E[s,k], E1[s], force = true)
+        end
+        for g in 1:ng
+            fix(Pg[g,k], Pg1[g], force = true) #Pg1[gst]
+        end
+    end
+    # variable bounds constraints
+    @constraint(m, stPdcon[k=2:Ti], 0.0 .<= Pd[:,k] .<= Pdmax[:,k]) # load served limits
+    @constraint(m, stPscon[k=2:Ti], Ps_min .<= Ps[:,k] .<= Ps_max) # storage power flow
+    @constraint(m, stEPscon[k=2:Ti], E[:,k] .== (E[:,k-1] - ((dt/60) .* (Ps[:,k])))) # storage energy at next time step
+    @constraint(m, stEcon[k=2:Ti], min_bat_E .<= (E[:,k]) .<= E_max) # storage energy
+    @constraint(m, genPgucon[k=2:Ti], Pg[:,k] .<= ug[:,1] .* Pg_max[:,1]) # generator power limits upper
+    @constraint(m, genPglcon[k=2:Ti], 0 .<= Pg[:,k]) # generator power limits lower
+    if n > 1
+        @variable(m, Theta[1:n, 1:Ti])
+        @constraint(m, Theta[1,:] .== 0); # set first bus as reference bus: V angle to 0
+        for k in 2:Ti
+	  brst = falses(nb);
+	  for b in 1:nb
+	    if ul[b,1] == 1
+              brst[b] = true;
+	    end
+	  end
+            F = bi[ps.branch.f[brst]]
+            T = bi[ps.branch.t[brst]]
+            Xinv = (1 ./ ps.branch.X[brst])
+            B = sparse(F,T,-Xinv,n,n) +
+                sparse(T,F,-Xinv,n,n) +
+                sparse(T,T,+Xinv,n,n) +
+                sparse(F,F,+Xinv,n,n);
+            #power balance
+            @constraint(m, B*Theta[:,k] .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
+            # power flow limits
+            @constraint(m, -flow_max[brst] .<= Xinv .* (Theta[F,k] - Theta[T,k]) .<= flow_max[brst])
+        end
+    else
+        @constraint(m, PBnoTheta[k=2:Ti], 0.0 .== G_bus*Pg[:,k]+S_bus*Ps[:,k]-D_bus*Pd[:,k])
+    end
+    # objective
+    @objective(m, Max, sum(Pd*C_time')) #TODO: constants
+    ## SOLVE! ##
+    optimize!(m)
+    sol_Pd=value.(Pd)[:,2]
+    sol_Ps=value.(Ps)[:,2]
+    sol_Pg=value.(Pg)[:,2]
+    sol_E=value.(E)[:,2]
+    @assert abs(sum(Pd_max[:,2].*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
+    @assert sum(ps.storage.E .< -tolerance)==0
+    dPd_star = (Vector(sol_Pd).*ps.baseMVA)./Pd_max[:,2] # % load served
+    dPs_star = Vector(sol_Ps).*ps.baseMVA
+    dPg_star = Vector(sol_Pg).*ps.baseMVA
+    dE_star = Vector(sol_E).*ps.baseMVA
+    # add changes ps/psi structure
+    ps.shunt.status = dPd_star;
+    ps.storage.Ps = dPs_star;
+    ps.storage.E = dE_star;
+    ps.gen.Pg = dPg_star;
+    return ps
+end
+
+
 #end

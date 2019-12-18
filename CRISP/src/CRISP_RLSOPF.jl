@@ -2568,19 +2568,41 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
     Time = t0:dt:EndTime
     # find generator status
     ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
-    println("ug = ");println(ug)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
-    println("ul = ");println(ul)
     # varying load over the course of the optimization
     Pd_max = vary_load(ps,Time,t_window)
-    println("Pd_max = ");println(Pd_max)
     # varying generation capacity over the optimization
     Pg_max = vary_gen_cap(ps,Time,t_window)
-    println("Pg_max = ");println(Pg_max)
     # number of time steps within the time window
     t_win_step = Int64(t_window/dt);
-    for i in 1:length(Time)
+    # find the number of islands in ps
+    subgraph = find_subgraphs(ps);# add Int64 here hide info here
+    M = Int64(findmax(subgraph)[1]);
+    ps_islands = build_islands(subgraph,ps)
+    for j in 1:M
+        psi = ps_subset(ps,ps_islands[j])
+        i_subset = 1:2
+        ugi = ug[ps_islands[j].gen,i_subset]
+        uli = ul[ps_islands[j].branch,i_subset]
+        Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
+        Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
+        crisp_mh_lsopf_var!(psi,dt,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+        ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+        ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
+        ps.storage.E[ps_islands[j].storage] = psi.storage.E
+        ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
+    end
+    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    # save current values
+    cv.time .= ti;
+    cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
+    cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
+    cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
+    cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
+    append!(Restore,cv)
+    ## go to restoration, i.e. include generator ramprates
+    for i in 2:length(Time)
         # update time
         ti = Time[i]-t0;
         # remove failures as the recovery time is reached
@@ -2611,6 +2633,10 @@ function crisp_Restoration_var(ps,l_recovery_times,g_recovery_times,dt,t_window,
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
         cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
+	println(Pd_max[:,i+1] .* ps.shunt.status)
+	println(ps.storage.Ps)
+	println(ps.gen.Pg)
+	println(abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg)))
         @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
     return Restore
@@ -2670,7 +2696,7 @@ function crisp_mh_rlopf_var!(ps,dt,t_win,ug,ul,Pd_max,Pg_max1,load_shed_cost)
     @variable(m, Ps[1:ns, 1:Ti]) # power flow into or out of storage (negative flow = charging)
     @variable(m, E[1:ns, 1:Ti]) # energy level in battery
     # first time step constraints
-    for k=1
+    for k in 1
         for d in 1:nd
             fix(Pd[d,k], Pd1[d], force = true) #Pd1[d]
         end
@@ -2882,6 +2908,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
             Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
+	    crisp_dcpf_g1_s!(psi)
             crisp_mh_rlopf_var!(psi,dt,t_window,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
