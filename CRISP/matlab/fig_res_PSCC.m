@@ -64,12 +64,12 @@ costs = costs(:,1)
 costs1 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1.csv');
 % costs1 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
 costs1 = costs1(:,1);
-% costs2 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
-costs2 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
+% costs2 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
 % costs2 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
 costs2 = costs2(:,1);
-% costs3 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
-costs3 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
+% costs3 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
 % costs3 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
 costs3 = costs3(:,1);
 
@@ -128,19 +128,20 @@ Pr2 = Pr2(sorted_costs2 ~= 0)
 sorted_costs2 = sorted_costs2(sorted_costs2 ~= 0)
 Pr3 = Pr3(sorted_costs3 ~= 0)
 sorted_costs3 = sorted_costs3(sorted_costs3 ~= 0)
+figure
 loglog([10^(-1); sorted_costs1],[Pr(1) Pr],'b')
 % loglog([10^(-1); sorted_costs0],[Pr0(1) Pr0],'b')%v-')
 hold on
 % loglog([10^(-1); sorted_costs1],[Pr(1) Pr],'color',[1.000 0.7000 0.0000])%'s-',
 % loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'color',[0.1 1.0 0.1])%'x-', %rgb(238,130,238) = violet
 % loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3],'color',[0.5 0.50 0.8000])%'d-', %rgb(255,69,0) orange-red
-% loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'c')
-% loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'm')
-loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'r')
-loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'color',[1.000    0.7000    0.0000])
+loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'c')
+loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'm')
+% loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'r')
+% loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3], 'color',[1.000    0.7000    0.0000])
 % legend("original", "+5% load in DG", "+20% load in DG","n-1 secure", "n-1 +5% load in DG", "n-1 +20% load in DG")
-% legend("base case", "+5% PV", "+20% PV")
-legend("base case", "+5% storage", "+20% storage")
+legend("base case", "+5% PV", "+20% PV")
+% legend("base case", "+5% storage", "+20% storage")
 % legend("base case","+20% storage","+20% storage +5% PV", " +20% storage +20% PV")
 xlabel("x")
 ylabel("Prob(ENS \geq x)")
