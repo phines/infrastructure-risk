@@ -16,12 +16,11 @@ Pd_max = deepcopy(ps.shunt[:P]);
 filename = "Polish_Case";
 
 #pull failures from csv file
-Lines_Init_State = CSV.read("C:\\Users\\mkellygo\\Documents\\Github\\infrastructure-risk\\CRISP\\results\\Extreme_initial_outages_case39_9.csv");
-state = Lines_Init_State[:,1];
+Lines_Init_State = CSV.File("data/example_outages/lines_tripped_ex1.csv") |> DataFrame
+nl = size(ps.shunt,1)
+L_ind = collect(1:nl)
+ps.branch.status[Int64.(Lines_Init_State.lines_tripped)] = zeros(length(Lines_Init_State[:,1]));
 recovery_times = Array{Float64}(Lines_Init_State[1:end,2]);
-failures = Array{Int64}(state[1:end]);
-ps.branch.status = failures;
-
 #check for islands
 subgraph = find_subgraphs(ps);
 M = Int64(findmax(subgraph)[1]);

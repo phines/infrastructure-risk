@@ -47,6 +47,19 @@ function import_ps(filename)
         psStorageData.Emax = psStorageData.Emax .* 1.0;
         psStorageData.Emin = psStorageData.Emin .* 1.0;
     else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], Efficiency = Float64[], status = Int64[]); end
+    # add status column if there is not one
+    if (sum(:status .== names(psShuntData)) < 1)
+        psShuntData[!,:status] = ones(size(psShuntData,1))
+    end
+    if (sum(:status .== names(psGenData)) < 1)
+        psGenData[!,:status] = ones(size(psGenData,1))
+    end
+    if (sum(:status .== names(psBranchData)) < 1)
+        psBranchData[!,:status] = ones(size(psBranchData,1))
+    end
+    if (sum(:status .== names(psStorageData)) < 1)
+        psStorageData[!,:status] = ones(size(psStorageData,1))
+    end
     ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
     return ps
 end
