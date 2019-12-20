@@ -4,36 +4,88 @@ using DataFrames
 using Random
 rng = MersenneTwister(100+872)
 fold = "casc2/"
-fold2 = "casc2+compi/"
 l = length(fold);
-Files = glob("VACC/results/experiments/mh/"*fold*"res_*")
-#include("src/CRISP_Rdist_PSCC_comms.jl")
-#include("src/CRISP_Rdist_PSCC_casc.jl")
+Files = glob("VACC/results/experiments/mh/"*fold*"res_*n-1.csv")
 include("../src/CRISP_Rdist.jl")
-#events = "data/outage_data/out_case73_noPWS_lx2_n-1"
-#events = "data/outage_data/communication_factor/out_case73_noPWS_lx2_n-1"
 events = "data/outage_data/"*fold*"out_case73_noPWS_lx2_n-1"
 for path in Files
 	## folder of case data
 	case = "data/saved_ps/"*path[(33+l):end-4]
-	out = "/experiments/"*fold2*path[(33+l):end-4]
 	#time steps
 	dt = 60 #minutes
 	for m in 872
 		#save restoration data to folder within results folder:
 		filename = "res_out_"*path[(34+l):end-4];
+		# run to save csv of resilience cost distribution to the specified out_folder
+		#Base line
+		fold2 = "casc2_base/"
+		out = "/experiments/"*fold2*path[(33+l):end-4]
 		out_folder = out*"/$filename-$m.csv"
 		if isdir("results"*out)
 		else
 		    mkdir("results"*out)
 		end
-		# run to save csv of resilience cost distribution to the specified out_folder
-		#res = Resilience(m,case,out_folder,events,dt)
-		#rng = MersenneTwister(100+m);
+		rng = MersenneTwister(100+m);
+		comm = false
+		nucp = false
+		ngi = false
+		crt = false
+		res = Rdist_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+		#Communications
+		fold2 = "casc2+comms/"
+		out = "/experiments/"*fold2*path[(33+l):end-4]
+		out_folder = out*"/$filename-$m.csv"
+		if isdir("results"*out)
+		else
+		    mkdir("results"*out)
+		end
+		rng = MersenneTwister(100+m);
+		comm = true
+		nucp = false
+		ngi = false
+		crt = false
+		res = Rdist_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+		#Nuclear Poissoning
+		fold2 = "casc2+nucp/"
+		out = "/experiments/"*fold2*path[(33+l):end-4]
+		out_folder = out*"/$filename-$m.csv"
+		if isdir("results"*out)
+		else
+		    mkdir("results"*out)
+		end
+		rng = MersenneTwister(100+m);
+		comm = false
+		nucp = true
+		ngi = false
+		crt = false
+		res = Rdist_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+		#Natural gas
+		fold2 = "casc2+ngi/"
+		out = "/experiments/"*fold2*path[(33+l):end-4]
+		out_folder = out*"/$filename-$m.csv"
+		if isdir("results"*out)
+		else
+		    mkdir("results"*out)
+		end
+		rng = MersenneTwister(100+m);
 		comm = false
 		nucp = false
 		ngi = true
 		crt = false
+		res = Rdist_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
+		# Compounding risk over time
+		fold2 = "casc2+compi/"
+		out = "/experiments/"*fold2*path[(33+l):end-4]
+		out_folder = out*"/$filename-$m.csv"
+		if isdir("results"*out)
+		else
+		    mkdir("results"*out)
+		end
+		rng = MersenneTwister(100+m);
+		comm = false
+		nucp = false
+		ngi = false
+		crt = true
 		res = Rdist_interact(m,case,out_folder,events,dt,comm,nucp,ngi,crt)
 #=		N=m;ps_folder=case;param_file = "";
 		#constants

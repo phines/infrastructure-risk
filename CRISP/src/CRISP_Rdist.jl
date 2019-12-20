@@ -5,7 +5,7 @@ include("CRISP_RLSOPF.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
-function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param_file = "")
+function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt)
     #constants
     debug=1;
     tolerance1 = 10^(-4);
@@ -32,7 +32,7 @@ function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;param
     end
     l_failures = Lines_Init_State.state;
     ps.branch.status[l_failures .== 0] .= 0;
-    l_recovery_times = Lines_Init_State.recovery_time;
+    l_recovery_times = deepcopy(Lines_Init_State.recovery_time);
     # generator states and recovery times
     g_failures = ones(size(ps.gen,1));
     g_failures[1:length(Gens_Init_State.state)] = Gens_Init_State.state;

@@ -2967,6 +2967,9 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
     # varying generation capacity over the optimization
     Pg_max = vary_gen_cap(ps,Time,t_window)
     for i in 1:length(Time)
+        if nucp
+            Pg_i = deepcopy(ps.gen.Pg);
+        end
         # update time
         ti = Time[i]-t0;
         # remove failures as the recovery time is reached
@@ -2990,6 +2993,9 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
             ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
         end
+        if nucp
+            g_recovery_times = nuclear_poissoning(ps,Pg_i,g_recovery_times,ti)
+        end
         if comm
             if (ti >= com_bl_a*60) .& (ti<= com_bl_b*60) #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
                 l_recovery_times = communication_interactions(ps,l_recovery_times,comm_battery_limits,ti,c_factor)
@@ -2997,7 +3003,7 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
         end
         if crt
             if (abs(ti./comp_t - round(ti./comp_t)) <= tolerance) & (ti > 0)
-                compound_rest_times!(ps,Pd_max[:,i+1],l_recovery_times,factor,ti)
+                l_recovery_times = compound_rest_times(ps,l_recovery_times,factor,ti)
             end
         end
     #=    rec_t = l_recovery_times[l_recovery_times.!=0];

@@ -16,10 +16,10 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
         state = Gens_Init_State.state
         recovery_times = Gens_Init_State.recovery_time
         gen = collect(1:ng)
-        ng_gen = gen[ps.gen.Fuel .== "Natural Gas"]
+        ng_gen = gen[ps.gen.Fuel .== "NG"]
         for g in ng_gen
-            state[g] .= 0
-            recovery_times[g] .= ng_rest_time
+            state[g] = 0
+            recovery_times[g] = ng_rest_time[1]
         end
         return Gens_Init_NG_State = DataFrame(state = state, recovery_time = recovery_times)
     else
@@ -27,22 +27,27 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
     end
 end
 
-function nuclear_poissoning(ps,n; time_range = four_days:week)
-    r = rand(rng,tim_range,n)
-    return r
+function nuclear_poissoning(ps,Pg_i,g_recovery_times,ti; time_range = four_days:week)
+    nuc_gen = gen[ps.gen.Fuel .== "Nuclear"]
+    for g in nuc_gen
+        ps.gen.status[g] = 0
+        g_recovery_times[g] = ti+rand(rng,time_range,1)[1]
+    end
+    return g_recovery_times
 end
 
-function compound_rest_times!(ps,Pdmax,restoration_times,factor,ti)
+function compound_rest_times(ps,restoration_times,factor,ti)
     tolerance = 10^(-8)
     println(ti)
-    loadshed = ps.shunt.status.*Pdmax
-    prob_check = loadshed .>= rand(rng,length(loadshed))
+    prob_check = ps.shunt.status .<= rand(rng,length(ps.shunt.status))
     buses_effected = ps.shunt.bus[prob_check]
     for b in buses_effected
         lines_f = ps.branch.f .== b
         restoration_times[lines_f] = restoration_times[lines_f].*factor
+        println(restoration_times[lines_f])
         lines_t = ps.branch.t .== b
         restoration_times[lines_t] = restoration_times[lines_t].*factor
+        println(restoration_times[lines_t])
     end
     return restoration_times
 end
@@ -54,8 +59,8 @@ function communication_interactions(ps,restoration_times,comm_battery_limits,t,f
     T = Int64.(ps.branch.t[l])
     CBLF = Int64.(zeros(length(F)))
     CBLT = Int64.(zeros(length(T)))
-    LSF = Int64.(zeros(length(F)))
-    LST = Int64.(zeros(length(T)))
+    LSF = Int64.(ones(length(F)))
+    LST = Int64.(ones(length(T)))
     for i in 1:length(F)
         CBLF[i] = comm_battery_limits[F[i] .== B][1]
         CBLT[i] = comm_battery_limits[T[i] .== B][1]
@@ -65,14 +70,13 @@ function communication_interactions(ps,restoration_times,comm_battery_limits,t,f
         if sum(ps.shunt.bus .== T[i]) >= 1
             LST[i] += ps.shunt.status[ps.shunt.bus .== T[i]][1]
         end
-        if CBLF[i] == t
-            g = rand(rng,1) < LSF
-            if g
-                restoraion_times[i] = restoraion_times[i].*factor
+        if CBLF[i] == (t/60)
+            if rand(rng,1)[1] > LSF[i]
+                restoration_times[i] = restoration_times[i].*factor
             end
-        elseif CBLT[i] == t
-            if rand(rng,1) < LST
-                restoraion_times[i] = restoraion_times[i].*factor
+        elseif CBLT[i] == (t/60)
+            if rand(rng,1)[1] > LST[i]
+                restoration_times[i] = restoration_times[i].*factor
             end
         end
     end
