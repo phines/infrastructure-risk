@@ -28,6 +28,8 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
 end
 
 function nuclear_poissoning(ps,Pg_i,g_recovery_times,ti; time_range = four_days:week)
+    ng = size(ps.gen,1)
+    gen = collect(1:ng)
     nuc_gen = gen[ps.gen.Fuel .== "Nuclear"]
     for g in nuc_gen
         ps.gen.status[g] = 0

@@ -2504,38 +2504,34 @@ function gen_on_off(ps,Time,t_window,gen_on,gens_recovery_time)
     return ug
 end
 
-function gen_ug_inter(ps,Time,t_window,gen_on,gens_recovery_time,nucp,ngi)
-# constants
-tolerance = 1e-6
-### collect the data that we will need ###
-dt = Time[2]-Time[1];
-Time = Time .- Time[1] .+ dt;
-ext_stps = Int64(t_window/dt);
-# gen data
-gs = (ps.gen.Pg .== 0);
-gst = (ps.gen.status .!= 1);
-g1 = (ps.gen.status .== 1);
-g2 = gen_on .& gs .& g1;
-ng = size(ps.gen.Pg,1)
-timedown = (ps.gen.minDownTimeHr .*60)
-timeup = (ps.gen.minDownTimeHr .*60)
-ug = falses(ng,length(Time)+ext_stps+1)
-gen_time = zeros(ng);
-gen_time[g2] .+= timedown[g2];
-gen_time[gs] .+= timeup[gs];
-gen_time[gst] .+= gens_recovery_time[gst];
-for t in 1:length(Time)+ext_stps+1
-    gen_time .-= dt
-    for g in 1:ng
-        if gen_time[g] <= 0
-            ug[g,t] = true;
-        else
-            ug[g,t] = false;
+function gen_on_off2(ps,Time,t_window,gen_on,gens_recovery_time)
+    # constants
+    tolerance = 1e-6
+    ### collect the data that we will need ###
+    dt = Time[2]-Time[1];
+    Time = Time .- Time[1] .+ dt;
+    ext_stps = Int64(t_window/dt);
+    # gen data
+    gs = (ps.gen.Pg .== 0);
+    gst = (ps.gen.status .!= 1);
+    g1 = (ps.gen.status .== 1);
+    g2 = gen_on .& gs .& g1;
+    ng = size(ps.gen.Pg,1)
+    ug = falses(ng,length(Time)+ext_stps+1)
+    gen_time = zeros(ng);
+    gen_time[gst] .+= gens_recovery_time[gst];
+    for t in 1:length(Time)+ext_stps+1
+        gen_time .-= dt
+        for g in 1:ng
+            if gen_time[g] <= 0
+                ug[g,t] = true;
+            else
+                ug[g,t] = false;
+            end
         end
     end
-end
-@assert sum(ug[:,end].!=true).==0
-return ug
+    @assert sum(ug[:,end].!=true).==0
+    return ug
 end
 ## CRISP_RLOPF_mh_varLoad
 # moving horizon model of restoration process after blackout
@@ -2843,6 +2839,25 @@ function vary_gen_cap(ps,Time,t_window)
     return Pg_max
 end
 
+function vary_gen_cap2(ps,Time,t_window)
+    PercSolar1 = CSV.File("data/solar+load/NY_NE_1244665_solarPV_power_density.csv") |> DataFrame
+    PowDen = PercSolar1.PowerDen;
+    ### collect the data that we will need ###
+    dt = Time[2]-Time[1];
+    Time = Time .- Time[1] .+ dt;
+    ext_stps = Int64(t_window/dt);
+    # shunt data
+    ng = size(ps.gen.Pg,1);
+    Pg_max = zeros(ng,length(Time)+ext_stps+1);
+    for t in 1:length(Time)+ext_stps+1
+        for g in 1:ng
+            Pg_max[g,t] = ps.gen.Pmax[g];
+        end
+    end
+    @assert sum(Pg_max[:,:].<0).==0
+    return Pg_max
+end
+
 
 ## CRISP_Restore_Interact.jl
 include("CRISP_interact.jl")
@@ -2877,7 +2892,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
     EndTime = (t0+recTime+((maximum(ps.gen.minDownTimeHr)+maximum(ps.gen.minUpTimeHr))*60));
     Time = t0:dt:EndTime
     # find generator status
-    ug = gen_ug_inter(ps,Time,t_window,gen_on,g_recovery_times,nucp,ngi)
+    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
@@ -2959,7 +2974,7 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
     lines_out = lines_out, gens_out = gens_out)
     cv = deepcopy(Restore);
     # find generator status
-    ug = gen_ug_inter(ps,Time,t_window,gen_on,g_recovery_times,nucp,ngi)
+    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
@@ -3022,6 +3037,65 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
         cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
         append!(Restore,cv)
         @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
+    end
+    return Restore
+end
+
+
+## CRISP_Restore_New_Simple_Version
+function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on;load_cost=0)
+    # constants
+    tolerance = 10^(-6);
+    if sum(load_cost)==0
+        load_cost = ones(length(ps.shunt.P));
+    end
+    ti = t0;
+    recTime = maximum([maximum(l_recovery_times) maximum(g_recovery_times)]);
+    # set time line
+    EndTime = (t0+recTime);
+    Time = t0:dt:EndTime
+    #save initial values
+    load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
+    perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
+    lines_out = length(ps.branch.status) - sum(ps.branch.status);
+    gens_out = length(ps.gen.status) - sum(ps.gen.status);
+    Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
+    lines_out = lines_out, gens_out = gens_out)
+    cv = deepcopy(Restore);
+    # find generator status
+    ug = gen_on_off2(ps,Time,t_window,gen_on,g_recovery_times)
+    # find line status
+    ul = line_stats(ps,Time,t_window,l_recovery_times)
+    for i in 1:length(Time)
+        # update time
+        ti = Time[i]-t0;
+        # remove failures as the recovery time is reached
+        ps.branch.status[ti .>= l_recovery_times] .= 1;
+        #comm_count[ti .>= l_recovery_times] .= 100;
+        ps.gen.status[ti .>= g_recovery_times] .= 1;
+        # find the number of islands in ps
+        subgraph = find_subgraphs(ps);# add Int64 here hide info here
+        M = Int64(findmax(subgraph)[1]);
+        ps_islands = build_islands(subgraph,ps)
+        for j in 1:M
+            psi = ps_subset(ps,ps_islands[j])
+            i_subset = i:i+1
+            ugi = ug[ps_islands[j].gen,i_subset]
+            uli = ul[ps_islands[j].branch,i_subset]
+            crisp_mh_lsopf!(psi,dt,ugi,uli,load_cost[ps_islands[j].shunt])
+            ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
+            ps.storage.E[ps_islands[j].storage] = psi.storage.E
+            ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
+        end
+        # save current values
+        cv.time .= ti+t0;
+        cv.load_shed .= sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
+        cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
+        append!(Restore,cv)
+        @assert 10^(-4)>=abs(sum(ps.shunt.P .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
     return Restore
 end
