@@ -2951,11 +2951,16 @@ end
 
 ## CRISP_Restore_Interact.jl
 function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
-    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b = 24,c_factor=1.5,comp_t=8*60,factor=1.5)
+    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b=24,c_factor=1.5,comp_t=8*60,factor=1.5)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
         load_cost = ones(length(ps.shunt.P));
+    end
+    if nucp
+        println(g_recovery_times)
+        nuclear_poissoning!(ps,gen_on,g_recovery_times,0)
+        println(g_recovery_times)
     end
     ti = t0;
     if comm
@@ -3009,26 +3014,28 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
             ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
         end
         if nucp
-            g_recovery_times = nuclear_poissoning(ps,Pg_i,g_recovery_times,ti)
+            nuclear_poissoning!(ps,Pg_i,g_recovery_times,ti)
         end
         if comm
+            println("ONE STEP TOWARDS INTERACTIONNNNN")
+            println((ti >= com_bl_a*60) .& (ti<= com_bl_b*60))
             if (ti >= com_bl_a*60) .& (ti<= com_bl_b*60) #most communcation towers have batteries which have a capacity to cover from 4 to 24 hour
-                l_recovery_times = communication_interactions(ps,l_recovery_times,comm_battery_limits,ti,c_factor)
+                println("PASSED CHECK TOWARDS INTERACTIONNNNN")
+                println(l_recovery_times)
+                communication_interactions!(ps,l_recovery_times,comm_battery_limits,ti,c_factor)
+                println(l_recovery_times)
             end
         end
         if crt
+            println("ONE STEP TOWARDS INTERACTIONNNNN")
+            println((abs(ti./comp_t - round(ti./comp_t)) <= tolerance) & (ti > 0))
             if (abs(ti./comp_t - round(ti./comp_t)) <= tolerance) & (ti > 0)
-                l_recovery_times = compound_rest_times(ps,l_recovery_times,factor,ti)
+                println("PASSED FIRST CHECK")
+                println(l_recovery_times)
+                compound_rest_times!(ps,l_recovery_times,factor,ti)
+                println(l_recovery_times)
             end
         end
-    #=    rec_t = l_recovery_times[l_recovery_times.!=0];
-        times = sort(rec_t);
-        load_shed = zeros(length(times)+2);
-        load_shed[1] = 0;
-        lines_out = zeros(length(times)+2);
-        lines_out[2] = length(failures) - sum(failures);
-        # set load shed for the step just before restoration process
-        load_shed[2] = sum(load_cost.*(Pd_max - ps.shunt[:P])); =#
         # save current values
         cv.time .= ti+t0;
         cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
@@ -3042,7 +3049,7 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
 end
 
 
-## CRISP_Restore_New_Simple_Version
+## CRISP_Restore_New_Simple_Version with generator recovery
 function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on;load_cost=0)
     # constants
     tolerance = 10^(-6);

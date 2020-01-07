@@ -40,26 +40,6 @@ function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt)
     ps.gen.Pg[g_failures .== 0] .= 0;
     g_recovery_times = zeros(size(ps.gen,1));
     g_recovery_times[1:length(Gens_Init_State.recovery_time)] = Gens_Init_State.recovery_time;
-    #=#check for islands
-    subgraph = find_subgraphs(ps);
-    M = Int64(findmax(subgraph)[1]);
-    ps_islands = build_islands(subgraph,ps)
-    for i in 1:M
-        psi = ps_subset(ps,ps_islands[i]);
-        crisp_dcpf_g1_s!(psi);
-        # run lsopf
-        #dt = 10; # first minute, affects ramp rate limits - rateB
-        #crisp_lsopf_g1_s!(psi,dt);
-        ps.gen.Pg[ps_islands[i].gen] = psi.gen.Pg
-        #ps.storage.Ps[ps_islands[i].storage] = psi.storage.Ps
-        #ps.storage.E[ps_islands[i].storage] = psi.storage.E
-	    for sh in 1:length(psi.shunt.status)
-		    if psi.shunt.status[sh] > 1
-			     psi.shunt.status[sh] = 1.0
-		    end
-	    end
-        ps.shunt.status[ps_islands[i].shunt] = psi.shunt.status
-    end=#
     ## run step 3
     dt = 60
     ti = 60*48;

@@ -3,10 +3,10 @@ using Random
 include("CRISP_network.jl")
 # interaction functions
 #constants
-four_days = 4*24
-week = 7*24
-two_weeks = 14*24;
-three_months = 90*24;
+four_days = 4*24*60
+week = 7*24*60
+two_weeks = 14*24*60;
+three_months = 90*24*60;
 function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
                                 range_a=two_weeks,range_b=three_months)
     if rand(rng,1)[1] >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
@@ -27,61 +27,79 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
     end
 end
 
-function nuclear_poissoning(ps,Pg_i,g_recovery_times,ti; time_range = four_days:week)
+function nuclear_poissoning!(ps,Pg_i,g_recovery_times,ti; time_range = four_days:week)
+    tolerance = 10^(-4)
     ng = size(ps.gen,1)
     gen = collect(1:ng)
     nuc_gen = gen[ps.gen.Fuel .== "Nuclear"]
     for g in nuc_gen
-        ps.gen.status[g] = 0
-        g_recovery_times[g] = ti+rand(rng,time_range,1)[1]
+        if (Pg_i[g] > ps.gen.Pg[g]) .& (abs(ps.gen.Pg[g]) <= tolerance)
+            ps.gen.status[g] = 0
+            if g_recovery_times[g] .== 0
+                g_recovery_times[g] = ti+rand(rng,time_range,1)[1]
+            else
+                g_recovery_times[g] += rand(rng,time_range,1)[1]
+            end
+        end
     end
     return g_recovery_times
 end
 
-function compound_rest_times(ps,restoration_times,factor,ti)
+function compound_rest_times!(ps,restoration_times,factor,ti)
     tolerance = 10^(-8)
-    println(ti)
-    prob_check = ps.shunt.status .<= rand(rng,length(ps.shunt.status))
+    prob_check = ps.shunt.status .<= 1#rand(rng,length(ps.shunt.status))
     buses_effected = ps.shunt.bus[prob_check]
     for b in buses_effected
-        lines_f = ps.branch.f .== b
-        restoration_times[lines_f] = restoration_times[lines_f].*factor
-        println(restoration_times[lines_f])
-        lines_t = ps.branch.t .== b
-        restoration_times[lines_t] = restoration_times[lines_t].*factor
-        println(restoration_times[lines_t])
+        lines_f = (ps.branch.f .== b)
+        restoration_times[lines_f] .*= factor
+        lines_t = (ps.branch.t .== b)
+        restoration_times[lines_t] .*= factor
     end
     return restoration_times
 end
 
-function communication_interactions(ps,restoration_times,comm_battery_limits,t,factor)
+function communication_interactions!(ps,restoration_times,comm_battery_limits,t,factor)
+    println("INTO COMMMS INTERACTIONS")
     l = restoration_times .> 0
+    r = restoration_times[l]
     B = Int64.(ps.bus.id)
     F = Int64.(ps.branch.f[l])
     T = Int64.(ps.branch.t[l])
     CBLF = Int64.(zeros(length(F)))
     CBLT = Int64.(zeros(length(T)))
-    LSF = Int64.(ones(length(F)))
-    LST = Int64.(ones(length(T)))
+    LSF = ones(length(F))
+    LST = ones(length(T))
     for i in 1:length(F)
         CBLF[i] = comm_battery_limits[F[i] .== B][1]
         CBLT[i] = comm_battery_limits[T[i] .== B][1]
         if sum(ps.shunt.bus .== F[i]) >= 1
-            LSF[i] += ps.shunt.status[ps.shunt.bus .== F[i]][1]
+            LSF[i] -= ps.shunt.status[ps.shunt.bus .== F[i]][1]
+            println("MADE IT TO CHECK THE LOAD SHED")
         end
         if sum(ps.shunt.bus .== T[i]) >= 1
-            LST[i] += ps.shunt.status[ps.shunt.bus .== T[i]][1]
+            LST[i] -= ps.shunt.status[ps.shunt.bus .== T[i]][1]
+            println("MADE IT TO CHECK THE LOAD SHED")
         end
         if CBLF[i] == (t/60)
-            if rand(rng,1)[1] > LSF[i]
-                restoration_times[i] = restoration_times[i].*factor
+            println("MADE IT TO CHECK THE BATTERY LIFE")
+            if rand(rng,1)[1] < LSF[i]
+                println(r[i])
+                r[i] *= factor
+                println(r[i])
+                println("CHANGED THE RESTORATION TIME??????")
             end
         elseif CBLT[i] == (t/60)
-            if rand(rng,1)[1] > LST[i]
-                restoration_times[i] = restoration_times[i].*factor
+            println("MADE IT TO CHECK THE BATTERY LIFE")
+            if rand(rng,1)[1] < LST[i]
+                println(r[i])
+                println(factor)
+                r[i] *= factor
+                println(r[i])
+                println("CHANGED THE RESTORATION TIME??????")
             end
         end
     end
+    restoration_times[l] .= r
     return restoration_times
 end
 

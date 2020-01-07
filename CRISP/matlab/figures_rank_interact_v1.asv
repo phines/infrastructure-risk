@@ -96,8 +96,6 @@ box off
 legend boxoff
 
 %% Make Square plots
-clear all
-
 data1 = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case73_noPWS_lx2_n-1.csv');
 data11 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case73_noPWS_lx2_n-1.csv');
 data21 = xlsread('..\VACC\results\experiments\mh\casc2+crt\RiskResults_case73_noPWS_lx2_n-1.csv');
@@ -132,10 +130,10 @@ costs21(isnan(costs21))=0;
 costs31(isnan(costs31))=0;
 
 % find eens for different sized events
-short = [0, 60*48];
-long =  [(60*48), max([time1; time2])];
-smallMW = [0, 250];
-largeMW = [250, max([costs1; costs2])];
+short = [0,60*48];
+long =  [60*48,max([time1; time2; time3])];
+smallMW = [0,250];
+largeMW = [250,max([costs1; costs2; costs3])];
 
 d1(1,1) = sort_and_sum_data(short,time11,smallMW,ls11,costs11);
 d1(1,2) = sort_and_sum_data(short,time11,largeMW,ls11,costs11);
@@ -162,13 +160,13 @@ d1(4,2) = 0;
 d1(4,3) = 0;
 d1(4,4) = 0;
 
-d1(5,1) = sort_and_sum_data(short,time1,smallMW,ls1,costs1);
-d1(5,2) = sort_and_sum_data(short,time1,largeMW,ls1,costs1);
-d1(5,3) = sort_and_sum_data(long,time1,smallMW,ls1,costs1);
-d1(5,4) = sort_and_sum_data(long,time1,largeMW,ls1,costs1);
+d1(6,1) = sort_and_sum_data(short,time1,smallMW,ls1,costs1);
+d1(6,2) = sort_and_sum_data(short,time1,largeMW,ls1,costs1);
+d1(6,3) = sort_and_sum_data(long,time1,smallMW,ls1,costs1);
+d1(6,4) = sort_and_sum_data(long,time1,largeMW,ls1,costs1);
 
-d1(6,1) = sort_and_sum_data(short, time2, smallMW,ls2, costs2);
-d1(6,2) = sort_and_sum_data(short,time2,largeMW,ls2,costs2);
+d1(7,1) = sort_and_sum_data(short, time2, smallMW,ls2, costs2);
+d1(7,2) = sort_and_sum_data(short,time2,largeMW,ls2,costs2);
 d1(6,3) = sort_and_sum_data(long,time2,smallMW,ls2,costs2);
 d1(6,4) = sort_and_sum_data(long,time2,largeMW,ls2,costs2);
 
@@ -176,5 +174,5 @@ d1(6,4) = sort_and_sum_data(long,time2,largeMW,ls2,costs2);
 data = d1; %rand(6,4)
 
 figure(4); clf;
-arrangement = [2 3]
+arrangement = [2 4]
 square_plots(data,arrangement)
