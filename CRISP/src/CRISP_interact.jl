@@ -47,7 +47,7 @@ end
 
 function compound_rest_times!(ps,restoration_times,factor,ti)
     tolerance = 10^(-8)
-    prob_check = ps.shunt.status .<= 1#rand(rng,length(ps.shunt.status))
+    prob_check = ps.shunt.status .< 1#rand(rng,length(ps.shunt.status))
     buses_effected = ps.shunt.bus[prob_check]
     for b in buses_effected
         lines_f = (ps.branch.f .== b)
@@ -82,7 +82,7 @@ function communication_interactions!(ps,restoration_times,comm_battery_limits,t,
         end
         if CBLF[i] == (t/60)
             println("MADE IT TO CHECK THE BATTERY LIFE")
-            if rand(rng,1)[1] < LSF[i]
+            if rand(rng,1)[1] > LSF[i]
                 println(r[i])
                 r[i] *= factor
                 println(r[i])
@@ -90,7 +90,7 @@ function communication_interactions!(ps,restoration_times,comm_battery_limits,t,
             end
         elseif CBLT[i] == (t/60)
             println("MADE IT TO CHECK THE BATTERY LIFE")
-            if rand(rng,1)[1] < LST[i]
+            if rand(rng,1)[1] > LST[i]
                 println(r[i])
                 println(factor)
                 r[i] *= factor
