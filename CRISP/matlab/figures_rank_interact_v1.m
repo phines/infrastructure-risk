@@ -1,4 +1,4 @@
-% Resilience figures for PSCC conference paper
+% Resilience figures for IEEE journal paper
 % Molly Kelly-Gorham 12/18/2019
 
 % N-1 Secure 73 bus original model sampling.
@@ -6,6 +6,7 @@
 
 costs = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case73_noPWS_lx2_n-1.csv');
 costs = costs(:,1)
+%costs1 = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case73_noPWS_lx2_n-1.csv');
 costs1 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case73_noPWS_lx2_n-1.csv');
 costs1 = costs1(:,1);
 costs2 = xlsread('..\VACC\results\experiments\mh\casc2+nucp\RiskResults_case73_noPWS_lx2_n-1.csv');
@@ -85,9 +86,9 @@ figure
 loglog([10^(-1); sorted_costs0],[Pr0(1) Pr0],'b')%v-')
 hold on
 loglog([10^(-1); sorted_costs1],[Pr(1) Pr],'color',[1.000 0.7000 0.0000])%'s-',
-% loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'color',[0.1 1.0 0.1])%'x-', %rgb(238,130,238) = violet
-% loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3],'color',[0.5 0.50 0.8000])%'d-', %rgb(255,69,0) orange-red
-% loglog([10^(-1); sorted_costs4],[Pr4(1) Pr4],'r')
+loglog([10^(-1); sorted_costs2],[Pr2(1) Pr2],'color',[0.1 1.0 0.1])%'x-', %rgb(238,130,238) = violet
+loglog([10^(-1); sorted_costs3],[Pr3(1) Pr3],'color',[0.5 0.50 0.8000])%'d-', %rgb(255,69,0) orange-red
+loglog([10^(-1); sorted_costs4],[Pr4(1) Pr4],'r')
 legend("Base", "Natural Gas", "Nuclear Poisson", "Communications", "Compounding Risk Over Time")
 xlabel("x")
 ylabel("Prob(ENS \geq x)")
