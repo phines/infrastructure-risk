@@ -5,7 +5,7 @@ include("src\\CRISP_network_gen.jl")
 =#
 using CSV
 include("CRISP_initiate.jl")
-include("CRISP_network_gen.jl")
+include("CRISP_network.jl")
 #julia> rng = MersenneTwister(100);
 #julia> Outages(1000,"data\\saved_ps\\case73_noPWS_lx2_n-1")
 function Outages(Num,ps_folder;param_file = "",cascade=true)
@@ -33,8 +33,8 @@ function Outages(Num,ps_folder;param_file = "",cascade=true)
         end
         Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
         if debug==1
-            CSV.write("data\\outage_data\\cascade1\\out_case73_noPWS_lx2_n-1_lines$iterat.csv", Lines_Init_State)
-            CSV.write("data\\outage_data\\cascade1\\out_case73_noPWS_lx2_n-1_gens$iterat.csv", Gens_Init_State)
+            CSV.write("data\\outage_data\\casc_39bus\\out_case39_n-1_lines$iterat.csv", Lines_Init_State)
+            CSV.write("data\\outage_data\\casc_39bus\\out_case39_n-1_gens$iterat.csv", Gens_Init_State)
         end
     end
 end
