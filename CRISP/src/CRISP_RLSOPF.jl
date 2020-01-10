@@ -3045,6 +3045,43 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
         append!(Restore,cv)
         @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
+    i = length(Time)
+    ti = ceil((maximum([maximum(l_recovery_times) maximum(g_recovery_times)]))/60)*60 - dt;
+    j=0;
+    while (sum(abs.(cv.perc_load_served .- 1) .> tolerance) !=0) & (j<= 1000)
+        j = j+1
+        # update time
+        ti = ti+dt
+        # remove failures as the recovery time is reached
+        ps.branch.status[ti .>= l_recovery_times] .= 1;
+        #comm_count[ti .>= l_recovery_times] .= 100;
+        ps.gen.status[ti .>= g_recovery_times] .= 1;
+        # find the number of islands in ps
+        subgraph = find_subgraphs(ps);# add Int64 here hide info here
+        M = Int64(findmax(subgraph)[1]);
+        ps_islands = build_islands(subgraph,ps)
+        for j in 1:M
+            psi = ps_subset(ps,ps_islands[j])
+            i_subset = i:i+1
+            ugi = ug[ps_islands[j].gen,i_subset]
+            uli = ul[ps_islands[j].branch,i_subset]
+            Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
+            Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
+            crisp_mh_lsopf_var!(psi,dt,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+            ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
+            ps.storage.E[ps_islands[j].storage] = psi.storage.E
+            ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
+        end
+        # save current values
+        cv.time .= ti+t0;
+        cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
+        cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
+        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
+        append!(Restore,cv)
+        @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
+    end
     return Restore
 end
 

@@ -4,16 +4,16 @@
 % N-1 Secure 73 bus original model sampling.
 %% Ranking Interactions
 
-costs = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case73_noPWS_lx2_n-1.csv');
+costs = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case39_n-1_gen.csv');
 costs = costs(:,1)
 %costs1 = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case73_noPWS_lx2_n-1.csv');
-costs1 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case73_noPWS_lx2_n-1.csv');
+costs1 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case39_n-1_gen.csv');
 costs1 = costs1(:,1);
-costs2 = xlsread('..\VACC\results\experiments\mh\casc2+nucp\RiskResults_case73_noPWS_lx2_n-1.csv');
+costs2 = xlsread('..\VACC\results\experiments\mh\casc2+nucp\RiskResults_case39_n-1_gen.csv');
 costs2 = costs2(:,1);
-costs3 = xlsread('..\VACC\results\experiments\mh\casc2+comm\RiskResults_case73_noPWS_lx2_n-1.csv');
+costs3 = xlsread('..\VACC\results\experiments\mh\casc2+comm\RiskResults_case39_n-1_gen.csv');
 costs3 = costs3(:,1);
-costs4 = xlsread('..\VACC\results\experiments\mh\casc2+crt\RiskResults_case73_noPWS_lx2_n-1.csv');
+costs4 = xlsread('..\VACC\results\experiments\mh\casc2+crt\RiskResults_case39_n-1_gen.csv');
 costs4 = costs4(:,1)
 
 costs(isnan(costs))=0;
@@ -99,11 +99,11 @@ legend boxoff
 %% Make Square plots
 clear all
 
-data1 = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case73_noPWS_lx2_n-1.csv');
-data11 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case73_noPWS_lx2_n-1.csv');
-data21 = xlsread('..\VACC\results\experiments\mh\casc2+crt\RiskResults_case73_noPWS_lx2_n-1.csv');
-data2 = xlsread('..\VACC\results\experiments\mh\casc2+nucp\RiskResults_case73_noPWS_lx2_n-1.csv');
-data31 = xlsread('..\VACC\results\experiments\mh\casc2+comm\RiskResults_case73_noPWS_lx2_n-1.csv');
+data1 = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case39_n-1_gen.csv');
+data11 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case39_n-1_gen.csv');
+data21 = xlsread('..\VACC\results\experiments\mh\casc2+crt\RiskResults_case39_n-1_gen.csv');
+data2 = xlsread('..\VACC\results\experiments\mh\casc2+nucp\RiskResults_case39_n-1_gen.csv');
+data31 = xlsread('..\VACC\results\experiments\mh\casc2+comm\RiskResults_case39_n-1_gen.csv');
 
 costs11 = data11(:,1);
 costs21 = data21(:,1);
@@ -133,7 +133,7 @@ costs21(isnan(costs21))=0;
 costs31(isnan(costs31))=0;
 
 % find eens for different sized events
-short = [0, 60*24*7)];
+short = [0, (60*24*7)];
 long =  [(60*24*7), max([time1; time2; time11; time21; time31])];
 smallMW = [0, 1000];
 largeMW = [1000, max([costs1; costs2; costs11; costs21; costs31])];
