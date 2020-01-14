@@ -133,20 +133,20 @@ costs21(isnan(costs21))=0;
 costs31(isnan(costs31))=0;
 
 % find eens for different sized events
-short = [0, 60*24*7)];
-long =  [(60*24*7), max([time1; time2; time11; time21; time31])];
-smallMW = [0, 1000];
-largeMW = [1000, max([costs1; costs2; costs11; costs21; costs31])];
+short = [0, (60*12)];
+long =  [(60*12), max([time1; time2; time11; time21; time31])];
+smallMW = [0, 300];
+largeMW = [300, max([costs1; costs2; costs11; costs21; costs31])];
 
-d1(1,1) = sort_and_sum_data(short,time11,smallMW,ls11,costs11);
-d1(1,2) = sort_and_sum_data(short,time11,largeMW,ls11,costs11);
-d1(1,3) = sort_and_sum_data(long,time11,smallMW,ls11,costs11);
-d1(1,4) = sort_and_sum_data(long,time11,largeMW,ls11,costs11);
-% 
-% d1(1,1) = 0;
-% d1(1,2) = 0;
-% d1(1,3) = 0;
-% d1(1,4) = 0;
+% d1(1,1) = sort_and_sum_data(short,time11,smallMW,ls11,costs11);
+% d1(1,2) = sort_and_sum_data(short,time11,largeMW,ls11,costs11);
+% d1(1,3) = sort_and_sum_data(long,time11,smallMW,ls11,costs11);
+% d1(1,4) = sort_and_sum_data(long,time11,largeMW,ls11,costs11);
+
+d1(1,1) = 0;
+d1(1,2) = 0;
+d1(1,3) = 0;
+d1(1,4) = 0;
 
 d1(2,1) = sort_and_sum_data(short, time21, smallMW,ls21, costs21);
 d1(2,2) = sort_and_sum_data(short,time21,largeMW,ls21,costs21);

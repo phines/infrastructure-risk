@@ -138,6 +138,98 @@ long =  [(60*24*7), max([time1; time2; time11; time21; time31])];
 smallMW = [0, 1000];
 largeMW = [1000, max([costs1; costs2; costs11; costs21; costs31])];
 
+d1(2,1) = sort_and_sum_data(short,time11,smallMW,ls11,costs11);
+d1(2,2) = sort_and_sum_data(short,time11,largeMW,ls11,costs11);
+d1(2,3) = sort_and_sum_data(long,time11,smallMW,ls11,costs11);
+d1(2,4) = sort_and_sum_data(long,time11,largeMW,ls11,costs11);
+
+d1(1,1) = 0;
+d1(1,2) = 0;
+d1(1,3) = 0;
+d1(1,4) = 0;
+
+
+% d1(2,1) = sort_and_sum_data(short, time21, smallMW,ls21, costs21);
+% d1(2,2) = sort_and_sum_data(short,time21,largeMW,ls21,costs21);
+% d1(2,3) = sort_and_sum_data(long,time21,smallMW,ls21,costs21);
+% d1(2,4) = sort_and_sum_data(long,time21,largeMW,ls21,costs21);
+
+
+
+d1(3,1) = sort_and_sum_data(short, time31, smallMW, ls31, costs31);
+d1(3,2) = sort_and_sum_data(short,time31,largeMW,ls31,costs31);
+d1(3,3) = sort_and_sum_data(long,time31,smallMW,ls31,costs31);
+d1(3,4) = sort_and_sum_data(long,time31,largeMW,ls31,costs31);
+
+% d1(4,1) = sort_and_sum_data(short,time41,smallMW,ls41,costs41);
+% d1(4,2) = sort_and_sum_data(short,time41,largeMW,ls41,costs41);
+% d1(4,3) = sort_and_sum_data(long,time41,smallMW,ls41,costs41);
+% d1(4,4) = sort_and_sum_data(long,time41,largeMW,ls41,costs41);
+
+d1(4,1) = 0;
+d1(4,2) = 0;
+d1(4,3) = 0;
+d1(4,4) = 0;
+
+d1(5,1) = sort_and_sum_data(short,time1,smallMW,ls1,costs1);
+d1(5,2) = sort_and_sum_data(short,time1,largeMW,ls1,costs1);
+d1(5,3) = sort_and_sum_data(long,time1,smallMW,ls1,costs1);
+d1(5,4) = sort_and_sum_data(long,time1,largeMW,ls1,costs1);
+
+d1(6,1) = sort_and_sum_data(short, time2, smallMW,ls2, costs2);
+d1(6,2) = sort_and_sum_data(short,time2,largeMW,ls2,costs2);
+d1(6,3) = sort_and_sum_data(long,time2,smallMW,ls2,costs2);
+d1(6,4) = sort_and_sum_data(long,time2,largeMW,ls2,costs2);
+
+% make a 6x4 grid of square plots, with six squares in each
+data = d1; %rand(6,4)
+
+figure(2); clf;
+arrangement = [2 3]
+square_plots(data,arrangement)
+
+%% Make Square plots
+clear all
+
+data1 = xlsread('..\VACC\results\experiments\mh\casc2+int0\RiskResults_case39_n-1_gen.csv');
+data11 = xlsread('..\VACC\results\experiments\mh\casc2+ngi\RiskResults_case39_n-1_gen.csv');
+data21 = xlsread('..\VACC\results\experiments\mh\casc2+crt\RiskResults_case39_n-1_gen.csv');
+data2 = xlsread('..\VACC\results\experiments\mh\casc2+nucp\RiskResults_case39_n-1_gen.csv');
+data31 = xlsread('..\VACC\results\experiments\mh\casc2+comm\RiskResults_case39_n-1_gen.csv');
+
+costs11 = data11(:,1);
+costs21 = data21(:,1);
+costs31 = data31(:,1);
+costs1 = data1(:,1);
+costs2 = data2(:,1);
+
+time1 = data1(:,3);
+time2 = data2(:,3);
+
+time11 = data11(:,3);
+time21 = data21(:,3);
+time31 = data31(:,3);
+
+ls1 = data1(:,2);
+ls2 = data2(:,2);
+
+ls11 = data11(:,2);
+ls21 = data21(:,2);
+ls31 = data31(:,2);
+
+costs1(isnan(costs1))=0;
+costs2(isnan(costs2))=0;
+
+costs11(isnan(costs11))=0;
+costs21(isnan(costs21))=0;
+costs31(isnan(costs31))=0;
+
+% find eens for different sized events
+short = [0, (60*24*7)];
+long =  [(60*24*7), max([time1; time2; time11; time21; time31])];
+smallMW = [0, 1000];
+largeMW = [1000, max([costs1; costs2; costs11; costs21; costs31])];
+
 d1(1,1) = sort_and_sum_data(short,time11,smallMW,ls11,costs11);
 d1(1,2) = sort_and_sum_data(short,time11,largeMW,ls11,costs11);
 d1(1,3) = sort_and_sum_data(long,time11,smallMW,ls11,costs11);
@@ -181,6 +273,6 @@ d1(6,4) = sort_and_sum_data(long,time2,largeMW,ls2,costs2);
 % make a 6x4 grid of square plots, with six squares in each
 data = d1; %rand(6,4)
 
-figure(4); clf;
+figure(3); clf;
 arrangement = [2 3]
 square_plots(data,arrangement)
