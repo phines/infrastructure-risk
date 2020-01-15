@@ -2919,7 +2919,7 @@ function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_windo
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
             Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
-	    crisp_dcpf_g1_s!(psi)
+	        crisp_dcpf_g1_s!(psi)
             crisp_mh_rlopf_var!(psi,dt,t_window,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
@@ -2979,7 +2979,11 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
     lines_out = lines_out, gens_out = gens_out)
     cv = deepcopy(Restore);
     # find generator status
-    ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    if size(ps.bus,1) <= 100
+        ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
+    else
+        ug = gen_on_off2(ps,Time,t_window,gen_on,g_recovery_times)
+    end
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization

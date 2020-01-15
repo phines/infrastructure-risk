@@ -2007,7 +2007,11 @@ function crisp_mh_lsopf_var!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,
     G_bus = sparse(G,collect(1:ng),1.,n,ng)
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
     Pg_max = (Pg_max1 ./ ps.baseMVA) .* ps.gen.status
-    RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA
+    if sum(names(ps.gen) .== :RampRateMWMin) .!=0
+        RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA
+    else
+        RR = ps.gen.ramp30 ./30 .* dt ./ ps.baseMVA
+    end
     if any(G.<1) || any(G.>n)
         error("Bad indices in gen matrix")
     end
