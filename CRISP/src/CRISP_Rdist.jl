@@ -5,7 +5,7 @@ include("CRISP_RLSOPF.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
-function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt)
+function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca=4,cb=24,cf=1.5)
     #constants
     debug=1;
     tolerance1 = 10^(-4);
@@ -45,7 +45,7 @@ function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt)
     ti = 60*48;
     t0 = 10
     Restore = crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,
-              ti,t0,gen_on,comm,nucp,ngi,crt)
+              ti,t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=ca,com_bl_b=cb,c_factor=cf)
               println(Restore)
     if debug==1
         outnow = (out_folder[1:end-4]);

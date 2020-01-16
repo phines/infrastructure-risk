@@ -21,7 +21,7 @@ path=Files[1]
 	case = "data/saved_ps/"*path[(33+l):end-4]
 	#time steps
 	dt = 60 #minutes
-	m=872;
+	m = 872;
 	#for m in 872
 		#save restoration data to folder within results folder:
 		filename = "res_out_"*path[(34+l):end-4];
