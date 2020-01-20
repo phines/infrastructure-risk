@@ -61,6 +61,60 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     end
 end
 
+function Outages_ss(Num,ps_folder,out_folder,outfile,gtrip;param_file = "",cascade=true,nlines=25,ngens=5)
+    debug=1;
+    tolerance1 = 10^(-6);
+    ## Num = number of failure scenarios to run through
+    # initialize vector of costs from events
+    ## load the case data
+    ps = import_ps("$ps_folder")
+    ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
+    if isempty(param_file)
+        # parameters of distributions for line outages and recovery times
+        s_line = 2.56;#lines_dist[1];
+        maxLinesOut = length(ps.branch.f); # => k in zipf distribution
+        mu_line = 3.66;#lines_dist[2];
+        sigma_line = 2.43;#lines_dist[3];
+        lambda_gen = 1;
+    end
+    TotalLines = length(ps.branch.f);
+    diameter = find_diameter(ps);
+    for iterat in 1:Num
+        for N in 1:nlines
+            # step 1
+            if cascade
+                lines_state = cascade!(ps, TotalLines, N, diameter);
+                RecovTimeL = RecoveryTimes(mu_line, sigma_line, N);
+                Lines_Init_State = RecTime(RecovTimeL, lines_state);
+            else
+                lines_state = initiate_state(TotalLines, N);
+                RecovTimeL = RecoveryTimes(mu_line,sigma_line,N);
+                Lines_Init_State = RecTime(RecovTimeL,lines_state);
+            end
+            if gtrip
+                line_state = Lines_Init_State.state
+                Gens_Init_State = gen_trip!(ps,line_state,mu_line,sigma_line)
+                if debug==1
+                    if isdir(out_folder*"/$N")
+                    else mkdir(out_folder*"/$N") end
+                    CSV.write(out_folder*"/$N/"*outfile*"_lines$iterat.csv", Lines_Init_State)
+                    CSV.write(out_folder*"/$N/"*outfile*"_gens$iterat.csv", Gens_Init_State)
+                end
+            else
+                for G in 1:ngens
+                    Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
+                    if debug==1
+                        if isdir(out_folder*"/$N-$G")
+                        else mkdir(out_folder*"/$N-$G") end
+                        CSV.write(out_folder*"/$N-$G/"*outfile*"_lines$iterat.csv", Lines_Init_State)
+                        CSV.write(out_folder*"/$N-$G/"*outfile*"_gens$iterat.csv", Gens_Init_State)
+                    end
+                end
+            end
+        end
+    end
+end
+
 function line_state_cascade!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch.f);
