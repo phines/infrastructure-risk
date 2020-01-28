@@ -8,6 +8,7 @@ include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 ## load the case data
 ps = import_ps("data/saved_ps/case2736sp_relaxedQ_ps")
+ps1 = import_ps("data/saved_ps/case2736sp_relaxedQ_ps_ex2")
 ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
 crisp_dcpf_g1_s!(ps)
 total = sum(ps.shunt.P);
@@ -39,7 +40,7 @@ g_recovery_times = RecTime(RecovTimeG, ps.gen.status).recovery_time;
 ## run step 3
 dt = 60
 ti = 60*48;
-t0 = 10
+t0 = 0
 Restore = crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
 CSV.write("results\\Restoration$(filename)_ex2.csv",Restore)
 ## run step 4

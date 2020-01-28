@@ -102,7 +102,10 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,gtrip;param_file = "",casca
                 end
             else
                 for G in 1:ngens
-                    Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
+                    TotalGens = length(ps.gen.bus);
+                    gens_state = initiate_state(TotalGens,G);
+                    RecovTimeG = RecoveryTimes(mu_line,sigma_line,G);
+                    Gens_Init_State = RecTime(RecovTimeG,gens_state)
                     if debug==1
                         if isdir(out_folder*"/$N-$G")
                         else mkdir(out_folder*"/$N-$G") end
