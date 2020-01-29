@@ -1,6 +1,14 @@
 # Debugging results/case39/*case39_9.*
+using Random
 rng = MersenneTwister(100);
 using CSV
+#=
+include("src\\CRISP_initiate.jl")
+include("src\\CRISP_LSOPF.jl")
+include("src\\CRISP_RLSOPF.jl")
+include("src\\CRISP_RT.jl")
+include("src\\CRISP_network.jl")
+=#
 include("..\\src\\CRISP_initiate.jl")
 include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")

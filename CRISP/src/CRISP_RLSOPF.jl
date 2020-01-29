@@ -3114,7 +3114,7 @@ function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_
     ug = gen_on_off2(ps,Time,t_window,gen_on,g_recovery_times)
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
-    for i in 1:length(Time)
+    for i in 2:length(Time)
         # update time
         ti = Time[i]-t0;
         # remove failures as the recovery time is reached
