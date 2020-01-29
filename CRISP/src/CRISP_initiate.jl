@@ -61,7 +61,7 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     end
 end
 
-function Outages_ss(Num,ps_folder,out_folder,outfile,gtrip;param_file = "",cascade=true,nlines=25,ngens=5)
+function Outages_ss(Num,ps_folder,out_folder,outfile,nlines,ngens,gtrip;cascade=true,param_file = "")
     debug=1;
     tolerance1 = 10^(-6);
     ## Num = number of failure scenarios to run through

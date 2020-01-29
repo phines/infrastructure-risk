@@ -28,6 +28,9 @@ else mkdir(out1) end
 case = "data\\saved_ps\\case73_noPWS_lx2_n-1"
 #case = "data\\saved_ps\\case39_n-1_gen"
 #case = out_case73_noPWS_lx2_n-1"
-outfile = "/out_case39_n-1"
+#outfile = "/out_case39_n-1"
 outfile = "/out_case73_noPWS_lx2_n-1"
-Outages_ss(100,case,out1,outfile,false)
+n = 20
+l_bins = 45
+g_bins = 20
+Outages_ss(n,case,out1,outfile,l_bins,g_bins,false)
