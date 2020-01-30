@@ -12,10 +12,10 @@ include("src\\CRISP_network.jl")
 include("..\\src\\CRISP_initiate.jl")
 include("..\\src\\CRISP_LSOPF.jl")
 include("..\\src\\CRISP_RLSOPF.jl")
-include("..\\src\\CRISP_RT.jl")
+#include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
 ## load the case data
-ex = 1
+for ex in 1:2
 ps = import_ps("data/saved_ps/case2736sp_relaxedQ_ps")
 ps.branch.status = ones(length(ps.branch.status))
 ps.gen.status = ones(length(ps.gen.status))
@@ -45,9 +45,15 @@ end
 filename = "Polish_Case";
 #pull failures from csv file
 Lines_Init_State = CSV.File("data/example_outages/lines_tripped_ex$ex.csv") |> DataFrame
+lines_state = Lines_Init_State.lines_tripped
+l = lines_state[1:end-1]
+k = lines_state[2:end]
+h = l .== k
+h = [false;h]
+lines_state = lines_state[.!h]
 nl = size(ps.branch,1)
-NLines = length(Lines_Init_State.lines_tripped);
-ps.branch.status[Int64.(Lines_Init_State.lines_tripped)] = zeros(NLines);
+NLines = length(lines_state);
+ps.branch.status[Int64.(lines_state)] .= 0;
 RecovTimeL = RecoveryTimes(mu_line, sigma_line, NLines);
 l_recovery_times = RecTime(RecovTimeL, ps.branch.status).recovery_time;
 Gens_Init_State = CSV.File("data/example_outages/gens_tripped_ex$ex.csv") |> DataFrame
@@ -62,6 +68,7 @@ dt = 60
 ti = 60*48;
 t0 = 0
 Restore = crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on)
-CSV.write("results\\Restoration$(filename)_ex$ex.csv",Restore)
+CSV.write("results\\Restoration$(filename)_ex_$ex.csv",Restore)
 ## run step 4
-ResilienceTri = crisp_res(Restore);
+#ResilienceTri = crisp_res(Restore);
+end

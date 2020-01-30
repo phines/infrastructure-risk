@@ -3100,13 +3100,13 @@ function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_
     ti = t0;
     recTime = maximum([maximum(l_recovery_times) maximum(g_recovery_times)]);
     # set time line
-    EndTime = (t0+recTime);
+    EndTime = (t0+recTime+dt);
     Time = t0:dt:EndTime
     #save initial values
     load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
     perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
     lines_out = length(ps.branch.status) - sum(ps.branch.status);
-    gens_off = length(ps.gen.status) - sum(ps.gen.Pg > ps.gen.Pmin); #sum(ps.gen.status);#
+    gens_off = length(ps.gen.status) - sum(ps.gen.Pg .> 0); #sum(ps.gen.status);#
     Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
     lines_out = lines_out, gens_off = gens_off)
     cv = deepcopy(Restore);
@@ -3141,7 +3141,7 @@ function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_
         cv.load_shed .= sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
         cv.perc_load_served .= (sum(load_cost.*ps.shunt.P) .- cv.load_shed)./sum(load_cost.*ps.shunt.P);
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_off .= length(ps.gen.status) - sum(ps.gen.Pg > ps.gen.Pmin); #sum(ps.gen.status);
+        cv.gens_off .= length(ps.gen.status) - sum(ps.gen.Pg .> 0); #sum(ps.gen.status);
         append!(Restore,cv)
         @assert 10^(-4)>=abs(sum(ps.shunt.P .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
