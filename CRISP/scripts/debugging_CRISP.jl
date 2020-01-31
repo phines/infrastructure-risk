@@ -61,7 +61,7 @@ ng = size(ps.gen,1);
 NGens = length(Gens_Init_State.gens_tripped);
 ps.gen.status[Int64.(Gens_Init_State.gens_tripped)] = zeros(NGens);
 #RecovTimeG = RecoveryTimes(mu_line, sigma_line, NGens);
-g_recovery_times = RecTime(RecovTimeG, ps.gen.status).recovery_time;
+g_recovery_times = zeros(length(ps.gen.bus))#RecTime(RecovTimeG, ps.gen.status).recovery_time;
 g_recovery_times[g_recovery_times .!= 0] = ones(sum(g_recovery_times .!= 0))
 ## run step 3
 dt = 60
