@@ -62,11 +62,9 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     end
 end
 
-function Outages_ss(Num,ps_folder,out_folder,outfile,bins_lines,bins_gens,gtrip;cascade=true,param_file = "")
+function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gtrip;cascade=true,param_file = "")
     debug=1;
     tolerance1 = 10^(-6);
-    nlines = length(bins_lines)
-    ngens = length(bins_gens)
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
@@ -80,9 +78,15 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,bins_lines,bins_gens,gtrip;
     end
     TotalLines = length(ps.branch.f);
     diameter = find_diameter(ps);
+    bins_lines = Int64.(round.(range(1, stop = TotalLines, length = n_bins_lines))) |> collect
+    bins_gens = Int64.(round.(range(1, stop = length(ps.gen.bus), length = n_bins_gens))) |> collect
+    nlines = length(bins_lines)-1;
+    ngens = length(bins_gens)-1
     for iterat in 1:Num
-        for N in 1:nlines
-            
+        for k in 1:nlines
+            bin_l = bins_lines[k]
+            bin_h = bins_lines[k+1]
+            N = make_bins_pb(bin_l,bin_h,true,false)
             # step 1
             if cascade
                 lines_state = cascade!(ps, TotalLines, N, diameter);
@@ -97,22 +101,25 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,bins_lines,bins_gens,gtrip;
                 line_state = Lines_Init_State.state
                 Gens_Init_State = gen_trip!(ps,line_state,mu_line,sigma_line)
                 if debug==1
-                    if isdir(out_folder*"/$N")
-                    else mkdir(out_folder*"/$N") end
-                    CSV.write(out_folder*"/$N/"*outfile*"_lines$iterat.csv", Lines_Init_State)
-                    CSV.write(out_folder*"/$N/"*outfile*"_gens$iterat.csv", Gens_Init_State)
+                    if isdir(out_folder*"/$bin_l")
+                    else mkdir(out_folder*"/$bin_l") end
+                    CSV.write(out_folder*"/$bin_l/"*outfile*"_lines$iterat.csv", Lines_Init_State)
+                    CSV.write(out_folder*"/$bin_l/"*outfile*"_gens$iterat.csv", Gens_Init_State)
                 end
             else
                 for G in 1:ngens
+                    bing_l = bins_gens[k]
+                    bing_h = bins_gens[k+1]
+                    G = make_bins_pb(bing_l,bing_h,false,true)
                     TotalGens = length(ps.gen.bus);
                     gens_state = initiate_state(TotalGens,G);
                     RecovTimeG = RecoveryTimes(mu_line,sigma_line,G);
                     Gens_Init_State = RecTime(RecovTimeG,gens_state)
                     if debug==1
-                        if isdir(out_folder*"/$N-$G")
-                        else mkdir(out_folder*"/$N-$G") end
-                        CSV.write(out_folder*"/$N-$G/"*outfile*"_lines$iterat.csv", Lines_Init_State)
-                        CSV.write(out_folder*"/$N-$G/"*outfile*"_gens$iterat.csv", Gens_Init_State)
+                        if isdir(out_folder*"/$bin_l-$bing_l")
+                        else mkdir(out_folder*"/$bin_l-$bing_l") end
+                        CSV.write(out_folder*"/$bin_l-$bing_l/"*outfile*"_lines$iterat.csv", Lines_Init_State)
+                        CSV.write(out_folder*"/$bin_l-$bing_l/"*outfile*"_gens$iterat.csv", Gens_Init_State)
                     end
                 end
             end
@@ -120,27 +127,44 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,bins_lines,bins_gens,gtrip;
     end
 end
 
-function make_bins_pb(bin_l, bin_h,zipf,geo;s=2.56,lambda=1)
+function make_bins_pb(bin_l, bin_h,zipf,unif;s=2.56,lambda=1)
     # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
     # the cdf of a zipf distribution
-    if zipf = true
-        k = length(bin_l:bin_h)
-        H_k_s = zeros(k-1);
-        for i = bin_l:(bin_h-1)
+    if zipf == true
+        bins = bin_l:bin_h
+        k = length(bins)
+        H_k_s = zeros(bin_h-1);
+        for i in 1:(bin_h-1)
             for j = 1:i
             H_k_s[i] = H_k_s[i] + 1/(j^s);
             end
         end
         cdf_lines = H_k_s./zeta(s);
-        s = 1/sum(cdf_lines);
-        scaled_cdf = cdf_lines.*s;
+        if bin_l == 1
+            scaled_cdf = cdf_lines
+        else
+            pmf = cdf_lines[bin_l:bin_h] - cdf_lines[bin_l-1:bin_h-1]:
+            scaler = 1/sum(pmf);
+            pmf = pmf.*scaler
+            scaled_cdf = cdf_lines.*scaler;
+        end
         P_leqNlinesOut = rand(rng,1);
         Nlines = sum(P_leqNlinesOut.>=cdf_lines);
         Nlines += 1;
-        Nlines = Int64(round(ratioL*Nlines)) #
+        #Nlines = Int64(round(ratioL*Nlines)) #
         println(Nlines)
         return Nlines
-    elseif geo = true
+    elseif unif == true
+        #ratioG = TotalGens/OriginalGens;
+        #Ngens1 = -floor.(log.(lambda .-rand(rng,1))); # geometric dist.
+        #Ngens = Int64(Ngens1[1]);
+        #Ngens = Int64(round(ratioG*Ngens));
+        #if Ngens > TotalGens
+            #Ngens = TotalGens
+        #end
+        Ngens = shuffle(bin_l:bin_h) # random pick from uniform distribution of n generators bin
+        Ngens = Int64(Ngens[1]);
+        return Ngens
     else
     end
 end
@@ -170,7 +194,7 @@ end
 function gen_state!(ps,lambda_gen,mu_gen,sigma_gen;orignumGen=0)
 # number of lines and generators in network case
 TotalGens =length(ps.gen.Pg);
-Ngens = init_out_exp(lambda_gen,TotalGens);
+Ngens = init_out_geo(lambda_gen,TotalGens);
 gens_state = initiate_state(TotalGens, Ngens);
 ps.gen.status = gens_state;
 ps.gen.Pg = ps.gen.Pg .*gens_state;
@@ -237,13 +261,13 @@ println(Nlines)
 return Nlines
 end
 
-function init_out_exp(lambda,TotalGens;OriginalGens=TotalGens)
+function init_out_geo(lambda,TotalGens;OriginalGens=TotalGens)
 # since we do not have the outage distribution of generators, I am modeling it temporariliy as
 # an exponential random variable with lambda=1. I would expect that the distribution of
 # generators that experience outages (not caused by grid dynamics) will be steeper than the
 # lines, which is why I am not using the zipf distribution
 ratioG = TotalGens/OriginalGens;
-Ngens1 = -floor.(log.(1 .-rand(rng,1)));
+Ngens1 = -floor.(log.(lambda .-rand(rng,1)));
 Ngens = Int64(Ngens1[1]);
 Ngens = Int64(round(ratioG*Ngens));
 if Ngens > TotalGens
