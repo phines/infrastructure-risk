@@ -11,6 +11,7 @@ using DataFrames
 include("CRISP_network.jl")
 include("CRISP_LSOPF.jl")
 
+
 function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     #constants
     debug=1;
@@ -61,11 +62,11 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
     end
 end
 
-function Outages_ss(Num,ps_folder,out_folder,outfile,nlines,ngens,gtrip;cascade=true,param_file = "")
+function Outages_ss(Num,ps_folder,out_folder,outfile,bins_lines,bins_gens,gtrip;cascade=true,param_file = "")
     debug=1;
     tolerance1 = 10^(-6);
-    ## Num = number of failure scenarios to run through
-    # initialize vector of costs from events
+    nlines = length(bins_lines)
+    ngens = length(bins_gens)
     ## load the case data
     ps = import_ps("$ps_folder")
     ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
@@ -81,6 +82,7 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,nlines,ngens,gtrip;cascade=
     diameter = find_diameter(ps);
     for iterat in 1:Num
         for N in 1:nlines
+            
             # step 1
             if cascade
                 lines_state = cascade!(ps, TotalLines, N, diameter);
@@ -118,10 +120,35 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,nlines,ngens,gtrip;cascade=
     end
 end
 
+function make_bins_pb(bin_l, bin_h,zipf,geo;s=2.56,lambda=1)
+    # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
+    # the cdf of a zipf distribution
+    if zipf = true
+        k = length(bin_l:bin_h)
+        H_k_s = zeros(k-1);
+        for i = bin_l:(bin_h-1)
+            for j = 1:i
+            H_k_s[i] = H_k_s[i] + 1/(j^s);
+            end
+        end
+        cdf_lines = H_k_s./zeta(s);
+        s = 1/sum(cdf_lines);
+        scaled_cdf = cdf_lines.*s;
+        P_leqNlinesOut = rand(rng,1);
+        Nlines = sum(P_leqNlinesOut.>=cdf_lines);
+        Nlines += 1;
+        Nlines = Int64(round(ratioL*Nlines)) #
+        println(Nlines)
+        return Nlines
+    elseif geo = true
+    else
+    end
+end
+
 function line_state_cascade!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch.f);
-Nlines = init_out_zipf_p1(s_line, maxLinesOut, TotalLines);
+Nlines = init_out_zipf(s_line, maxLinesOut, TotalLines);
 diameter = find_diameter(ps)
 lines_state = cascade!(ps, TotalLines, Nlines, diameter);
 RecovTimeL = RecoveryTimes(mu_line, sigma_line, Nlines);
@@ -132,36 +159,9 @@ end
 function line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
 # number of lines and generators in network case
 TotalLines = length(ps.branch.f);
-Nlines = init_out_zipf_p1(s_line,maxLinesOut,TotalLines);
+Nlines = init_out_zipf(s_line,maxLinesOut,TotalLines);
 lines_state = initiate_state(TotalLines, Nlines);
 ps.branch.status .= lines_state;
-RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
-lines_outage_recovery = RecTime(RecovTimeL,lines_state);
-return lines_outage_recovery
-end
-
-function line_state2!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
-# number of lines and generators in network case
-TotalLines = length(ps.branch[1]);
-Nlines = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
-lines_state = initiate_state(TotalLines, Nlines);
-ps.branch[:status] = lines_state;
-RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
-lines_outage_recovery = RecTime(RecovTimeL,lines_state);
-return lines_outage_recovery
-end
-
-#No longer using.
-# fair sample from distribution that allows 0 outages, but that only picks events with outages
-function line_state3!(ps,s_line,maxLinesOut,mu_line,sigma_line;orignumLines=0)
-# number of lines and generators in network case
-TotalLines = length(ps.branch[1]);
-Nlines = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
-while Nlines==0
-    Nlines = init_out_zipf_a0(s_line,maxLinesOut,TotalLines);
-end
-lines_state = initiate_state(TotalLines, Nlines);
-ps.branch[:status] = lines_state;
 RecovTimeL = RecoveryTimes(mu_line,sigma_line,Nlines);
 lines_outage_recovery = RecTime(RecovTimeL,lines_state);
 return lines_outage_recovery
@@ -217,7 +217,7 @@ gen_state = ones(Ng);
 return gen_state
 end
 
-function init_out_zipf_p1(s,k,TotalLines;OrigNumLines=TotalLines)
+function init_out_zipf(s,k,TotalLines;OrigNumLines=TotalLines)
 ratioL = TotalLines/OrigNumLines;
 # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
 # the cdf of a zipf distribution with
@@ -234,44 +234,6 @@ Nlines = sum(P_leqNlinesOut.>=cdf_lines);
 Nlines += 1;
 Nlines = Int64(round(ratioL*Nlines)) #
 println(Nlines)
-return Nlines
-end
-
-function init_out_zipf(s,k,TotalLines;OrigNumLines=TotalLines)
-ratioL = TotalLines/OrigNumLines;
-# the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
-# the cdf of a zipf distribution with
-H_k_s = zeros(k);
-for i = 1:k
-    for j = 1:i
-    H_k_s[i] = H_k_s[i] + 1/(j^s);
-    end
-end
-cdf_lines = H_k_s./zeta(s);
-P_leqNlinesOut = rand(rng,1);
-cdf_lines = H_k_s./zeta(s);
-Nlines = sum(P_leqNlinesOut.>=cdf_lines);
-if Nlines==0
-    Nlines=1;
-end
-Nlines = Int64(round(ratioL*Nlines)) #
-return Nlines
-end
-
-function init_out_zipf_a0(s,k,TotalLines;OrigNumLines=TotalLines)
-ratioL = TotalLines/OrigNumLines;
-# the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
-# the cdf of a zipf distribution with
-H_k_s = zeros(k);
-for i = 1:k
-    for n = 1:i
-    H_k_s[i] = H_k_s[i] + 1/(n^s);
-    end
-end
-cdf_lines = H_k_s./zeta(s);
-P_leqNlinesOut = rand(rng,1);
-Nlines = sum(P_leqNlinesOut.>=cdf_lines);
-Nlines = Int64(round(ratioL*Nlines)) #
 return Nlines
 end
 
