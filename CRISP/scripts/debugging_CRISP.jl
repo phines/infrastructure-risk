@@ -17,7 +17,8 @@ include("..\\src\\CRISP_network.jl")
 ## load the case data
 for ex in 1:2
 ps = import_ps("data/saved_ps/case2736sp_relaxedQ_ps")
-ps.branch.status = ones(length(ps.branch.status))
+ps.branch = ps.branch[(ps.branch.status .!= 0),:]
+#ps.branch.status = ones(length(ps.branch.status))
 ps.gen.status = ones(length(ps.gen.status))
 ps1 = import_ps("data/saved_ps/2736sp_relaxedQ_ps_ex$ex")
 ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]

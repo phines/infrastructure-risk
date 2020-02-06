@@ -79,14 +79,18 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gt
     TotalLines = length(ps.branch.f);
     diameter = find_diameter(ps);
     bins_lines = Int64.(round.(range(1, stop = TotalLines, length = n_bins_lines))) |> collect
+    remove_repeats!(bins_lines)
     bins_gens = Int64.(round.(range(1, stop = length(ps.gen.bus), length = n_bins_gens))) |> collect
+    remove_repeats!(bins_gens)
     nlines = length(bins_lines)-1;
-    ngens = length(bins_gens)-1
+    ngens = length(bins_gens)-1;
     for iterat in 1:Num
         for k in 1:nlines
-            bin_l = bins_lines[k]
-            bin_h = bins_lines[k+1]
-            N = make_bins_pb(bin_l,bin_h,true,false)
+            println("k = $k")
+            bin_l = bins_lines[k];
+            bin_h = bins_lines[k+1];
+            N = make_bins_pb(bin_l,bin_h,TotalLines,true,false);
+            println("N_Lines = $N")
             # step 1
             if cascade
                 lines_state = cascade!(ps, TotalLines, N, diameter);
@@ -98,62 +102,92 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gt
                 Lines_Init_State = RecTime(RecovTimeL,lines_state);
             end
             if gtrip
-                line_state = Lines_Init_State.state
-                Gens_Init_State = gen_trip!(ps,line_state,mu_line,sigma_line)
-                if debug==1
-                    if isdir(out_folder*"/$bin_l")
-                    else mkdir(out_folder*"/$bin_l") end
-                    CSV.write(out_folder*"/$bin_l/"*outfile*"_lines$iterat.csv", Lines_Init_State)
-                    CSV.write(out_folder*"/$bin_l/"*outfile*"_gens$iterat.csv", Gens_Init_State)
-                end
+                line_state = Lines_Init_State.state;
+                Gens_Init_State = gen_trip!(ps,line_state,mu_line,sigma_line);
+                if isdir(out_folder*"/$bin_l")
+                else mkdir(out_folder*"/$bin_l") end
+                CSV.write(out_folder*"/$bin_l/"*outfile*"_lines$iterat.csv", Lines_Init_State)
+                CSV.write(out_folder*"/$bin_l/"*outfile*"_gens$iterat.csv", Gens_Init_State)
             else
-                for G in 1:ngens
-                    bing_l = bins_gens[k]
-                    bing_h = bins_gens[k+1]
-                    G = make_bins_pb(bing_l,bing_h,false,true)
+                for g in 1:(ngens-1)
+                    bing_l = bins_gens[g];
+                    bing_h = bins_gens[g+1];
+                    G = make_bins_pb(bing_l,bing_h,length(ps.gen.bus),false,true);
                     TotalGens = length(ps.gen.bus);
                     gens_state = initiate_state(TotalGens,G);
                     RecovTimeG = RecoveryTimes(mu_line,sigma_line,G);
-                    Gens_Init_State = RecTime(RecovTimeG,gens_state)
-                    if debug==1
-                        if isdir(out_folder*"/$bin_l-$bing_l")
-                        else mkdir(out_folder*"/$bin_l-$bing_l") end
-                        CSV.write(out_folder*"/$bin_l-$bing_l/"*outfile*"_lines$iterat.csv", Lines_Init_State)
-                        CSV.write(out_folder*"/$bin_l-$bing_l/"*outfile*"_gens$iterat.csv", Gens_Init_State)
-                    end
+                    Gens_Init_State = RecTime(RecovTimeG,gens_state);
+                    if isdir(out_folder*"/$bin_l-$bing_l")
+                    else mkdir(out_folder*"/$bin_l-$bing_l") end
+                    CSV.write(out_folder*"/$bin_l-$bing_l/"*outfile*"_lines$iterat.csv", Lines_Init_State)
+                    CSV.write(out_folder*"/$bin_l-$bing_l/"*outfile*"_gens$iterat.csv", Gens_Init_State)
                 end
             end
         end
     end
 end
 
-function make_bins_pb(bin_l, bin_h,zipf,unif;s=2.56,lambda=1)
+function remove_repeats!(bins)
+    for i in 1:(length(bins)-1)
+        Index = 1:length(bins);
+        if bins[i] == bins[i+1]
+            bins = bins[Index != i+1];
+        end
+    end
+    return bins
+end
+
+function make_bins_pb(bin_l, bin_h,total,zipf,unif;s=2.56,lambda=1)
     # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
     # the cdf of a zipf distribution
     if zipf == true
+        if ((bin_h - bin_l) == 1) && (bin_h != total)
+            return N = bin_l
+        else
         bins = bin_l:bin_h
-        k = length(bins)
-        H_k_s = zeros(bin_h-1);
-        for i in 1:(bin_h-1)
+        H_k_s = zeros((bin_h));
+        for i in 1:length(H_k_s)
             for j = 1:i
             H_k_s[i] = H_k_s[i] + 1/(j^s);
             end
         end
         cdf_lines = H_k_s./zeta(s);
-        if bin_l == 1
+        if (bin_l == 1) && (bin_h == total)
             scaled_cdf = cdf_lines
-        else
-            pmf = cdf_lines[bin_l:bin_h] - cdf_lines[bin_l-1:bin_h-1]:
+        elseif bin_l == 1
+            pmf = (cdf_lines[bin_l+1:bin_h-1] - cdf_lines[bin_l:bin_h-2]);
+            pmf = [cdf_lines[1]; pmf];
+            scaler = 1/sum(pmf);
+            pmf = pmf.*scaler;
+            scaled_cdf = zeros(length(pmf));
+            for p in 1:length(pmf)
+                scaled_cdf[p] = sum(pmf[1:p]);
+            end
+        elseif bin_h == total
+            pmf = (cdf_lines[bin_l:bin_h-1] - cdf_lines[(bin_l-1):(bin_h-2)]);
+            pmf = [zeros(bin_l-1); pmf; (1-pmf[end])]
             scaler = 1/sum(pmf);
             pmf = pmf.*scaler
-            scaled_cdf = cdf_lines.*scaler;
+            scaled_cdf = zeros(length(pmf));
+            for p in 1:length(pmf)
+                scaled_cdf[p] = sum(pmf[1:p])
+            end
+        else
+            pmf = (cdf_lines[bin_l:(bin_h-1)] - cdf_lines[(bin_l-1):(bin_h-2)]);
+            scaler = 1/sum(pmf);
+            pmf = [zeros(bin_l-1); pmf].*scaler
+            scaled_cdf = zeros(length(pmf));
+            for p in 1:length(pmf)
+                scaled_cdf[p] = sum(pmf[1:p])
+            end
         end
         P_leqNlinesOut = rand(rng,1);
-        Nlines = sum(P_leqNlinesOut.>=cdf_lines);
+        Nlines = sum(P_leqNlinesOut.>=scaled_cdf);
         Nlines += 1;
         #Nlines = Int64(round(ratioL*Nlines)) #
         println(Nlines)
         return Nlines
+        end
     elseif unif == true
         #ratioG = TotalGens/OriginalGens;
         #Ngens1 = -floor.(log.(lambda .-rand(rng,1))); # geometric dist.
@@ -340,6 +374,9 @@ function cascade!(ps, TotalLines, Nlines, diameter);
             end
             if isempty(new_line)
                 Index = 1:length(lines_status)
+                if isempty(Index[lines_status .== 1])
+                    return lines_status
+                end
                 new_line = Index[lines_status .== 1][1]
             end
             lines_status[new_line] = 0

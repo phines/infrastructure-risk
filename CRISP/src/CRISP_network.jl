@@ -5,8 +5,8 @@ using LinearAlgebra
 using DataFrames
 using CSV
 ## coming from CRISP_network_gen.jl
-
-include("ipga_topology.jl")
+#include("../../../iPGA/main/ipga_miscellaneous.jl")
+#include("../../../iPGA/main/ipga_topology.jl")
 #import ps from csv files
 function import_ps(filename)
     psBusData = CSV.File("$filename/bus.csv")  |> DataFrame
@@ -207,6 +207,35 @@ function find_diameter(ps)
     end
     diameter = maximum(diameter)
     return Int64(diameter)
+end
+
+function find_neighbors(nodes, edges, subset; K=1)
+    #finds all neighbors of degree <=K for subset node
+    n = length(nodes)
+    neighbors = falses(n)
+    F = edges[:,1]
+    T = edges[:,2]
+    ei = sparse(nodes, repeat([1],inner=n), 1:n, maximum(nodes), 1)
+    k  = intersect(findall(.!isnothing.(indexin(edges[:,1],nodes))), findall(.!isnothing.(indexin(edges[:,2],nodes)))) # link indices for which (from_node,to_node) belong to nodes
+	f  = ei[edges[k,1]]
+	t  = ei[edges[k,2]]
+    A = sparse([f;t],[t;f],1,n,n)
+    (A[A .>= 1] .= 1)
+	(A += SparseMatrixCSC{Float64}(I,n,n))
+    neighbors[ei[subset]] .= true
+	for k in 1:K
+		(i, _, _) = findnz(A[:,neighbors])
+		neighbors[i] .= true
+	end
+	neighbors[ei[subset]] .= false
+    return nodes[neighbors]
+end
+
+function index_in(a, b)
+	i = indexin(a, b)
+	j = .!isnothing.(i)
+
+	return i[j], j
 end
 
 function find_lines_n_hops(ps,lines_status,hop)
