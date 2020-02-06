@@ -20,7 +20,7 @@ Outages(1000,case,out,true)
 =#
 
 ## Stratified sampling
-##=
+#=
 ## 73 bus case
 out1 = "data\\strat_sample_bins\\casc_73bus"
 if isdir(out1)
@@ -31,10 +31,10 @@ n = 100
 l_bins = 20
 g_bins = 5
 Outages_ss(n,case,out1,outfile,l_bins,g_bins,false)
-##=#
-#=
+=#
+###=
 ##39 bus case
-out1 = "data\\strat_sample_bins\\casc_39bus_gt"
+out1 = "data\\strat_sample_bins\\casc_39bus"
 if isdir(out1)
 else mkdir(out1) end
 case = "data\\saved_ps\\case39_n-1_gen"
@@ -43,7 +43,7 @@ n = 100
 l_bins = 20
 g_bins = 5
 Outages_ss(n,case,out1,outfile,l_bins,g_bins,false)
-=#
+##=#
 #=
 ## Polish case
 #out1 = "data\\strat_sample_bins\\casc_39bus_gt"

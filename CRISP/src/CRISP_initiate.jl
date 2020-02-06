@@ -125,6 +125,10 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gt
             end
         end
     end
+    bin_l  = DataFrame(line_bins = bins_lines)
+    bin_g  = DataFrame(gen_bins = bins_gens)
+    CSV.write(out_folder*"/line_bins.csv", bin_l)
+    CSV.write(out_folder*"/gen_bins.csv", bin_g)
 end
 
 function remove_repeats!(bins)
@@ -165,7 +169,7 @@ function make_bins_pb(bin_l, bin_h,total,zipf,unif;s=2.56,lambda=1)
             end
         elseif bin_h == total
             pmf = (cdf_lines[bin_l:bin_h-1] - cdf_lines[(bin_l-1):(bin_h-2)]);
-            pmf = [zeros(bin_l-1); pmf; (1-pmf[end])]
+            pmf = [zeros(bin_l-1); pmf; (1-cdf_lines[end])]
             scaler = 1/sum(pmf);
             pmf = pmf.*scaler
             scaled_cdf = zeros(length(pmf));
@@ -189,6 +193,74 @@ function make_bins_pb(bin_l, bin_h,total,zipf,unif;s=2.56,lambda=1)
         return Nlines
         end
     elseif unif == true
+        if (bin_l==1) & (bin_h==total)
+            pmf = exp.(-(bin_l:bin_h));
+            scaled_cdf = zeros(length(pmf));
+            for p in 1:length(pmf)
+                scaled_cdf[p] = sum(pmf[1:p]);
+            end
+        elseif bin_h == total
+            pmf = exp.(-(bin_l:bin_h));
+            pmf = [zeros(bin_l-1); pmf]
+            scaler = 1/sum(pmf);
+            pmf = pmf.*scaler
+            scaled_cdf = zeros(length(pmf));
+            for p in 1:length(pmf)
+                scaled_cdf[p] = sum(pmf[1:p])
+            end
+        else
+            pmf = exp.(-(bin_l:(bin_h-1)));
+            scaler = 1/sum(pmf);
+            if bin_l==1
+                pmf = pmf.*scaler
+            else
+                pmf = [zeros(bin_l-1); pmf].*scaler
+            end
+            scaled_cdf = zeros(length(pmf));
+            for p in 1:length(pmf)
+                scaled_cdf[p] = sum(pmf[1:p])
+            end
+        end
+        Ngens = sum(rand(rng,1).>=scaled_cdf);
+        #Ngens = shuffle(bin_l:bin_h) # random pick from uniform distribution of n generators bin
+        Ngens = Int64(Ngens[1]);
+        return Ngens
+    else
+    end
+end
+
+function find_bins_pb(bin_l, bin_h,total,zipf,unif;s=2.56,lambda=1)
+    # the number of lines outaged probability distribution is fit to a zipf distribution with s = 2.56
+    # the cdf of a zipf distribution
+    if zipf == true
+        if ((bin_h - bin_l) == 1) && (bin_h != total)
+            return N = bin_l
+        else
+        bins = bin_l:bin_h
+        H_k_s = zeros((bin_h));
+        for i in 1:length(H_k_s)
+            for j = 1:i
+            H_k_s[i] = H_k_s[i] + 1/(j^s);
+            end
+        end
+        cdf_lines = H_k_s./zeta(s);
+        if (bin_l == 1) && (bin_h == total)
+            scaler = 1;
+        elseif bin_l == 1
+            pmf = (cdf_lines[bin_l+1:bin_h-1] - cdf_lines[bin_l:bin_h-2]);
+            pmf = [cdf_lines[1]; pmf];
+            scaler = sum(pmf);
+        elseif bin_h == total
+            pmf = (cdf_lines[bin_l:bin_h-1] - cdf_lines[(bin_l-1):(bin_h-2)]);
+            pmf = [zeros(bin_l-1); pmf; (1-pmf[end])]
+            scaler = sum(pmf);
+        else
+            pmf = (cdf_lines[bin_l:(bin_h-1)] - cdf_lines[(bin_l-1):(bin_h-2)]);
+            scaler = sum(pmf);
+        end
+        return scaler
+        end
+    elseif unif == true
         #ratioG = TotalGens/OriginalGens;
         #Ngens1 = -floor.(log.(lambda .-rand(rng,1))); # geometric dist.
         #Ngens = Int64(Ngens1[1]);
@@ -196,9 +268,10 @@ function make_bins_pb(bin_l, bin_h,total,zipf,unif;s=2.56,lambda=1)
         #if Ngens > TotalGens
             #Ngens = TotalGens
         #end
-        Ngens = shuffle(bin_l:bin_h) # random pick from uniform distribution of n generators bin
-        Ngens = Int64(Ngens[1]);
-        return Ngens
+        #Ngens = shuffle(bin_l:bin_h) # random pick from uniform distribution of n generators bin
+        #Ngens = Int64(Ngens[1]);
+        scaler = sum(exp.(-(bin_l:bin_h)))
+        return scaler
     else
     end
 end
