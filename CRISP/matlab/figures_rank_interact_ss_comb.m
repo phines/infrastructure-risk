@@ -4,16 +4,16 @@
 % N-1 Secure 73 bus original model sampling.
 %% Ranking Interactions
 
-costs = xlsread('..\VACC\results\experiments\strat_samp\int0\RiskResults_case39_n-1_gen-5-5.csv');
+costs = xlsread('..\VACC\results\experiments\strat_samp\case73\int0_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs = costs(:,1)
 %costs1 = xlsread('..\VACC\results\experiments\strat_samp\int0\RiskResults_case73_noPWS_lx2_n-1.csv');
-costs1 = xlsread('..\VACC\results\experiments\strat_samp\ngi\RiskResults_case39_n-1_gen-5-5.csv');
+costs1 = xlsread('..\VACC\results\experiments\strat_samp\case73\ngi_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs1 = costs1(:,1);
-costs2 = xlsread('..\VACC\results\experiments\strat_samp\nucp\RiskResults_case39_n-1_gen-5-5.csv');
+costs2 = xlsread('..\VACC\results\experiments\strat_samp\case73\nucp_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs2 = costs2(:,1);
-costs3 = xlsread('..\VACC\results\experiments\strat_samp\comm\RiskResults_case39_n-1_gen-5-5.csv');
+costs3 = xlsread('..\VACC\results\experiments\strat_samp\case73\comm_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs3 = costs3(:,1);
-costs4 = xlsread('..\VACC\results\experiments\strat_samp\crt\RiskResults_case39_n-1_gen-5-5.csv');
+costs4 = xlsread('..\VACC\results\experiments\strat_samp\case73\crt_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs4 = costs4(:,1)
 
 costs(isnan(costs))=0;
@@ -83,7 +83,7 @@ sorted_costs3 = sorted_costs3(sorted_costs3 ~= 0)
 Pr4 = Pr4(sorted_costs4 ~= 0)
 sorted_costs4 = sorted_costs4(sorted_costs4 ~= 0)
 figure(1)
-subplot(2,2,1)
+%subplot(2,2,1)
 loglog([10^(-1); sorted_costs0],[Pr0(1) Pr0],'b')%v-')
 hold on
 loglog([10^(-1); sorted_costs1],[Pr(1) Pr],'color',[1.000 0.7000 0.0000])%'s-',
@@ -94,20 +94,20 @@ legend("Base", "Natural Gas", "Nuclear Poisson", "Communications", "Compounding 
 xlabel("x")
 ylabel("Prob(ENS \geq x)")
 set(gca, 'fontsize',13)
-xlim([10 10^7.5])
+xlim([10 10^20])
 box off
 legend boxoff
 
 %% NEW BINNED RISK PLOTS
 
-data1 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1.csv');
-data11 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S5.csv');
-data21 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+S20.csv');
-data2 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV5.csv');
-data3 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV20.csv');
-data31 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV5+S20.csv');
+data1 = xlsread('..\VACC\results\experiments\strat_samp\case73\int0_CombinedResults_case73_noPWS_lx2_n-1.csv');
+data11 = xlsread('..\VACC\results\experiments\strat_samp\case73\comm_CombinedResults_case73_noPWS_lx2_n-1.csv');
+data21 = xlsread('..\VACC\results\experiments\strat_samp\case73\nucp_CombinedResults_case73_noPWS_lx2_n-1.csv');
+data2 = xlsread('..\VACC\results\experiments\strat_samp\case73\ngi_CombinedResults_case73_noPWS_lx2_n-1.csv');
+data3 = xlsread('..\VACC\results\experiments\strat_samp\case73\ngi_CombinedResults_case73_noPWS_lx2_n-1.csv');
+data31 = xlsread('..\VACC\results\experiments\strat_samp\case73\crt_CombinedResults_case73_noPWS_lx2_n-1.csv');
 % data4 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
-data41 = xlsread('..\VACC\results\experiments\mh\casc2_1\RiskResults_case73_noPWS_lx2_n-1+PV20+S20.csv');
+data41 = xlsread('..\VACC\results\experiments\strat_samp\case73\crt_CombinedResults_case73_noPWS_lx2_n-1.csv');
 
 costs11 = data11(:,1);
 costs21 = data21(:,1);
@@ -145,12 +145,12 @@ costs31(isnan(costs31))=0;
 costs41(isnan(costs41))=0;
 
 % find eens for different sized events
-short = [0,60*12];
-med = [60*12,60*48];
-long =  [60*48,max([time1; time2; time3])];
-smallMW = [0,100];
-medMW = [100,350];
-largeMW = [350,max([costs1; costs2; costs3])];
+short = [0,60*27.5*24];
+med = [60*27.5*24,60*60*24];
+long =  [60*60*24,max([time1; time2; time3])];
+smallMW = [0,6000];
+medMW = [6000,7500];
+largeMW = [7500,max([costs1; costs2; costs3])];
 
 d1(1,1) = sort_and_sum_data(short,time11,smallMW,ls11,costs11);
 d1(1,2) = sort_and_sum_data(short,time11,medMW,ls11,costs11);
@@ -172,15 +172,25 @@ d1(2,7) = sort_and_sum_data(long,time21,smallMW,ls21,costs21);
 d1(2,8) = sort_and_sum_data(long,time21,medMW,ls21,costs21);
 d1(2,9) = sort_and_sum_data(long,time21,largeMW,ls21,costs21);
 
-d1(3,1) = sort_and_sum_data(short,time31,smallMW,ls31,costs31);
-d1(3,2) = sort_and_sum_data(short,time31,medMW,ls31,costs31);
-d1(3,3) = sort_and_sum_data(short,time31,largeMW,ls31,costs31);
-d1(3,4) = sort_and_sum_data(med,time31,smallMW,ls31,costs31);
-d1(3,5) = sort_and_sum_data(med,time31,medMW,ls31,costs31);
-d1(3,6) = sort_and_sum_data(med,time31,largeMW,ls31,costs31);
-d1(3,7) = sort_and_sum_data(long,time31,smallMW,ls31,costs31);
-d1(3,8) = sort_and_sum_data(long,time31,medMW,ls31,costs31);
-d1(3,9) = sort_and_sum_data(long,time31,largeMW,ls31,costs31);
+% d1(3,1) = sort_and_sum_data(short,time31,smallMW,ls31,costs31);
+% d1(3,2) = sort_and_sum_data(short,time31,medMW,ls31,costs31);
+% d1(3,3) = sort_and_sum_data(short,time31,largeMW,ls31,costs31);
+% d1(3,4) = sort_and_sum_data(med,time31,smallMW,ls31,costs31);
+% d1(3,5) = sort_and_sum_data(med,time31,medMW,ls31,costs31);
+% d1(3,6) = sort_and_sum_data(med,time31,largeMW,ls31,costs31);
+% d1(3,7) = sort_and_sum_data(long,time31,smallMW,ls31,costs31);
+% d1(3,8) = sort_and_sum_data(long,time31,medMW,ls31,costs31);
+% d1(3,9) = sort_and_sum_data(long,time31,largeMW,ls31,costs31);
+
+d1(3,1) = 0;
+d1(3,2) = 0;
+d1(3,3) = 0;
+d1(3,4) = 0;
+d1(3,5) = 0;
+d1(3,6) = 0;
+d1(3,7) = 0;
+d1(3,8) = 0;
+d1(3,9) = 0;
 
 d1(4,1) = 0;
 d1(4,2) = 0;
@@ -211,6 +221,16 @@ d1(6,6) = sort_and_sum_data(med,time2,largeMW,ls2,costs2);
 d1(6,7) = sort_and_sum_data(long,time2,smallMW,ls2,costs2);
 d1(6,8) = sort_and_sum_data(long,time2,medMW,ls2,costs2);
 d1(6,9) = sort_and_sum_data(long,time2,largeMW,ls2,costs2);
+
+% d1(6,1) = 0;
+% d1(6,2) = 0;
+% d1(6,3) = 0;
+% d1(6,4) = 0;
+% d1(6,5) = 0;
+% d1(6,6) = 0;
+% d1(6,7) = 0;
+% d1(6,8) = 0;
+% d1(6,9) = 0;
 
 d1(4,1) = max(max(d1));
 d1(4,2) = max(max(d1));

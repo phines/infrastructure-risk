@@ -252,7 +252,7 @@ function find_bins_pb(bin_l, bin_h,total,zipf,unif;s=2.56,lambda=1)
             scaler = sum(pmf);
         elseif bin_h == total
             pmf = (cdf_lines[bin_l:bin_h-1] - cdf_lines[(bin_l-1):(bin_h-2)]);
-            pmf = [zeros(bin_l-1); pmf; (1-pmf[end])]
+            pmf = [zeros(bin_l-1); pmf; (1-cdf_lines[end])]
             scaler = sum(pmf);
         else
             pmf = (cdf_lines[bin_l:(bin_h-1)] - cdf_lines[(bin_l-1):(bin_h-2)]);
