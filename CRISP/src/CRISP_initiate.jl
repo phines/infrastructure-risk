@@ -8,8 +8,30 @@ using SpecialFunctions
 using Random
 using CSV
 using DataFrames
+using Distributions
 include("CRISP_network.jl")
 include("CRISP_LSOPF.jl")
+
+function exp2lognorm(n,p1,p2,factor)
+results = zeros(n);
+w = Weibull(p1,p2)
+for i = 1:n
+    rest_time = rand(rng, w, 1)[1];
+    # repeatedly increase rest_time, if rest_time is big
+    j = 1
+    while j == 1
+        p_inc = 1 .-1 ./log.(rest_time); # magic; calibrate
+        if rand(rng,1)[1]<p_inc
+            rest_time = rest_time*factor;
+        else
+            j = 0
+        end
+    end
+    #% record the results
+    results[i] = rest_time;
+end
+return results
+end
 
 
 function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)

@@ -1,26 +1,18 @@
-# Debugging results/case39/*case39_9.*
 using Random
 rng = MersenneTwister(100);
 using CSV
-#=
-include("src\\CRISP_initiate.jl")
-include("src\\CRISP_LSOPF.jl")
-include("src\\CRISP_RLSOPF.jl")
-include("src\\CRISP_RT.jl")
-include("src\\CRISP_network.jl")
-=#
+
+# testing lsopf_soc
 include("..\\src\\CRISP_initiate.jl")
 include("..\\src\\CRISP_LSOPF.jl")
-include("..\\src\\CRISP_RLSOPF.jl")
-#include("..\\src\\CRISP_RT.jl")
 include("..\\src\\CRISP_network.jl")
+
 ## load the case data
 for ex in 1:2
 ps = import_ps("data/saved_ps/case2736sp_relaxedQ_ps")
 branch_out = (ps.branch.status .== 0)
 #ps.branch = ps.branch[(ps.branch.status .!= 0),:]
-ps.branch.status = ones(length(ps.branch.status))
-gen_out = (ps.gen.status .== 0)
+#ps.branch.status = ones(length(ps.branch.status))
 ps.gen.status = ones(length(ps.gen.status))
 ps1 = import_ps("data/saved_ps/2736sp_relaxedQ_ps_ex$ex")
 ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
@@ -70,8 +62,5 @@ g_recovery_times[g_recovery_times .!= 0] = ones(sum(g_recovery_times .!= 0))
 dt = 60
 ti = 60*48;
 t0 = 0
-Restore = crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,ti,t0,gen_on,branch_out,gen_out)
-CSV.write("results\\Restoration$(filename)_ex1_$ex.csv",Restore)
-## run step 4
-#ResilienceTri = crisp_res(Restore);
+(dPd, DPg) = crisp_soc_lsopf(ps)
 end
