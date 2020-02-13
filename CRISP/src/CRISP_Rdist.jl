@@ -28,7 +28,7 @@ function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca=4,
     Lines_Init_State = CSV.File(events*"_lines$N.csv") |> DataFrame
     Gens_Init_State = CSV.File(events*"_gens$N.csv") |> DataFrame
     if ngi
-        Gens_Init_State = natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State)
+        Gens_Init_State = natural_gas_int_lognorm!(ps,Lines_Init_State,Gens_Init_State)
     end
     l_failures = Lines_Init_State.state;
     ps.branch.status[l_failures .== 0] .= 0;

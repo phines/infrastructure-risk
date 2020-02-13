@@ -92,7 +92,7 @@ path=Files[1]
 		else
 		    mkdir("results"*out)
 		end
-		rng = MersenneTwister(100+m);
+		rng = MersenneTwister(100+m+10);
 		comm = false
 		nucp = true
 		ngi = false

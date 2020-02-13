@@ -2951,17 +2951,19 @@ end
 
 ## CRISP_Restore_Interact.jl
 function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
-    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b=24,c_factor=1.5,comp_t=8*60,factor=1.5)
+    t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=4,com_bl_b=24,c_factor=1.5,
+    comp_t=8*60,factor=1.5)
     # constants
     tolerance = 10^(-6);
     if sum(load_cost)==0
         load_cost = ones(length(ps.shunt.P));
     end
-    if nucp
-        println(g_recovery_times)
-        nuclear_poissoning!(ps,gen_on,g_recovery_times,0)
-        println(g_recovery_times)
-    end
+    #if nucp
+        #Pg_i = zeros(size(Pg_max))
+        #println(g_recovery_times)
+        #nuclear_poissoning!(ps,gen_on,g_recovery_times,0)
+        #println(g_recovery_times)
+    #end
     ti = t0;
     if comm
         comm_battery_limits = comm_battery_lim(size(ps.bus,1),com_bl_a,com_bl_b)
@@ -2990,9 +2992,13 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
     Pd_max = vary_load(ps,Time,t_window)
     # varying generation capacity over the optimization
     Pg_max = vary_gen_cap(ps,Time,t_window)
+    if nucp
+        Pg_i = zeros(size(Pg_max))
+    end
     for i in 1:length(Time)
         if nucp
-            Pg_i = deepcopy(ps.gen.Pg);
+            #Pg_i = deepcopy(ps.gen.Pg);
+            Pg_i[:,i] = deepcopy(ps.gen.Pg);
         end
         # update time
         ti = Time[i]-t0;
@@ -3018,7 +3024,11 @@ function crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
             ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
         end
         if nucp
-            nuclear_poissoning!(ps,Pg_i,g_recovery_times,ti)
+            #nuclear_poissoning!(ps,Pg_i,g_recovery_times,ti)
+            if ti >= (2*60)
+                println("ONE STEP TOWARDS NucP INTERACTIONNNNN")
+                nuclear_pois_lognorm!(ps,Pg_i[:,i-2:i],g_recovery_times,ti)
+            end
         end
         if comm
             println("ONE STEP TOWARDS INTERACTIONNNNN")

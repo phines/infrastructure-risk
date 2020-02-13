@@ -58,7 +58,7 @@ function nuclear_pois_lognorm!(ps,Pg_i,g_recovery_times,ti; mu = 1, sigma = 0.5)
     gen = collect(1:ng)
     nuc_gen = gen[ps.gen.Fuel .== "Nuclear"]
     for g in nuc_gen
-        if (Pg_i[g] > ps.gen.Pg[g]) .& (abs(ps.gen.Pg[g]) <= tolerance)
+        if (Pg_i[g,1] > ps.gen.Pg[g]) .& (Pg_i[g,1] > Pg_i[g,2]) .& (Pg_i[g,1] > Pg_i[g,3]) .&(abs(ps.gen.Pg[g]) <= tolerance)
             ps.gen.status[g] = 0
             if g_recovery_times[g] .== 0
                 g_recovery_times[g] = ti + (rand(rng,lognorm,1)[1].*60*24)  # into units of minutes
