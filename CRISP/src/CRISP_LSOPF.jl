@@ -2202,4 +2202,102 @@ function crisp_mh_lsopf!(ps,dt,ug,ul,load_shed_cost;t_win=dt,w_g=0.1)
     return ps
 end
 
+
+function crisp_dcpf_NENY!(ps)
+    # constants
+    tolerance = 1e-4
+    ### collect the data that we will need ###
+    # bus data
+    n = size(ps.bus,1) # the number of buses
+    bi = sparse(ps.bus.id,fill(1,n),collect(1:n)) # helps us to find things
+    # load data
+    nd = size(ps.shunt,1)
+    D = bi[ps.shunt.bus]
+    Pd = ps.shunt.P ./ ps.baseMVA .* ps.shunt.status
+    if any(D.<1) || any(D.>n)
+        error("Bad indices in shunt matrix")
+    end
+    Pd_bus = Array(sparse(D,ones(size(D)),Pd,n,1))
+    # gen data
+    ng = size(ps.gen,1)
+    G = bi[ps.gen.bus]
+    Pg = ps.gen.P ./ ps.baseMVA .* ps.gen.status
+    if any(G.<1) || any(G.>n)
+        error("Bad indices in gen matrix")
+    end
+    Pg_bus = Array(sparse(G,ones(size(G)),Pg,n,1))
+    # branch data
+    brst = (ps.branch.status.==1)
+    F = bi[ps.branch[brst,:f]]
+    T = bi[ps.branch[brst,:t]]
+    Xinv = (1 ./ ps.branch.X[brst])
+    Bdc = sparse(F,T,-Xinv,n,n) + sparse(T,F,-Xinv,n,n) +
+          sparse(T,T,+Xinv,n,n) + sparse(F,F,+Xinv,n,n)
+    #find reference bus
+    if isempty(ps.bus.id[ps.bus.kind.==3]) # note in Pavan's ps structure I beleive it's called 'kind' not 'bus_type'
+        if isempty(ps.gen) || isempty(ps.shunt)
+            ps.branch.Pf[brst] .= 0
+            ps.branch.Pt[brst] .= 0
+            ps.branch.Qf[brst] .= 0
+            ps.branch.Qt[brst] .= 0
+            if isempty(ps.shunt) && !isempty(ps.gen)
+                ps.gen.P .= 0.0
+            elseif !isempty(ps.shunt) && isempty(ps.gen)
+                ps.shunt.P .= 0.0
+            end
+            return ps #TODO
+        else
+            maxGen = findmax(ps.gen.P)[2]
+            busID = ps.gen[maxGen,:bus];
+            isref = (busID.==ps.bus.id)
+            nonref = .~isref
+        end
+    else
+        isref = (ps.bus.kind.==3)
+        nonref = .~isref
+    end
+    # bus injection
+    Pbus = Pg_bus-Pd_bus;#Array(sparse(G,fill(1,ng),Pg,n,1) - sparse(D,fill(1,nd),Pd,n,1))
+    # angles
+    theta = zeros(n)
+    Bsub = Bdc[nonref,nonref]
+    Psub = Pbus[nonref]
+    tsub = Bsub\Psub
+    theta[nonref] = tsub
+    # record the results to the bus matrix
+    ps.bus.Va = theta .* (180.0 / pi)
+    ps.bus.Vm = ones(n)
+    # compute/record the power flows
+    Pf_pu = Xinv .* (theta[F] - theta[T])
+    ps.branch.Pf[brst] = +Pf_pu.*ps.baseMVA
+    ps.branch.Pt[brst] = -Pf_pu.*ps.baseMVA
+    ps.branch.Qf[brst] .= 0
+    ps.branch.Qt[brst] .= 0
+    # fix the generation at the slack bus
+    mismatch = sum(Pbus)
+    if abs(mismatch)>tolerance
+        refbusid = ps.bus[isref,:id]
+        is_refgen = (ps.gen.bus.==refbusid)
+        if sum(is_refgen) != 1
+            println("Multiple Gen on ref bus, splitting mismatch among them.")
+        #if sum(is_refgen) != 1
+        #    error("Must be exactly one ref generator")
+        #end
+            ps.gen.P[is_refgen] .-= (mismatch.*ps.baseMVA)/sum(is_refgen)
+        else
+            ps.gen.P[is_refgen] .-= (mismatch.*ps.baseMVA)
+        end
+    end
+    # check the mismatch
+    mis_check = sum(ps.gen.P.*ps.gen.status) - sum(ps.shunt.P.*ps.shunt.status)
+    if abs(mis_check)>tolerance
+        println(mismatch)
+        println(Pbus)
+        print("Mismatch = ")
+        println(mis_check)
+        error("Mismach error in crisp_dcpf")
+    end
+    # return the resulting system
+    return ps
+end
 #end

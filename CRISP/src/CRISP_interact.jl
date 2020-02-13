@@ -1,12 +1,15 @@
 using SpecialFunctions
 using Random
+using Distributions
 include("CRISP_network.jl")
+
 # interaction functions
 #constants
 four_days = 4*24*60
 week = 7*24*60
 two_weeks = 14*24*60;
 three_months = 90*24*60;
+
 function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
                                 range_a=two_weeks,range_b=three_months)
     if rand(rng,1)[1] >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
@@ -25,6 +28,46 @@ function natural_gas_interactions!(ps,Lines_Init_State,Gens_Init_State;
     else
         return Gens_Init_State
     end
+end
+
+function natural_gas_int_lognorm!(ps,Lines_Init_State,Gens_Init_State;
+                                mu = 3, sigma = 1)
+    lognorm = LogNormal(mu,sigma) # in days
+    if rand(rng,1)[1] >= sum(Lines_Init_State.state)/length(Lines_Init_State.state)
+        println("ng_fails = 1")
+        ng_rest_time = rand(rng,lognorm,1) # in days
+        ng = size(ps.gen,1)
+        state = Gens_Init_State.state
+        recovery_times = Gens_Init_State.recovery_time
+        gen = collect(1:ng)
+        ng_gen = gen[ps.gen.Fuel .== "NG"]
+        for g in ng_gen
+            state[g] = 0
+            recovery_times[g] = ng_rest_time[1].*60*24 # from days to minutes
+        end
+        return Gens_Init_NG_State = DataFrame(state = state, recovery_time = recovery_times)
+    else
+        return Gens_Init_State
+    end
+end
+
+function nuclear_pois_lognorm!(ps,Pg_i,g_recovery_times,ti; mu = 1, sigma = 0.5)
+    lognorm = LogNormal(mu,sigma) # days
+    tolerance = 10^(-4)
+    ng = size(ps.gen,1)
+    gen = collect(1:ng)
+    nuc_gen = gen[ps.gen.Fuel .== "Nuclear"]
+    for g in nuc_gen
+        if (Pg_i[g] > ps.gen.Pg[g]) .& (abs(ps.gen.Pg[g]) <= tolerance)
+            ps.gen.status[g] = 0
+            if g_recovery_times[g] .== 0
+                g_recovery_times[g] = ti + (rand(rng,lognorm,1)[1].*60*24)  # into units of minutes
+            else
+                g_recovery_times[g] += (rand(rng,lognorm,1)[1].*60*24 )
+            end
+        end
+    end
+    return g_recovery_times
 end
 
 function nuclear_poissoning!(ps,Pg_i,g_recovery_times,ti; time_range = four_days:week)

@@ -29,12 +29,19 @@ function import_ps(filename)
     mpBaseMVA =  100; # CSV.read("$filename/baseMVA.csv")[1,1];
     #if !isempty(ps.gencost) CSV.write("$filename-gen_cost.csv",ps.gencost) end
     ## Changing types in dataframes:
-    psBranchData.Pf = psBranchData.Pf .* 1.0;
-    psBranchData.Qf = psBranchData.Qf .* 1.0;
-    psBranchData.Pt = psBranchData.Pt .* 1.0;
-    psBranchData.Qt = psBranchData.Qt .* 1.0;
-    psGenData.Pg = psGenData.Pg .* 1.0;
-    psGenData.Qg = psGenData.Qg .* 1.0;
+    if occursin("NE_NY_",filename)
+        psBranchData[!,:Pf] = zeros(length(psBranchData.f)) .* 1.0;
+        psBranchData[!,:Qf] = zeros(length(psBranchData.f)) .* 1.0;
+        psBranchData[!,:Pt] = zeros(length(psBranchData.f)) .* 1.0;
+        psBranchData[!,:Qt] = zeros(length(psBranchData.f)) .* 1.0;
+    else
+        psBranchData.Pf = psBranchData.Pf .* 1.0;
+        psBranchData.Qf = psBranchData.Qf .* 1.0;
+        psBranchData.Pt = psBranchData.Pt .* 1.0;
+        psBranchData.Qt = psBranchData.Qt .* 1.0;
+        psGenData.Pg = psGenData.Pg .* 1.0;
+        psGenData.Qg = psGenData.Qg .* 1.0;
+    end
     psGenData.Pmax = psGenData.Pmax .* 1.0;
     psGenData.Pmin = psGenData.Pmin .* 1.0;
     psShuntData.P = psShuntData.P .* 1.0;
