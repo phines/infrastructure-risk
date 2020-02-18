@@ -5,6 +5,76 @@ include("CRISP_RLSOPF.jl")
 include("CRISP_RT.jl")
 include("CRISP_network.jl")
 
+@enum GenState OutOfOpperation Damaged Off ShuttingDown WarmingUp On
+
+function Rdist_BS_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca=4,cb=24,cf=1.5)
+    #constants
+    debug=1;
+    tolerance1 = 10^(-4);
+    Num = 1; #number of events to run
+    ## N = which failure scenario
+    # initialize vector of costs from events
+    NumLinesOut = Array{Float64}(undef,Num,1);
+    LoadShed0 =  Array{Float64}(undef,Num,1);
+    MaxRestorationTime = Array{Float64}(undef,Num,1);
+    LoadServedTime = Array{Float64}(undef,Num,1);
+    ResilienceTri = Array{Float64}(undef,Num,1);
+    ## load the case data
+    ps = import_ps("$ps_folder")
+    ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
+    ng = size(ps.gen,1)
+    ps.gen[!,:state] = Vector{Enum}(undef,ng)
+    crisp_dcpf_g1_s!(ps)
+    total = sum(ps.shunt.P);
+    Pd_max = deepcopy(ps.shunt.P);
+    gen_on = ps.gen.Pg .!= 0;
+    # step 1
+    Lines_Init_State = CSV.File(events*"_lines$N.csv") |> DataFrame
+    Gens_Init_State = CSV.File(events*"_gens$N.csv") |> DataFrame
+    if ngi
+        Gens_Init_State = natural_gas_int_lognorm!(ps,Lines_Init_State,Gens_Init_State)
+    end
+    l_failures = Lines_Init_State.state;
+    ps.branch.status[l_failures .== 0] .= 0;
+    l_recovery_times = deepcopy(Lines_Init_State.recovery_time);
+    # generator states and recovery times
+    g_failures = ones(size(ps.gen,1));
+    g_failures[1:length(Gens_Init_State.state)] = Gens_Init_State.state;
+    ps.gen.status[g_failures .== 0] .= 0;
+    ps.gen.Pg[g_failures .== 0] .= 0;
+    g_recovery_times = zeros(size(ps.gen,1));
+    g_recovery_times[1:length(Gens_Init_State.recovery_time)] = Gens_Init_State.recovery_time;
+    ## run step 3
+    dt = 60
+    ti = 60*48;
+    t0 = 10
+    Restore = crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,
+              ti,t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=ca,com_bl_b=cb,c_factor=cf)
+              println(Restore)
+    if debug==1
+        outnow = (out_folder[1:end-4]);
+        CSV.write("results"*outnow*"_restore.csv", Restore)
+    end
+    ## find the time to restore the grid to 99.9% load served
+    K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
+    K[1] = false;
+    if isempty( Restore.time[K]) && (size(Restore)[1] > 1)
+        error("Never solved to full restoration.")
+    elseif isempty( Restore.time[K]) && (size(Restore)[1] == 1)
+        LoadServedTime = t0;
+    else
+        R = Restore.time[K];
+        ## run step 4
+        ResilienceTri = crisp_res(Restore);
+        println(ResilienceTri)
+    end
+    ## make dataframes
+    case_res = DataFrame(resilience = ResilienceTri);
+    ## save data
+    CSV.write("results/$out_folder", case_res);
+end
+
+
 function Rdist_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca=4,cb=24,cf=1.5)
     #constants
     debug=1;
