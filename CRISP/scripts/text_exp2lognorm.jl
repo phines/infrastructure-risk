@@ -7,8 +7,8 @@ N = 100000
 mu = 3.66
 sigma = 2.43
 P1 = 0.1:0.1:1.5
-p2 = 50
-factor = 1.15
+p2 = 60
+factor = 1.1
 rest_times1 = RecoveryTimes(mu,sigma,N)
 for p1 in P1
     rest_times2 = exp2lognorm(N,p1,p2,factor)

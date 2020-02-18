@@ -25,25 +25,31 @@ n = length(results0);
 figure(2); clf;
 x = sort(results0);
 p = (n:-1:1)/n;
-loglog(x,p);
+loglog(x,p,'LineWidth',2);
 hold on
-x = sort(results1);
-loglog(x,p);
+% x = sort(results1);
+% loglog(x,p);
 x = sort(results2);
-loglog(x,p);
-x = sort(results3);
-loglog(x,p);
-x = sort(results4);
-loglog(x,p);
-x = sort(results5);
-loglog(x,p);
-x = sort(results6);
-loglog(x,p);
-x = sort(results7);
-loglog(x,p);
-legend('lognormal(3.22,2.43)','weibull(0.3,10),factor 1.1',...
-    'weibull(0.4,10),factor 1.1','weibull(0.5,10),factor 1.1',...
-    'weibull(0.8,10),factor 1.1','weibull(0.9,10),factor 1.1','weibull(1.0,10)','weibull(1.1,10)')
+loglog(x,p,'LineWidth',2);
+% x = sort(results3);
+% loglog(x,p);
+% x = sort(results4);
+% loglog(x,p);
+% x = sort(results5);
+% loglog(x,p);
+% x = sort(results6);
+% loglog(x,p);
+% x = sort(results7);
+% loglog(x,p);
+legend('lognormal(3.22,2.43)','weibull(0.4,60),factor 1.1')
+% legend('lognormal(3.22,2.43)','weibull(0.3,60),factor 1.1',...
+%     'weibull(0.4,60),factor 1.1','weibull(0.5,60),factor 1.1')
+% legend('lognormal(3.22,2.43)','weibull(0.3,10),factor 1.1',...
+%     'weibull(0.4,10),factor 1.1','weibull(0.5,10),factor 1.1',...
+%     'weibull(0.8,10),factor 1.1','weibull(0.9,10),factor 1.1','weibull(1.0,10)','weibull(1.1,10)')
+box off
+legend boxoff
+set(gca,'FontSize',14)
 hold off
 
 %% p2
