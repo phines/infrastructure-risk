@@ -12,6 +12,19 @@ using Distributions
 include("CRISP_network.jl")
 include("CRISP_LSOPF.jl")
 
+function gen_states!(ps)
+    for g in 1:length(ps.gen.Pg)
+        if ps.gen.Pg[g] > 0
+            ps.gen.state[g] = On;
+        elseif ps.gen.status[g] = 0
+            ps.gen.state[g] = OutOfOpperation;
+        else
+            ps.gen.state[g] = Off
+        end
+    end
+    return ps
+end
+
 function exp2lognorm(n,p1,p2,factor)
 results = zeros(n);
 w = Weibull(p1,p2)
