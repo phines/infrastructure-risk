@@ -3134,8 +3134,10 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
     Pd_max = vary_load(ps,Time,t_window)
+    # varying generation capacity over the optimization
+    Pg_max = vary_gen_cap(ps,Time,t_window)
     if nucp
-        Pg_i = zeros(length(ps.gen.Pg),size(Pd_max,2))
+        Pg_i = zeros(size(Pg_max))
     end
     for i in 1:length(Time)
         if nucp

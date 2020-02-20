@@ -2300,4 +2300,118 @@ function crisp_dcpf_NENY!(ps)
     # return the resulting system
     return ps
 end
+
+function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=0.1)
+    timeline = 0:dt:t_win
+    Ti = size(timeline,1)
+    # constants
+    tolerance = 1e-4
+    ### collect the data that we will need ###
+    # bus data
+    n = size(ps.bus,1) # the number of buses
+    bi = ps.bi
+    # load data
+    nd = size(ps.shunt,1)
+    D = bi[ps.shunt.bus]
+    D_bus = sparse(D,collect(1:nd),1.,n,nd)
+    Pdmax = (Pd_max ./ ps.baseMVA)
+    Pd1 = (Pd_max[:,1] ./ ps.baseMVA) .* ps.shunt.status
+    if any(D.<1) || any(D.>n)
+        error("Bad indices in shunt matrix")
+    end
+    # gen data
+    ng = size(ps.gen.Pg,1)
+    gen_state =
+    G = bi[ps.gen.bus]
+    G_bus = sparse(G,collect(1:ng),1.,n,ng)
+    Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
+    Pg_max = (Pg_max1 ./ ps.baseMVA) .* ps.gen.status
+    if sum(names(ps.gen) .== :RampRateMWMin) .!=0
+        RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA
+    else
+        RR = ps.gen.ramp30 ./30 .* dt ./ ps.baseMVA
+    end
+    if any(G.<1) || any(G.>n)
+        error("Bad indices in gen matrix")
+    end
+    # branch data
+    nb = size(ps.branch,1)
+    flow_max = ps.branch.rateA./ps.baseMVA # this could also be rateB
+    # storage data
+    min_bat_E = 0;
+    ns = size(ps.storage,1)
+    S = bi[ps.storage.bus]
+    S_bus = sparse(S,collect(1:ns),1.,n,ns)
+    Ps1 = (ps.storage.Ps ./ ps.baseMVA) .* ps.storage.status
+    E1 = (ps.storage.E ./ ps.baseMVA) .* ps.storage.status
+    E_max = (ps.storage.Emax ./ ps.baseMVA) .* ps.storage.status
+    Ps_max = (ps.storage.Psmax ./ ps.baseMVA) .* ps.storage.status
+    Ps_min = (ps.storage.Psmin ./ ps.baseMVA) .* ps.storage.status
+    if any(S.<1) || any(S.>n)
+        error("Bad indices in storage matrix")
+    end
+    # vector that depreciates the value of later elements in objective
+    m = Model(with_optimizer(Gurobi.Optimizer))
+    #m = Model(with_optimizer(Cbc.Optimizer))
+    # variables
+    @variable(m, Pd[1:nd]) # demand
+    @variable(m, Pg[1:ng]) # generation
+    @variable(m, Ps[1:ns]) # power flow into or out of storage (negative flow = charging)
+    @variable(m, E[1:ns, 1:2]) # energy level in battery
+    # fix battery starting charge
+    for s in 1:ns
+        fix(E[s,1], E1[s], force = true)
+    end
+    # variable bounds constraints
+    @constraint(m, stPdcon, 0.0 .<= Pd[:] .<= Pdmax[:,1]) # load served limits
+    @constraint(m, stPscon, Ps_min .<= Ps[:] .<= Ps_max) # storage power flow
+    @constraint(m, stEPscon, E[:,2] .== (E[:,1] - ((dt/60) .* (Ps[:])))) # storage energy at next time step
+    @constraint(m, stEcon, min_bat_E .<= (E[:,2]) .<= E_max) # storage energy
+    @constraint(m, genPgucon, Pg[:] .<= ug[:,1] .* Pg_max[:,1]) # generator power limits upper
+    @constraint(m, genPglcon, 0 .<= Pg[:]) # generator power limits lower
+    if n > 1
+        @variable(m, Theta[1:n])
+        @constraint(m, Theta[1] .== 0); # set first bus as reference bus: V angle to 0
+        brst = falses(nb);
+        for b in 1:nb
+            if ul[b,1] == 1
+                brst[b] = true;
+            end
+        end
+        F = bi[ps.branch.f[brst]]
+        T = bi[ps.branch.t[brst]]
+        Xinv = (1 ./ ps.branch.X[brst])
+        B = sparse(F,T,-Xinv,n,n) +
+            sparse(T,F,-Xinv,n,n) +
+            sparse(T,T,+Xinv,n,n) +
+            sparse(F,F,+Xinv,n,n);
+        #power balance
+        @constraint(m, B*Theta[:] .== G_bus*Pg[:]+S_bus*Ps[:]-D_bus*Pd[:])
+        # power flow limits
+        @constraint(m, -flow_max[brst] .<= Xinv .* (Theta[F] - Theta[T]) .<= flow_max[brst])
+    else
+        @constraint(m, PBnoTheta, 0.0 .== G_bus*Pg[:]+S_bus*Ps[:]-D_bus*Pd[:])
+    end
+    # objective
+    @objective(m, Max, sum(Pd) + sum(w_g.*Pg)) #TODO: constants
+    ## SOLVE! ##
+    optimize!(m)
+    sol_Pd=value.(Pd)[:]
+    sol_Ps=value.(Ps)[:]
+    sol_Pg=value.(Pg)[:]
+    sol_E=value.(E)[:,2]
+    dPd_star = (Vector(sol_Pd).*ps.baseMVA)./Pd_max[:,1] # % load served
+    dPs_star = Vector(sol_Ps).*ps.baseMVA
+    dPg_star = Vector(sol_Pg).*ps.baseMVA
+    dE_star = Vector(sol_E).*ps.baseMVA
+    # add changes ps/psi structure
+    ps.shunt.status = dPd_star;
+    ps.storage.Ps = dPs_star;
+    ps.storage.E = dE_star;
+    ps.gen.Pg = dPg_star;
+    @assert abs(sum(Pd_max[:,1].*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
+    @assert sum(ps.storage.E .< -tolerance)==0
+    return ps
+end
+
 #end
