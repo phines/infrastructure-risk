@@ -21,10 +21,6 @@ function Rdist_BS_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca
     ResilienceTri = Array{Float64}(undef,Num,1);
     ## load the case data
     ps = import_ps("$ps_folder")
-    ps.shunt = ps.shunt[ps.shunt.P .!=0.0,:]
-    ng = size(ps.gen,1)
-    ps.gen[!,:state] = Vector{Enum}(undef,ng)
-    gen_states!(ps)
     crisp_dcpf_g1_s!(ps)
     total = sum(ps.shunt.P);
     Pd_max = deepcopy(ps.shunt.P);

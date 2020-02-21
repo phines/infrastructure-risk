@@ -3243,7 +3243,10 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     return Restore
 end
 
-
+function black_start!(ps)
+    
+    return ps
+end
 ## CRISP_Restore_New_Simple_Version with generator recovery
 function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,branch_out,gen_out;load_cost=0)
     # constants

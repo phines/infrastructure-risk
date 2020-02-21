@@ -4,9 +4,30 @@ using SparseArrays
 using LinearAlgebra
 using DataFrames
 using CSV
-## coming from CRISP_network_gen.jl
-#include("../../../iPGA/main/ipga_miscellaneous.jl")
-#include("../../../iPGA/main/ipga_topology.jl")
+
+function choose_gens_black_start!(ps,fraction, sizethreshold)
+    ng = length(ps.gen.bus)
+    ps.gen[!,:black_start] = falses(ng)
+    st = ps.gen.Pmax .<= sizethreshold
+    fr = Int64(round(sum(st)*fraction))
+    ps.gen.black_start[st][rand(rng,fr,1:sum(st))] .= trues(fr)
+    return ps
+end
+
+# sets generator states for modeling black start
+function gen_states!(ps)
+    for g in 1:length(ps.gen.Pg)
+        if ps.gen.Pg[g] > 0
+            ps.gen.state[g] = On;
+        elseif ps.gen.status[g] == 0
+            ps.gen.state[g] = OutOfOpperation;
+        else
+            ps.gen.state[g] = Off
+        end
+    end
+    return ps
+end
+
 #import ps from csv files
 function import_ps(filename)
     psBusData = CSV.File("$filename/bus.csv")  |> DataFrame
