@@ -2858,7 +2858,6 @@ function vary_gen_cap2(ps,Time,t_window)
     return Pg_max
 end
 
-
 ## CRISP_Restore_Interact.jl
 include("CRISP_interact.jl")
 function crisp_Restoration_inter(ps,l_recovery_times,g_recovery_times,dt,t_window,
@@ -3243,10 +3242,57 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     return Restore
 end
 
-function black_start!(ps)
-    
-    return ps
+function black_start_gen_cap(ps,Time,t_window,gen_on,gens_recovery_time)
+    PercSolar1 = CSV.File("data/solar+load/NY_NE_1244665_solarPV_power_density.csv") |> DataFrame
+    PowDen = PercSolar1.PowerDen;
+    ### collect the data that we will need ###
+    dt = Time[2]-Time[1];
+    Time = Time .- Time[1] .+ dt;
+    ext_stps = Int64(t_window/dt);
+    # shunt data
+    ng = size(ps.gen.Pg,1);
+    Pg_max = zeros(ng,length(Time)+ext_stps+1);
+    for t in 1:length(Time)+ext_stps+1
+        for g in 1:ng
+            if ps.gen.Fuel[g] .== "Solar"
+                Pg_max[g,t] = ps.gen.Pmax[g].*PowDen[t];
+            else
+                Pg_max[g,t] = ps.gen.Pmax[g];
+            end
+        end
+    end
+    @assert sum(Pg_max[:,:].<0).==0
+    return Pg_max
+    gen_on_off2(ps,Time,t_window,gen_on,gens_recovery_time)
+        # constants
+        tolerance = 1e-6
+        ### collect the data that we will need ###
+        dt = Time[2]-Time[1];
+        Time = Time .- Time[1] .+ dt;
+        ext_stps = Int64(t_window/dt);
+        # gen data
+        gs = (ps.gen.Pg .== 0);
+        gst = (ps.gen.status .!= 1);
+        g1 = (ps.gen.status .== 1);
+        g2 = gen_on .& gs .& g1;
+        ng = size(ps.gen.Pg,1)
+        ug = falses(ng,length(Time)+ext_stps+1)
+        gen_time = zeros(ng);
+        gen_time[gst] .+= gens_recovery_time[gst];
+        for t in 1:length(Time)+ext_stps+1
+            gen_time .-= dt
+            for g in 1:ng
+                if gen_time[g] <= 0
+                    ug[g,t] = true;
+                else
+                    ug[g,t] = false;
+                end
+            end
+        end
+        @assert sum(ug[:,end].!=true).==0
+        return ug
 end
+
 ## CRISP_Restore_New_Simple_Version with generator recovery
 function crisp_RLOPF_v1(ps,l_recovery_times,g_recovery_times,dt,t_window,t0,gen_on,branch_out,gen_out;load_cost=0)
     # constants

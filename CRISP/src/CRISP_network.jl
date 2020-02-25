@@ -10,7 +10,9 @@ function choose_gens_black_start!(ps,fraction, sizethreshold)
     ps.gen[!,:black_start] = falses(ng)
     st = ps.gen.Pmax .<= sizethreshold
     fr = Int64(round(sum(st)*fraction))
-    ps.gen.black_start[st][rand(rng,fr,1:sum(st))] .= trues(fr)
+    if sum(st) >= 1
+        ps.gen.black_start[st][rand(rng,(1:sum(st)),fr)] .= trues(fr)
+    end
     return ps
 end
 
