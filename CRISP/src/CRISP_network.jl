@@ -11,13 +11,14 @@ function choose_gens_black_start!(ps,fraction, sizethreshold)
     st = ps.gen.Pmax .<= sizethreshold
     fr = Int64(round(sum(st)*fraction))
     if sum(st) >= 1
-        ps.gen.black_start[st][rand(rng,(1:sum(st)),fr)] .= trues(fr)
+        ps.gen.black_start[st][rand(rng,(1:sum(st)),fr)] .= true
+        ps.gen.service_load[ps.gen.black_start .== true] .= 0
     end
     return ps
 end
 
 # sets generator states for modeling black start
-function gen_states!(ps)
+function set_gen_states!(ps)
     for g in 1:length(ps.gen.Pg)
         if ps.gen.Pg[g] > 0
             ps.gen.state[g] = On;
