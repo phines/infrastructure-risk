@@ -2301,7 +2301,7 @@ function crisp_dcpf_NENY!(ps)
     return ps
 end
 
-function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=0.1)
+function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10,w_g=0.1)
     timeline = 0:dt:t_win
     Ti = size(timeline,1)
     # constants
@@ -2321,7 +2321,7 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=
     end
     # gen data
     ng = size(ps.gen.Pg,1)
-    gen_state =
+    gen_off = ((ps.gen.state .== Off) .& (ps.gen.state .== Damaged) .& (ps.gen.state .== OutOfOpperation))
     G = bi[ps.gen.bus]
     G_bus = sparse(G,collect(1:ng),1.,n,ng)
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
@@ -2356,6 +2356,8 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=
     # variables
     @variable(m, Pd[1:nd]) # demand
     @variable(m, Pg[1:ng]) # generation
+    @variable(m, Pss[1:ng]) # generation
+    fix(Pss[gen_off], zeros(length(Pss[gen_off])), force = true)
     @variable(m, Ps[1:ns]) # power flow into or out of storage (negative flow = charging)
     @variable(m, E[1:ns, 1:2]) # energy level in battery
     # fix battery starting charge
@@ -2368,6 +2370,7 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=
     @constraint(m, stEPscon, E[:,2] .== (E[:,1] - ((dt/60) .* (Ps[:])))) # storage energy at next time step
     @constraint(m, stEcon, min_bat_E .<= (E[:,2]) .<= E_max) # storage energy
     @constraint(m, genPgucon, Pg[:] .<= ug[:,1] .* Pg_max[:,1]) # generator power limits upper
+    @constraint(m, genPssucon, Pss[:] .<= Pss_max[:,1]) # generator power service load upper
     @constraint(m, genPglcon, 0 .<= Pg[:]) # generator power limits lower
     if n > 1
         @variable(m, Theta[1:n])
@@ -2386,24 +2389,28 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_g=
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n);
         #power balance
-        @constraint(m, B*Theta[:] .== G_bus*Pg[:]+S_bus*Ps[:]-D_bus*Pd[:])
+        @constraint(m, B*Theta[:] .== G_bus*Pg[:]-G_bus*Pss[:]+S_bus*Ps[:]-D_bus*Pd[:])
         # power flow limits
         @constraint(m, -flow_max[brst] .<= Xinv .* (Theta[F] - Theta[T]) .<= flow_max[brst])
     else
-        @constraint(m, PBnoTheta, 0.0 .== G_bus*Pg[:]+S_bus*Ps[:]-D_bus*Pd[:])
+        #one bus power balance
+        @constraint(m, PBnoTheta, 0.0 .== G_bus*Pg[:]-G_bus*Pss[:]+S_bus*Ps[:]-D_bus*Pd[:])
     end
     # objective
-    @objective(m, Max, sum(Pd) + sum(w_g.*Pg)) #TODO: constants
+    @objective(m, Max, w_ss*sum(Pss) + sum(Pd) + sum(w_g.*Pg)) #TODO: constants
     ## SOLVE! ##
     optimize!(m)
     sol_Pd=value.(Pd)[:]
     sol_Ps=value.(Ps)[:]
     sol_Pg=value.(Pg)[:]
+    sol_Pss=value.(Pss)[:]
     sol_E=value.(E)[:,2]
     dPd_star = (Vector(sol_Pd).*ps.baseMVA)./Pd_max[:,1] # % load served
     dPs_star = Vector(sol_Ps).*ps.baseMVA
     dPg_star = Vector(sol_Pg).*ps.baseMVA
+    dPss_star = Vector(sol_Pss).*ps.baseMVA
     dE_star = Vector(sol_E).*ps.baseMVA
+
     # add changes ps/psi structure
     ps.shunt.status = dPd_star;
     ps.storage.Ps = dPs_star;
