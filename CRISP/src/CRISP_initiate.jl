@@ -34,7 +34,7 @@ return results
 end
 
 
-function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
+function Outages(Num,ps_folder,out;param_file = "",cascade=true,gens_out=true)
     #constants
     debug=1;
     tolerance1 = 10^(-6);
@@ -57,29 +57,15 @@ function Outages(Num,ps_folder;param_file = "",cascade=true,comms=true)
         # step 1
         if cascade
             Lines_Init_State = line_state_cascade!(ps,s_line,maxLinesOut,mu_line,sigma_line)
-            if comms
-                dt = 10
-                subgraph = find_subgraphs(ps);
-                M = Int64(findmax(subgraph)[1]);
-                ps_islands = build_islands(subgraph,ps);
-                for i in 1:M
-                    psi = ps_subset(ps,ps_islands[i]);
-                    # run lsopf
-                    crisp_lsopf_g1_s!(psi,dt);
-                    ps.gen[ps_islands[i].gen,:Pg] = psi.gen.Pg
-                    ps.shunt[ps_islands[i].shunt,:status] = psi.shunt.status
-                    ps.storage[ps_islands[i].storage,:E] = psi.storage.E
-                    ps.storage[ps_islands[i].storage,:Ps] = psi.storage.Ps
-                end
-                line_rec_times_add_comms!(ps,Lines_Init_State,mult_factor)
-            end
         else
             Lines_Init_State = line_state!(ps,s_line,maxLinesOut,mu_line,sigma_line)
         end
-        Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
+        if gens_out
+            Gens_Init_State = gen_state!(ps,lambda_gen,mu_line,sigma_line)
+        end
         if debug==1
-            CSV.write("data/outage_data/communication_factor/out_case73_noPWS_lx2_n-1_lines$iterat.csv", Lines_Init_State)
-            CSV.write("data/outage_data/communication_factor/out_case73_noPWS_lx2_n-1_gens$iterat.csv", Gens_Init_State)
+            CSV.write(out*"_lines$iterat.csv", Lines_Init_State)
+            CSV.write(out*"_gens$iterat.csv", Gens_Init_State)
         end
     end
 end
