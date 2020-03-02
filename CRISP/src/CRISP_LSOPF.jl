@@ -2322,6 +2322,9 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss
     # gen data
     ng = size(ps.gen.Pg,1)
     gen_off = ((ps.gen.state .== Off) .& (ps.gen.state .== Damaged) .& (ps.gen.state .== OutOfOpperation))
+    Pss_max = zeros(ng);
+    g_loads = (((ps.gen.state .== On) .| (ps.gen.state .== ShuttingDown) .|
+                (ps.gen.state .== WarmingUp)) .& !ps.gen.black_start)
     G = bi[ps.gen.bus]
     G_bus = sparse(G,collect(1:ng),1.,n,ng)
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
@@ -2369,8 +2372,8 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss
     @constraint(m, stPscon, Ps_min .<= Ps[:] .<= Ps_max) # storage power flow
     @constraint(m, stEPscon, E[:,2] .== (E[:,1] - ((dt/60) .* (Ps[:])))) # storage energy at next time step
     @constraint(m, stEcon, min_bat_E .<= (E[:,2]) .<= E_max) # storage energy
-    @constraint(m, genPgucon, Pg[:] .<= ug[:,1] .* Pg_max[:,1]) # generator power limits upper
-    @constraint(m, genPssucon, Pss[:] .<= Pss_max[:,1]) # generator power service load upper
+    @constraint(m, genPgucon, Pg[:] .<= ug[:,1] .* Pg_max) # generator power limits upper
+    @constraint(m, genPssucon, Pss[:] .<= Pss_max) # generator power service load upper
     @constraint(m, genPglcon, 0 .<= Pg[:]) # generator power limits lower
     if n > 1
         @variable(m, Theta[1:n])
@@ -2416,7 +2419,8 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss
     ps.storage.Ps = dPs_star;
     ps.storage.E = dE_star;
     ps.gen.Pg = dPg_star;
-    @assert abs(sum(Pd_max[:,1].*ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
+    ps.gen.service_load = dPss_star
+    @assert abs(sum(Pd_max[:,1].*ps.shunt.status)+sum(ps.gen.service_load)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
     @assert sum(ps.storage.E .< -tolerance)==0
     return ps
 end

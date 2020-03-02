@@ -3242,7 +3242,7 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     return Restore
 end
 
-function black_start_gen_cap(ps,Time,dt,gen_on,gens_recovery_time)
+function black_start_gen_cap(ps,t,dt,gen_on,gens_recovery_time;mu=3.66,sigma=2.43)
     PercSolar1 = CSV.File("data/solar+load/NY_NE_1244665_solarPV_power_density.csv") |> DataFrame
     PowDen = PercSolar1.PowerDen;
     # shunt data
@@ -3262,11 +3262,42 @@ function black_start_gen_cap(ps,Time,dt,gen_on,gens_recovery_time)
     ng = size(ps.gen.Pg,1)
     for g in 1:ng
         if ps.gen.state[g] .== On
-
         elseif ps.gen.state[g] .== WarmingUp
+            if ps.gen.time_in_state[g] >= 60 .*ps.gen.minUpTimeHr[g]
+                ps.gen.state[g] = On
+                ps.gen.time_in_state = 0
+            else ps.time_in_state[g] += dt
+            end
         elseif ps.gen.state[g] .== ShuttingDown
+            if abs(ps.gen.service_load[g] - 0.05*ps.gen.Pmax[g]) <= tolerance
+                if ps.gen.time_in_state[g] >= 60 .*ps.gen.minDownTimeHr[g]
+                    ps.gen.state[g] = Off
+                    ps.gen.time_in_state[g] = 0
+                else ps.gen.time_in_state[g] += dt
+                end
+            else
+                ps.time_in_state[g] = 0;
+                ps.gen.state[g] = Damaged
+                gens_recovery_time[g] = t + RecoveryTimes(mu,sigma,1);
+            end
         elseif ps.gen.state[g] .== Off
+            if sum(ps.shunt.status .== 1) != 0
+                ps.gen.state[g] .== WarmingUp
+                ps.gen.time_in_state[g] = 0
+            else
+                ps.gen.time_in_state[g] += dt
+            end
+
         elseif ps.gen.state[g] .== Damaged
+            if abs(ps.gen.service_load[g] - 0.05*ps.gen.Pmax[g]) <= tolerance
+                ps.gen.time_in_state[g] += dt
+                if gens_recovery_time[g] <= t
+                    ps.gen.state[g] = Off
+                    ps.gen.time_in_state[g] = 0
+                end
+            else
+                gens_recovery_time[g] = t + RecoveryTimes(mu,sigma,1);
+            end
         end
     end
     @assert sum(ug[:,end].!=true).==0

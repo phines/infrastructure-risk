@@ -14,6 +14,7 @@ function choose_gens_black_start!(ps,fraction, sizethreshold)
         ps.gen.black_start[st][rand(rng,(1:sum(st)),fr)] .= true
         ps.gen.service_load[ps.gen.black_start .== true] .= 0
     end
+    ps.gen.Pmax[.!ps.gen.black_start] .+= 0.5 .*ps.gen.Pmax[.!ps.gen.black_start]
     return ps
 end
 
@@ -24,8 +25,10 @@ function set_gen_states!(ps)
             ps.gen.state[g] = On;
         elseif ps.gen.status[g] == 0
             ps.gen.state[g] = OutOfOpperation;
+            ps.gen.service_load[g] = 0;
         else
             ps.gen.state[g] = Off
+            ps.gen.service_load[g] = 0;
         end
     end
     return ps
@@ -38,7 +41,15 @@ function import_ps(filename)
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));
     #psBusIndex = CSV.read("$filename/bi.csv",allowmissing=:none)
     psBranchData = CSV.File("$filename/branch.csv")  |> DataFrame;
-    if occursin("case73_",filename)
+    if occursin("black_start",filename)
+        psGenData = CSV.File("$filename/gen.csv",
+               types = [Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
+               Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
+               Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, String,
+               Float64, Float64, Float64, Float64, String, Float64, String, String, String, String, Float64,
+               Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
+               String, Float64, String, String, String, String,Float64,Bool]) |> DataFrame;
+    elseif occursin("case73_",filename)
         psGenData = CSV.File("$filename/gen.csv",
                types = [Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
