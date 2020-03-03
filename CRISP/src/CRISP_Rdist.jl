@@ -49,7 +49,7 @@ function Rdist_BS_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca
     dt = 60
     ti = 60*48;
     t0 = 10
-    Restore = crisp_RLOPF_inter(ps,l_recovery_times,g_recovery_times,dt,
+    Restore = crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,
               ti,t0,gen_on,comm,nucp,ngi,crt;load_cost=0,com_bl_a=ca,com_bl_b=cb,c_factor=cf)
               println(Restore)
     if debug==1
