@@ -4,16 +4,16 @@
 % N-1 Secure 73 bus original model sampling.
 %% Ranking Interactions
 
-costs = xlsread('..\VACC\results\experiments\strat_samp\case73\int0_CombinedResults_case73_noPWS_lx2_n-1.csv');
+costs = xlsread('..\VACC\results\experiments\strat_samp\case73\0_int0_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs = costs(:,1)
 %costs1 = xlsread('..\VACC\results\experiments\strat_samp\int0\RiskResults_case73_noPWS_lx2_n-1.csv');
-costs1 = xlsread('..\VACC\results\experiments\strat_samp\case73\ngi_CombinedResults_case73_noPWS_lx2_n-1.csv');
+costs1 = xlsread('..\VACC\results\experiments\strat_samp\case73\0_ngi_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs1 = costs1(:,1);
-costs2 = xlsread('..\VACC\results\experiments\strat_samp\case73\nucp_CombinedResults_case73_noPWS_lx2_n-1.csv');
+costs2 = xlsread('..\VACC\results\experiments\strat_samp\case73\0_nucp_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs2 = costs2(:,1);
-costs3 = xlsread('..\VACC\results\experiments\strat_samp\case73\comm_CombinedResults_case73_noPWS_lx2_n-1.csv');
+costs3 = xlsread('..\VACC\results\experiments\strat_samp\case73\0_comm_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs3 = costs3(:,1);
-costs4 = xlsread('..\VACC\results\experiments\strat_samp\case73\crt_CombinedResults_case73_noPWS_lx2_n-1.csv');
+costs4 = xlsread('..\VACC\results\experiments\strat_samp\case73\0_crt_CombinedResults_case73_noPWS_lx2_n-1.csv');
 costs4 = costs4(:,1)
 
 costs(isnan(costs))=0;
