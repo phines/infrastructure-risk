@@ -5,6 +5,21 @@ using LinearAlgebra
 using DataFrames
 using CSV
 
+function reduce_network!(ps,deg)
+    flow = ps.branch.Pf;
+
+    return ps1
+end
+
+function find_node_degree(nodes,f,t)
+    n = length(nodes)
+    degree = zeros(n)
+    for n in 1:n
+        degree[n] = sum(nodes[n] .== f) + sum(nodes[n] .== t);
+    end
+    return degree
+end
+
 function choose_gens_black_start!(ps,fraction, sizethreshold)
     ng = length(ps.gen.bus)
     ps.gen[!,:black_start] = falses(ng)
