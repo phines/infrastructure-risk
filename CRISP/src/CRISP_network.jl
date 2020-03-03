@@ -56,7 +56,7 @@ function import_ps(filename)
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));
     #psBusIndex = CSV.read("$filename/bi.csv",allowmissing=:none)
     psBranchData = CSV.File("$filename/branch.csv")  |> DataFrame;
-    if occursin("black_start",filename)
+    if occursin("bs",filename)
         psGenData = CSV.File("$filename/gen.csv",
                types = [Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
