@@ -7,7 +7,12 @@ using CSV
 
 function reduce_network!(ps,deg)
     flow = ps.branch.Pf;
-
+    Index_gen = 1:length(ps.bus.id)
+    m = Index[deg .== 1]
+    for i in m
+        ps.branch = ps.branch[:,ps.branch.t .!= ps.bus.id[i]];
+        ps.branch = ps.branch[:,ps.brnach.f .!= ps.bus.id[i]];
+        ps.bus = ps.bus[:,!i]
     return ps1
 end
 
