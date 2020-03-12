@@ -43,6 +43,8 @@ function Rdist_BS_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca
     g_failures[1:length(Gens_Init_State.state)] = Gens_Init_State.state;
     ps.gen.status[g_failures .== 0] .= 0;
     ps.gen.Pg[g_failures .== 0] .= 0;
+    ps.gen.state[g_failures .== 0] .= Damaged;
+    ps.gen.time_in_state[g_failures .== 0] .= 0;
     g_recovery_times = zeros(size(ps.gen,1));
     g_recovery_times[1:length(Gens_Init_State.recovery_time)] = Gens_Init_State.recovery_time;
     ## run step 3

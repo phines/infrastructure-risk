@@ -2301,7 +2301,7 @@ function crisp_dcpf_NENY!(ps)
     return ps
 end
 
-function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10,w_g=0.1)
+function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10,w_g=0.1)
     timeline = 0:dt:t_win
     Ti = size(timeline,1)
     # constants
@@ -2324,11 +2324,12 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss
     gen_off = ((ps.gen.state .== Off) .& (ps.gen.state .== Damaged) .& (ps.gen.state .== OutOfOpperation))
     Pss_max = zeros(ng);
     g_loads = (((ps.gen.state .== On) .| (ps.gen.state .== ShuttingDown) .|
-                (ps.gen.state .== WarmingUp)) .& !ps.gen.black_start)
+                (ps.gen.state .== WarmingUp)) .& .!ps.gen.black_start)
     G = bi[ps.gen.bus]
     G_bus = sparse(G,collect(1:ng),1.,n,ng)
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
     Pg_max = (Pg_max1 ./ ps.baseMVA) .* ps.gen.status
+    ug = ps.gen.state .== On
     if sum(names(ps.gen) .== :RampRateMWMin) .!=0
         RR = ps.gen.RampRateMWMin .* dt ./ ps.baseMVA
     else
@@ -2360,7 +2361,7 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss
     @variable(m, Pd[1:nd]) # demand
     @variable(m, Pg[1:ng]) # generation
     @variable(m, Pss[1:ng]) # generation
-    fix(Pss[gen_off], zeros(length(Pss[gen_off])), force = true)
+    #fix(Pss[gen_off], zeros(length(Pss[gen_off])), force = true)
     @variable(m, Ps[1:ns]) # power flow into or out of storage (negative flow = charging)
     @variable(m, E[1:ns, 1:2]) # energy level in battery
     # fix battery starting charge
@@ -2372,7 +2373,7 @@ function crisp_lsopf_bs!(ps,dt,ug,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss
     @constraint(m, stPscon, Ps_min .<= Ps[:] .<= Ps_max) # storage power flow
     @constraint(m, stEPscon, E[:,2] .== (E[:,1] - ((dt/60) .* (Ps[:])))) # storage energy at next time step
     @constraint(m, stEcon, min_bat_E .<= (E[:,2]) .<= E_max) # storage energy
-    @constraint(m, genPgucon, Pg[:] .<= ug[:,1] .* Pg_max) # generator power limits upper
+    @constraint(m, genPgucon, Pg[:] .<= ug[:] .* Pg_max) # generator power limits upper
     @constraint(m, genPssucon, Pss[:] .<= Pss_max) # generator power service load upper
     @constraint(m, genPglcon, 0 .<= Pg[:]) # generator power limits lower
     if n > 1

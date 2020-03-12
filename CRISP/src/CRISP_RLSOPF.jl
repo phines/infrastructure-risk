@@ -3123,12 +3123,6 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
     lines_out = lines_out, gens_out = gens_out)
     cv = deepcopy(Restore);
-    # find generator status
-    if size(ps.bus,1) <= 100
-        ug = gen_on_off(ps,Time,t_window,gen_on,g_recovery_times)
-    else
-        ug = gen_on_off2(ps,Time,t_window,gen_on,g_recovery_times)
-    end
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
     # varying load over the course of the optimization
@@ -3153,14 +3147,14 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps)
+        Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,ti,dt,gen_on,g_recovery_times)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
             i_subset = i:i+1
-            ugi = ug[ps_islands[j].gen,i_subset]
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
-            Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
-            crisp_mh_lsopf_var!(psi,dt,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+            Pg_maxi = Pg_max[ps_islands[j].gen]
+            crisp_lsopf_bs!(psi,dt,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
@@ -3217,14 +3211,14 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps)
+        Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,t,dt,gen_on,gens_recovery_time)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
             i_subset = i:i+1
-            ugi = ug[ps_islands[j].gen,i_subset]
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
-            Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
-            crisp_mh_lsopf_var!(psi,dt,ugi,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
+            Pg_maxi = Pg_max[ps_islands[j].gen]
+            crisp_lsopf_bs!(psi,dt,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
@@ -3242,22 +3236,26 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     return Restore
 end
 
-function black_start_gen_cap(ps,t,dt,gen_on,gens_recovery_time;mu=3.66,sigma=2.43)
+function black_start_gen_cap!(ps,t,dt,gen_on,gen_recovery_time;start=1,mu=3.66,sigma=2.43)
+    tolerance = 10^(-6);
     PercSolar1 = CSV.File("data/solar+load/NY_NE_1244665_solarPV_power_density.csv") |> DataFrame
     PowDen = PercSolar1.PowerDen;
+    T = t/60
+    time = start+T
+    while time > length(PowDen)
+        time = time - length(PowDen)
+    end
     # shunt data
     ng = size(ps.gen.Pg,1);
-    Pg_max = zeros(ng,length(Time)+ext_stps+1);
-    for t in 1:length(Time)+ext_stps+1
-        for g in 1:ng
-            if ps.gen.Fuel[g] .== "Solar"
-                Pg_max[g,t] = ps.gen.Pmax[g].*PowDen[t];
-            else
-                Pg_max[g,t] = ps.gen.Pmax[g];
-            end
+    Pg_max = zeros(ng);
+    for g in 1:ng
+        if ps.gen.Fuel[g] .== "Solar"
+            Pg_max[g] = ps.gen.Pmax[g].*PowDen[time];
+        else
+            Pg_max[g] = ps.gen.Pmax[g];
         end
     end
-    @assert sum(Pg_max[:,:].<0).==0
+    @assert sum(Pg_max[:].<0).==0
     # gen data
     ng = size(ps.gen.Pg,1)
     for g in 1:ng
@@ -3287,7 +3285,6 @@ function black_start_gen_cap(ps,t,dt,gen_on,gens_recovery_time;mu=3.66,sigma=2.4
             else
                 ps.gen.time_in_state[g] += dt
             end
-
         elseif ps.gen.state[g] .== Damaged
             if abs(ps.gen.service_load[g] - 0.05*ps.gen.Pmax[g]) <= tolerance
                 ps.gen.time_in_state[g] += dt
@@ -3296,12 +3293,11 @@ function black_start_gen_cap(ps,t,dt,gen_on,gens_recovery_time;mu=3.66,sigma=2.4
                     ps.gen.time_in_state[g] = 0
                 end
             else
-                gens_recovery_time[g] = t + RecoveryTimes(mu,sigma,1);
+                gen_recovery_time[g] = t .+ RecoveryTimes(mu,sigma,1)[1];
             end
         end
     end
-    @assert sum(ug[:,end].!=true).==0
-    return ps, Pg_max
+    return Pg_max, ps, gen_recovery_time
 end
 
 ## CRISP_Restore_New_Simple_Version with generator recovery
