@@ -13,6 +13,7 @@ function reduce_network!(ps,deg)
         ps.branch = ps.branch[:,ps.branch.t .!= ps.bus.id[i]];
         ps.branch = ps.branch[:,ps.brnach.f .!= ps.bus.id[i]];
         ps.bus = ps.bus[:,!i]
+    end
     return ps1
 end
 

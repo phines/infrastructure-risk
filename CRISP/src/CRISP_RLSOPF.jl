@@ -3147,7 +3147,7 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps)
-        Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,ti,dt,gen_on,g_recovery_times)
+        Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,ti,dt,g_recovery_times)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
             i_subset = i:i+1
@@ -3199,7 +3199,7 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     i = length(Time)
     ti = ceil((maximum([maximum(l_recovery_times) maximum(g_recovery_times)]))/60)*60 - dt;
     j=0;
-    while (sum(abs.(cv.perc_load_served .- 1) .> tolerance) !=0) & (j<= 1000)
+    while (sum(abs.(cv.perc_load_served .- 1) .> tolerance) !=0) & (j<= 10000)
         j = j+1
         # update time
         ti = ti+dt
@@ -3211,7 +3211,7 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         subgraph = find_subgraphs(ps);# add Int64 here hide info here
         M = Int64(findmax(subgraph)[1]);
         ps_islands = build_islands(subgraph,ps)
-        Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,t,dt,gen_on,gens_recovery_time)
+        Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,ti,dt,g_recovery_times)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
             i_subset = i:i+1
@@ -3236,7 +3236,7 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     return Restore
 end
 
-function black_start_gen_cap!(ps,t,dt,gen_on,gen_recovery_time;start=1,mu=3.66,sigma=2.43)
+function black_start_gen_cap!(ps,t,dt,gen_recovery_time;start=1,mu=3.66,sigma=2.43)
     tolerance = 10^(-6);
     PercSolar1 = CSV.File("data/solar+load/NY_NE_1244665_solarPV_power_density.csv") |> DataFrame
     PowDen = PercSolar1.PowerDen;
@@ -3288,7 +3288,7 @@ function black_start_gen_cap!(ps,t,dt,gen_on,gen_recovery_time;start=1,mu=3.66,s
         elseif ps.gen.state[g] .== Damaged
             if abs(ps.gen.service_load[g] - 0.05*ps.gen.Pmax[g]) <= tolerance
                 ps.gen.time_in_state[g] += dt
-                if gens_recovery_time[g] <= t
+                if gen_recovery_time[g] <= t
                     ps.gen.state[g] = Off
                     ps.gen.time_in_state[g] = 0
                 end
