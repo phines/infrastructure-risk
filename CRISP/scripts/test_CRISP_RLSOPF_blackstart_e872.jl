@@ -75,7 +75,7 @@ end
 println(ps.shunt.status)
 println(ps.gen.state)
 println(gens_recovery_time)
-pgmax,ps,gens_recovery_time = black_start_gen_cap!(ps,t,dt,gen_on,gens_recovery_time)
+pgmax,ps,gens_recovery_time = black_start_gen_cap!(ps,t,dt,gens_recovery_time)
 println(ps.gen.state)
 println(gens_recovery_time)
 #=

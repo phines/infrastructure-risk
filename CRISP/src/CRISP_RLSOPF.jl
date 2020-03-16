@@ -3199,7 +3199,7 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     i = length(Time)
     ti = ceil((maximum([maximum(l_recovery_times) maximum(g_recovery_times)]))/60)*60 - dt;
     j=0;
-    while (sum(abs.(cv.perc_load_served .- 1) .> tolerance) !=0) & (j<= 10000)
+    while (sum(abs.(cv.perc_load_served .- 1) .> tolerance) !=0) & (j<= 1000)
         j = j+1
         # update time
         ti = ti+dt

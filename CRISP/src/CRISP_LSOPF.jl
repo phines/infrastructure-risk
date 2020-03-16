@@ -2321,10 +2321,13 @@ function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10
     end
     # gen data
     ng = size(ps.gen.Pg,1)
-    gen_off = ((ps.gen.state .== Off) .& (ps.gen.state .== Damaged) .& (ps.gen.state .== OutOfOpperation))
+    gen_off = ((ps.gen.state .== Off) .& (ps.gen.state .== OutOfOpperation) .& ps.gen.black_start)
+    Pss_m_off = falses(length(gen_off))
+    Pss_m_off .= true
     Pss_max = zeros(ng);
-    g_loads = (((ps.gen.state .== On) .| (ps.gen.state .== ShuttingDown) .|
-                (ps.gen.state .== WarmingUp)) .& .!ps.gen.black_start)
+    g_loads = (((ps.gen.state .== On) .| (ps.gen.state .== ShuttingDown) .| (ps.gen.state .== Damaged)
+                .| (ps.gen.state .== WarmingUp)) .& .!ps.gen.black_start)
+    Pss_max[g_loads] .= ps.gen.service_load[g_loads]
     G = bi[ps.gen.bus]
     G_bus = sparse(G,collect(1:ng),1.,n,ng)
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
@@ -2361,7 +2364,9 @@ function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10
     @variable(m, Pd[1:nd]) # demand
     @variable(m, Pg[1:ng]) # generation
     @variable(m, Pss[1:ng]) # generation
-    #fix(Pss[gen_off], zeros(length(Pss[gen_off])), force = true)
+    for g in 1:ng
+        if Pss_m_off[g] fix(Pss[g], 0, force = true) end
+    end
     @variable(m, Ps[1:ns]) # power flow into or out of storage (negative flow = charging)
     @variable(m, E[1:ns, 1:2]) # energy level in battery
     # fix battery starting charge
