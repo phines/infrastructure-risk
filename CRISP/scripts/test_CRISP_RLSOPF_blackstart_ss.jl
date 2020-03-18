@@ -9,21 +9,23 @@ if isdir("results"*out_fold) else mkdir("results"*out_fold) end
 fold2 = "casc/"
 l = length(fold);
 Files = glob("VACC/results/experiments/mh/"*fold*"res_*")
-#include("src/CRISP_Rdist_PSCC_comms.jl")
-#include("src/CRISP_Rdist_PSCC_casc.jl")
 include("../src/CRISP_Rdist.jl")
 include("../src/CRISP_RLSOPF.jl")
 include("../src/CRISP_network.jl")
 #events = "data/outage_data/out_case73_noPWS_lx2_n-1"
 #events = "data/outage_data/communication_factor/out_case73_noPWS_lx2_n-1"
 
-events = "data/outage_data/"*fold*"out_case73_noPWS_lx2_n-1"
+events_f = "data/strat_sample/casc_73bus"
+e1 = "out_case73_noPWS_lx2_n-1"
 comm = false;
 nucp = false;
 ngi = false;
 crt = false;
 dt = 60*10;
-N = 1; #872;
+N = 1;
+n = 1; #872;
+g = 1;
+events = events_f *"/$n-$g/"e1
 Lines_Init_State = CSV.File(events*"_lines$N.csv") |> DataFrame
 Gens_Init_State = CSV.File(events*"_gens$N.csv") |> DataFrame
 ps_folder = "data/saved_ps/bs/case73_noPWS_lx2_n-1"
@@ -68,6 +70,7 @@ for j in 1:M
     Pg_maxi = Pg_max[ps_islands[j].gen,i_subset]
     crisp_lsopf_bs!(psi,dt,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
     ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+    ps.gen.sl_status[ps_islands[j].gen] = psi.gen.sl_status
     ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
     ps.storage.E[ps_islands[j].storage] = psi.storage.E
     ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status

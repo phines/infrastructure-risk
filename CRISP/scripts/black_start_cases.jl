@@ -3,7 +3,7 @@ rng = MersenneTwister(1);
 include("../src/CRISP_network.jl");
 case = "data/saved_ps/case73_noPWS_lx2_n-1";
 #case = "data/saved_ps/case39_n-1_gen";
-folder = "data/saved_ps/black_start";
+folder = "data/saved_ps/bs";
 if isdir(folder) else mkdir(folder) end
 out = folder*case[14:end]
 ps0 = import_ps(case);
@@ -14,7 +14,9 @@ ng = size(ps.gen,1);
 #ps.gen[!,:state] = Vector{Enum}(undef,ng);
 #ps.gen[!,:time_in_state] = zeros(length(ps.gen.bus));
 ps.gen[!,:service_load] = 0.05.*ps.gen.Pmax;
+ps.gen[!,:sl_status] = ones(ng);
 #set_gen_states!(ps);
 choose_gens_black_start!(ps,0.5, 20);
+ps.gen.Pmax[.!ps.gen.black_start] .+=0.05.*ps.gen.Pmax[.!ps.gen.black_start];
 if isdir(out) else mkdir(out) end
 export_ps(ps,out)

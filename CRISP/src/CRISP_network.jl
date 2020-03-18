@@ -33,9 +33,8 @@ function choose_gens_black_start!(ps,fraction, sizethreshold)
     fr = Int64(round(sum(st)*fraction))
     if sum(st) >= 1
         ps.gen.black_start[st][rand(rng,(1:sum(st)),fr)] .= true
-        ps.gen.service_load[ps.gen.black_start .== true] .= 0
     end
-    ps.gen.Pmax[.!ps.gen.black_start] .+= 0.5 .*ps.gen.Pmax[.!ps.gen.black_start]
+    ps.gen.service_load[ps.gen.black_start .== true] .= 0
     return ps
 end
 
@@ -69,7 +68,7 @@ function import_ps(filename)
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, String,
                Float64, Float64, Float64, Float64, String, Float64, String, String, String, String, Float64,
                Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,
-               String, Float64, String, String, String, String,Float64,Bool]) |> DataFrame;
+               String, Float64, String, String, String, String,Float64,Float64,Bool]) |> DataFrame;
     elseif occursin("case73_",filename)
         psGenData = CSV.File("$filename/gen.csv",
                types = [Int64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64, Float64,

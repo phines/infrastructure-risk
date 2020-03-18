@@ -2301,11 +2301,11 @@ function crisp_dcpf_NENY!(ps)
     return ps
 end
 
-function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10,w_g=0.1)
+function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_sl=10,w_g=0.1)
     timeline = 0:dt:t_win
     Ti = size(timeline,1)
     # constants
-    tolerance = 1e-4
+    tolerance = 1e-2
     ### collect the data that we will need ###
     # bus data
     n = size(ps.bus,1) # the number of buses
@@ -2314,20 +2314,16 @@ function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10
     nd = size(ps.shunt,1)
     D = bi[ps.shunt.bus]
     D_bus = sparse(D,collect(1:nd),1.,n,nd)
-    Pdmax = (Pd_max ./ ps.baseMVA)
-    Pd1 = (Pd_max[:,1] ./ ps.baseMVA) .* ps.shunt.status
+    Pdmax = (Pd_max[:,1] ./ ps.baseMVA)
     if any(D.<1) || any(D.>n)
         error("Bad indices in shunt matrix")
     end
     # gen data
     ng = size(ps.gen.Pg,1)
-    gen_off = ((ps.gen.state .== Off) .& (ps.gen.state .== OutOfOpperation) .& ps.gen.black_start)
-    Pss_m_off = falses(length(gen_off))
-    Pss_m_off .= true
-    Pss_max = zeros(ng);
+    Psl_max = zeros(ng);
     g_loads = (((ps.gen.state .== On) .| (ps.gen.state .== ShuttingDown) .| (ps.gen.state .== Damaged)
                 .| (ps.gen.state .== WarmingUp)) .& .!ps.gen.black_start)
-    Pss_max[g_loads] .= ps.gen.service_load[g_loads]
+    Psl_max[g_loads] .= (ps.gen.service_load[g_loads] ./ ps.baseMVA)
     G = bi[ps.gen.bus]
     G_bus = sparse(G,collect(1:ng),1.,n,ng)
     Pg1 = (ps.gen.Pg ./ ps.baseMVA) .* ps.gen.status
@@ -2363,10 +2359,7 @@ function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10
     # variables
     @variable(m, Pd[1:nd]) # demand
     @variable(m, Pg[1:ng]) # generation
-    @variable(m, Pss[1:ng]) # generation
-    for g in 1:ng
-        if Pss_m_off[g] fix(Pss[g], 0, force = true) end
-    end
+    @variable(m, Psl[1:ng]) # generation
     @variable(m, Ps[1:ns]) # power flow into or out of storage (negative flow = charging)
     @variable(m, E[1:ns, 1:2]) # energy level in battery
     # fix battery starting charge
@@ -2379,7 +2372,7 @@ function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10
     @constraint(m, stEPscon, E[:,2] .== (E[:,1] - ((dt/60) .* (Ps[:])))) # storage energy at next time step
     @constraint(m, stEcon, min_bat_E .<= (E[:,2]) .<= E_max) # storage energy
     @constraint(m, genPgucon, Pg[:] .<= ug[:] .* Pg_max) # generator power limits upper
-    @constraint(m, genPssucon, Pss[:] .<= Pss_max) # generator power service load upper
+    @constraint(m, genPssucon, Psl[:] .<= Psl_max) # generator power service load upper
     @constraint(m, genPglcon, 0 .<= Pg[:]) # generator power limits lower
     if n > 1
         @variable(m, Theta[1:n])
@@ -2398,35 +2391,39 @@ function crisp_lsopf_bs!(ps,dt,ul,Pd_max,Pg_max1,load_shed_cost;t_win=dt,w_ss=10
             sparse(T,T,+Xinv,n,n) +
             sparse(F,F,+Xinv,n,n);
         #power balance
-        @constraint(m, B*Theta[:] .== G_bus*Pg[:]-G_bus*Pss[:]+S_bus*Ps[:]-D_bus*Pd[:])
+        @constraint(m, B*Theta[:] .== G_bus*Pg[:]-G_bus*Psl[:]+S_bus*Ps[:]-D_bus*Pd[:])
         # power flow limits
         @constraint(m, -flow_max[brst] .<= Xinv .* (Theta[F] - Theta[T]) .<= flow_max[brst])
     else
         #one bus power balance
-        @constraint(m, PBnoTheta, 0.0 .== G_bus*Pg[:]-G_bus*Pss[:]+S_bus*Ps[:]-D_bus*Pd[:])
+        @constraint(m, PBnoTheta, 0.0 .== G_bus*Pg[:]-G_bus*Psl[:]+S_bus*Ps[:]-D_bus*Pd[:])
     end
     # objective
-    @objective(m, Max, w_ss*sum(Pss) + sum(Pd) + sum(w_g.*Pg)) #TODO: constants
+    @objective(m, Max, w_sl*sum(Psl) + sum(Pd) + sum(w_g.*Pg)) #TODO: constants
     ## SOLVE! ##
     optimize!(m)
     sol_Pd=value.(Pd)[:]
     sol_Ps=value.(Ps)[:]
     sol_Pg=value.(Pg)[:]
-    sol_Pss=value.(Pss)[:]
+    sol_Psl=value.(Psl)[:]
     sol_E=value.(E)[:,2]
-    dPd_star = (Vector(sol_Pd).*ps.baseMVA)./Pd_max[:,1] # % load served
+    @assert abs(sum(sol_Pg)+sum(sol_Ps)-sum(sol_Pd)-sum(sol_Psl)) <= tolerance
+    @assert abs(sum(sol_Pg.*ps.baseMVA)+sum(sol_Ps.*ps.baseMVA)-sum(sol_Pd.*ps.baseMVA)-sum(sol_Psl.*ps.baseMVA)) <= tolerance
+    dPd_star = (Vector(sol_Pd).*ps.baseMVA)#./Pd_max
     dPs_star = Vector(sol_Ps).*ps.baseMVA
     dPg_star = Vector(sol_Pg).*ps.baseMVA
-    dPss_star = Vector(sol_Pss).*ps.baseMVA
+    dPsl_star = Vector(sol_Psl).*ps.baseMVA#./ps.gen.service_load
+    dPsl_star[ps.gen.service_load.!=0] .= (dPsl_star[ps.gen.service_load.!=0]./ps.gen.service_load[ps.gen.service_load.!=0])
+    dPsl_star[ps.gen.service_load.==0] .= 1# % service load served
     dE_star = Vector(sol_E).*ps.baseMVA
-
+    @assert abs(sum(dPg_star)+sum(dPs_star)-sum(dPd_star)-sum(dPsl_star.*ps.gen.service_load)) <= tolerance
     # add changes ps/psi structure
-    ps.shunt.status = dPd_star;
+    ps.shunt.status = dPd_star./Pd_max[:,1]; # % load served
     ps.storage.Ps = dPs_star;
     ps.storage.E = dE_star;
     ps.gen.Pg = dPg_star;
-    ps.gen.service_load = dPss_star
-    @assert abs(sum(Pd_max[:,1].*ps.shunt.status)+sum(ps.gen.service_load)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=2*tolerance
+    ps.gen.sl_status = dPsl_star# % service load served
+    @assert abs(sum(Pd_max[:,1].*ps.shunt.status)+sum(ps.gen.service_load.*ps.gen.sl_status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))<=4*tolerance
     @assert sum(ps.storage.E .< -tolerance)==0
     return ps
 end

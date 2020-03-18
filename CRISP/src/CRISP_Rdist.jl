@@ -58,23 +58,19 @@ function Rdist_BS_interact(N,ps_folder,out_folder,events,dt,comm,nucp,ngi,crt;ca
         outnow = (out_folder[1:end-4]);
         CSV.write("results"*outnow*"_restore.csv", Restore)
     end
+    ## run step 4
+    ResilienceTri = crisp_res(Restore);
+    println(ResilienceTri)
+    ## make dataframes
+    case_res = DataFrame(resilience = ResilienceTri);
+    ## save data
+    CSV.write("results/$out_folder", case_res);
     ## find the time to restore the grid to 99.9% load served
     K = abs.(Restore.perc_load_served .- 1) .<= 0.001;
     K[1] = false;
     if isempty( Restore.time[K]) && (size(Restore)[1] > 1)
         error("Never solved to full restoration.")
-    elseif isempty( Restore.time[K]) && (size(Restore)[1] == 1)
-        LoadServedTime = t0;
-    else
-        R = Restore.time[K];
-        ## run step 4
-        ResilienceTri = crisp_res(Restore);
-        println(ResilienceTri)
     end
-    ## make dataframes
-    case_res = DataFrame(resilience = ResilienceTri);
-    ## save data
-    CSV.write("results/$out_folder", case_res);
 end
 
 

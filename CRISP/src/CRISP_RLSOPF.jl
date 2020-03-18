@@ -3119,9 +3119,12 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
     load_shed = sum(load_cost.*(ps.shunt.P - ps.shunt.P.*ps.shunt.status));
     perc_load_served = (sum(load_cost.*ps.shunt.P) .- load_shed)./sum(load_cost.*ps.shunt.P);
     lines_out = length(ps.branch.status) - sum(ps.branch.status);
-    gens_out = length(ps.gen.status) - sum(ps.gen.status);
+    gens_out = sum(ps.gen.state .== Damaged);
+    gens_off = sum(ps.gen.state .== Off);
+    gens_wu = sum(ps.gen.state .== WarmingUp);
+    gens_on = sum(ps.gen.state .== On);
     Restore = DataFrame(time = ti, load_shed = load_shed, perc_load_served = perc_load_served,
-    lines_out = lines_out, gens_out = gens_out)
+    lines_out = lines_out, gens_out = gens_out, gens_off = gens_off, gens_wu = gens_wu, gens_on = gens_on)
     cv = deepcopy(Restore);
     # find line status
     ul = line_stats(ps,Time,t_window,l_recovery_times)
@@ -3150,12 +3153,13 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,ti,dt,g_recovery_times)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
-            i_subset = i:i+1
+            i_subset = i:i
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
             Pg_maxi = Pg_max[ps_islands[j].gen]
             crisp_lsopf_bs!(psi,dt,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.gen.sl_status[ps_islands[j].gen] = psi.gen.sl_status
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
             ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
@@ -3189,12 +3193,15 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         end
         # save current values
         cv.time .= ti+t0;
-        cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
-        cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
+        cv.load_shed .= sum(load_cost.*(Pd_max[:,i] - Pd_max[:,i].*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
+        cv.gens_out .= sum(ps.gen.state .== Damaged);
+        cv.gens_off .= sum(ps.gen.state .== Off);
+        cv.gens_wu .= sum(ps.gen.state .== WarmingUp);
+        cv.gens_on .= sum(ps.gen.state .== On);
         append!(Restore,cv)
-        @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
+        @assert 10^(-4)>=abs(sum(Pd_max[:,i] .* ps.shunt.status)+sum(ps.gen.service_load.*ps.gen.sl_status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
     i = length(Time)
     ti = ceil((maximum([maximum(l_recovery_times) maximum(g_recovery_times)]))/60)*60 - dt;
@@ -3214,24 +3221,28 @@ function crisp_RLOPF_inter_bs(ps,l_recovery_times,g_recovery_times,dt,t_window,
         Pg_max, ps, g_recovery_times =  black_start_gen_cap!(ps,ti,dt,g_recovery_times)
         for j in 1:M
             psi = ps_subset(ps,ps_islands[j])
-            i_subset = i:i+1
+            i_subset = i:i
             uli = ul[ps_islands[j].branch,i_subset]
             Pd_maxi = Pd_max[ps_islands[j].shunt,i_subset]
             Pg_maxi = Pg_max[ps_islands[j].gen]
             crisp_lsopf_bs!(psi,dt,uli,Pd_maxi,Pg_maxi,load_cost[ps_islands[j].shunt])
             ps.gen.Pg[ps_islands[j].gen] = psi.gen.Pg
+            ps.gen.sl_status[ps_islands[j].gen] = psi.gen.sl_status
             ps.storage.Ps[ps_islands[j].storage] = psi.storage.Ps
             ps.storage.E[ps_islands[j].storage] = psi.storage.E
             ps.shunt.status[ps_islands[j].shunt] = psi.shunt.status
         end
         # save current values
         cv.time .= ti+t0;
-        cv.load_shed .= sum(load_cost.*(Pd_max[:,i+1] - Pd_max[:,i+1].*ps.shunt.status));
-        cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i+1]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i+1]);
+        cv.load_shed .= sum(load_cost.*(Pd_max[:,i] - Pd_max[:,i].*ps.shunt.status));
+        cv.perc_load_served .= (sum(load_cost.*Pd_max[:,i]) .- cv.load_shed)./sum(load_cost.*Pd_max[:,i]);
         cv.lines_out .= length(ps.branch.status) - sum(ps.branch.status);
-        cv.gens_out .= length(ps.gen.status) - sum(ps.gen.status);
+        cv.gens_out .= sum(ps.gen.state .== Damaged);
+        cv.gens_off .= sum(ps.gen.state .== Off);
+        cv.gens_wu .= sum(ps.gen.state .== WarmingUp);
+        cv.gens_on .= sum(ps.gen.state .== On);
         append!(Restore,cv)
-        @assert 10^(-4)>=abs(sum(Pd_max[:,i+1] .* ps.shunt.status)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
+        @assert 10^(-4)>=abs(sum(Pd_max[:,i] .* ps.shunt.status)+sum(ps.gen.sl_status.*ps.gen.service_load)-sum(ps.storage.Ps)-sum(ps.gen.Pg))
     end
     return Restore
 end
@@ -3263,11 +3274,15 @@ function black_start_gen_cap!(ps,t,dt,gen_recovery_time;start=1,mu=3.66,sigma=2.
         elseif ps.gen.state[g] .== WarmingUp
             if ps.gen.time_in_state[g] >= 60 .*ps.gen.minUpTimeHr[g]
                 ps.gen.state[g] = On
+                ps.gen.time_in_state[g] = 0
+            elseif abs(ps.gen.sl_status[g] - 1) >= tolerance
+                ps.gen.state[g] = Damaged
                 ps.gen.time_in_state = 0
-            else ps.time_in_state[g] += dt
+                gen_recovery_time[g] = t + RecoveryTimes(mu,sigma,1)[1];
+            else ps.gen.time_in_state[g] += dt
             end
         elseif ps.gen.state[g] .== ShuttingDown
-            if abs(ps.gen.service_load[g] - 0.05*ps.gen.Pmax[g]) <= tolerance
+            if abs(ps.gen.sl_status[g] - 1) <= tolerance
                 if ps.gen.time_in_state[g] >= 60 .*ps.gen.minDownTimeHr[g]
                     ps.gen.state[g] = Off
                     ps.gen.time_in_state[g] = 0
@@ -3279,21 +3294,24 @@ function black_start_gen_cap!(ps,t,dt,gen_recovery_time;start=1,mu=3.66,sigma=2.
                 gens_recovery_time[g] = t + RecoveryTimes(mu,sigma,1);
             end
         elseif ps.gen.state[g] .== Off
-            if sum(ps.shunt.status .== 1) != 0
-                ps.gen.state[g] .== WarmingUp
+            if sum(abs.(ps.shunt.status .- 1) .<= tolerance) != 0
+                ps.gen.state[g] = WarmingUp
                 ps.gen.time_in_state[g] = 0
             else
                 ps.gen.time_in_state[g] += dt
             end
         elseif ps.gen.state[g] .== Damaged
-            if abs(ps.gen.service_load[g] - 0.05*ps.gen.Pmax[g]) <= tolerance
+            if abs(ps.gen.sl_status[g] - 1) <= tolerance
                 ps.gen.time_in_state[g] += dt
                 if gen_recovery_time[g] <= t
                     ps.gen.state[g] = Off
                     ps.gen.time_in_state[g] = 0
                 end
+            elseif rand(rng,1)[1] >= 0.9999
+                gen_recovery_time[g] = t .+ 60*12#RecoveryTimes(mu,sigma,1)[1];
+                ps.gen.time_in_state[g] += dt
             else
-                gen_recovery_time[g] = t .+ RecoveryTimes(mu,sigma,1)[1];
+                ps.gen.time_in_state[g] += dt
             end
         end
     end
