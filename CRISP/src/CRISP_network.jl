@@ -6,15 +6,52 @@ using DataFrames
 using CSV
 
 function reduce_network!(ps,deg)
-    flow = ps.branch.Pf;
-    Index_gen = 1:length(ps.bus.id)
+    tolerance = 10^(-6)
+    nl = length(ps.shunt.bus)
+    mismatch = sum(ps.shunt.P)-sum(ps.gen.Pg)-sum(ps.hvdc.P)
+    Index = 1:length(ps.bus.id)
     m = Index[deg .== 1]
+    mis_set_P = -mismatch/(length(m))
+    pf = 0.95 #assuming powerfactor of 0.85
+    mis_set_Q = sin(acos(pf))*(mis_set_P/pf) #assuming pf of 0.95 for loads
+    j=0;
+    ind_l = Int64.(zeros(length(m)))
     for i in m
-        ps.branch = ps.branch[:,ps.branch.t .!= ps.bus.id[i]];
-        ps.branch = ps.branch[:,ps.brnach.f .!= ps.bus.id[i]];
-        ps.bus = ps.bus[:,!i]
+        Index_lines = 1:length(ps.branch.f)
+        Index_bus = 1:length(ps.bus.id)
+        j=j+1;
+        Fr = (ps.branch.f .== ps.bus.id[i])
+        To = (ps.branch.t .== ps.bus.id[i])
+        if sum(Fr)==0
+            b = ps.branch.f[To][1]
+            name = ps.bus.name[ps.bus.id .== b][1]
+            ps.shunt.bus[ps.shunt.bus .== ps.bus.id[i]] .= b
+            ps.shunt.name[ps.shunt.bus .== ps.bus.id[i]] .= name
+            ps.gen.bus[ps.gen.bus .== ps.bus.id[i]] .= b
+            ps.gen.name[ps.gen.bus .== ps.bus.id[i]] .= name
+            if mismatch < -tolerance
+                l = DataFrame(id = nl+j,bus=b, name =name*"_mismatch", status = 1.0, P = mis_set_P, Q=mis_set_Q);
+                append!(ps.shunt,l)
+            end
+            ind_l[j] = Index_lines[ps.branch.t .== ps.bus.id[i]][1];
+        else
+            b = ps.branch.t[Fr][1]
+            name = ps.bus.name[ps.bus.id .== b][1]
+            ps.shunt.bus[ps.shunt.bus .== ps.bus.id[i]] .= b
+            ps.shunt.name[ps.shunt.bus .== ps.bus.id[i]] .= name
+            ps.gen.bus[ps.gen.bus .== ps.bus.id[i]] .= b
+            ps.gen.name[ps.gen.bus .== ps.bus.id[i]] .= name
+            if mismatch < -tolerance
+                l = DataFrame(id = nl+j,bus=b, name =name*"_mismatch", status = 1.0, P = mis_set_P, Q=mis_set_Q);
+                append!(ps.shunt,l)
+            end
+            ind_l[j] = Index_lines[ps.branch.f .== ps.bus.id[i]][1];
+        end
     end
-    return ps1
+    sort!(ind_l)
+    deleterows!(ps.branch,ind_l)
+    deleterows!(ps.bus,m)
+    return ps
 end
 
 function find_node_degree(nodes,f,t)
@@ -52,6 +89,17 @@ function set_gen_states!(ps)
         end
     end
     return ps
+end
+
+mutable struct PSCase
+    baseMVA::Int64
+    bus::DataFrame
+    branch::DataFrame
+    gen::DataFrame
+    shunt::DataFrame
+    storage::DataFrame
+    hvdc::DataFrame
+    bi::SparseMatrixCSC{Int64,Int64}
 end
 
 #import ps from csv files
@@ -101,14 +149,18 @@ function import_ps(filename)
     psGenData.Pmin = psGenData.Pmin .* 1.0;
     psShuntData.P = psShuntData.P .* 1.0;
     psShuntData.status = psShuntData.status .* 1.0;
-    if isfile("$filename/storage.csv") psStorageData = CSV.File("$filename/storage.csv")   |> DataFrame;;
+    if isfile("$filename/storage.csv") psStorageData = CSV.File("$filename/storage.csv")   |> DataFrame;
         psStorageData.Ps = psStorageData.Ps .* 1.0;
         psStorageData.E = psStorageData.E .* 1.0;
         psStorageData.Psmax = psStorageData.Psmax .* 1.0;
         psStorageData.Psmin = psStorageData.Psmin .* 1.0;
         psStorageData.Emax = psStorageData.Emax .* 1.0;
         psStorageData.Emin = psStorageData.Emin .* 1.0;
-    else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], Efficiency = Float64[], status = Int64[]); end
+    else psStorageData = DataFrame(bus = Int64[], E = Float64[], Ps = Float64[], Emax = Float64[], Emin = Float64[], Psmax = Float64[], Psmin = Float64[], Efficiency = Float64[], status = Int64[]);
+    end
+    if isfile("$filename/hvdc.csv") psHVDCData = CSV.File("$filename/hvdc.csv")   |> DataFrame;
+    else psHVDCData = DataFrame(id = Int64[], bus = Int64[], name = String[], status = Int64[], P = Float64[], Q = Float64[], Pmax = Float64[], Qmax = Float64[]);
+    end
     # add status column if there is not one
     if (sum(:status .== names(psShuntData)) < 1)
         psShuntData[!,:status] = ones(size(psShuntData,1))
@@ -122,7 +174,7 @@ function import_ps(filename)
     if (sum(:status .== names(psStorageData)) < 1)
         psStorageData[!,:status] = ones(size(psStorageData,1))
     end
-    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
+    ps = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psHVDCData, psBusIndex);
     return ps
 end
 
@@ -134,11 +186,7 @@ function export_ps(ps,filename)
     if !isempty(ps.shunt) CSV.write("$filename/shunt.csv",ps.shunt) end
     if !isempty(ps.baseMVA) CSV.write("$filename/baseMVA.csv",DataFrame(base_MVA = ps.baseMVA)) end
     if !isempty(ps.storage) CSV.write("$filename/storage.csv",ps.storage) end
-    #if !isempty(ps.bi)
-        #n = length(ps.bus.id);
-        #bi = sparse(ps.bus.id,fill(1,n),collect(1:n));
-        #CSV.write("$filename/bi.csv",bi)
-    #end
+    if !isempty(ps.hvdc) CSV.write("$filename/hvdc.csv",ps.hvdc) end
 end
 
 function find_subgraphs(ps)
@@ -199,6 +247,7 @@ struct Island_ps
     shunt::Array
     gen::Array
     storage::Array
+    hvdc::Array
 end
 
 function build_islands(subgraph,ps)
@@ -211,9 +260,15 @@ function build_islands(subgraph,ps)
         shunt = falses(length(ps.shunt.bus));
         storage = falses(length(ps.storage.bus));
         branch = falses(length(ps.branch.f));
+        hvdc = falses(length(ps.hvdc.bus))
         for g = 1:length(ps.gen.bus)
             if sum(ps.gen.bus[g] .== buses)!=0
                 gen[g] = true;
+            end
+        end
+        for h in 1:length(ps.hvdc.bus)
+            if sum(ps.hvdc.bus[h] .== buses)!=0
+                hvdc[h] = true
             end
         end
         for s = 1:length(ps.shunt.bus)
@@ -233,21 +288,10 @@ function build_islands(subgraph,ps)
                 end
             end
         end
-        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen,storage);
+        ps_islands[jj] = Island_ps(nodes,branch,shunt,gen,storage,hvdc);
     end
     return ps_islands
 end
-
-mutable struct PSCase
-    baseMVA::Int64
-    bus::DataFrame
-    branch::DataFrame
-    gen::DataFrame
-    shunt::DataFrame
-    storage::DataFrame
-    bi::SparseMatrixCSC{Int64,Int64}
-end
-
 
 function find_diameter(ps)
     nodes = ps.bus.id
@@ -425,9 +469,10 @@ function ps_subset(ps,ps_island)
     psGenData = ps.gen[ps_island.gen,:];
     psShuntData = ps.shunt[ps_island.shunt,:];
     psStorageData = ps.storage[ps_island.storage,:];
+    psHVDCData = ps.hvdc[ps_island.hvdc,:];
     n = length(psBusData.id);
     psBusIndex =  sparse(psBusData.id,fill(1,n),collect(1:n));#DataFrame(bi=ps.bi.bi[ps_island.bus]);
-    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psBusIndex);
+    psi = PSCase(mpBaseMVA, psBusData, psBranchData, psGenData, psShuntData, psStorageData, psHVDCData, psBusIndex);
     return psi
 end
 
