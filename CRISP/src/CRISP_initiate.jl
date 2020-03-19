@@ -70,7 +70,7 @@ function Outages(Num,ps_folder,out;param_file = "",cascade=true,gens_out=true)
     end
 end
 
-function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gtrip;cascade=true,param_file = "")
+function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gtrip;bins_lines=[],bins_gens=[],cascade=true,param_file = "")
     debug=1;
     tolerance1 = 10^(-6);
     ## load the case data
@@ -86,10 +86,14 @@ function Outages_ss(Num,ps_folder,out_folder,outfile,n_bins_lines,n_bins_gens,gt
     end
     TotalLines = length(ps.branch.f);
     diameter = find_diameter(ps);
-    bins_lines = Int64.(round.(range(1, stop = TotalLines, length = n_bins_lines))) |> collect
-    remove_repeats!(bins_lines)
-    bins_gens = Int64.(round.(range(1, stop = length(ps.gen.bus), length = n_bins_gens))) |> collect
-    remove_repeats!(bins_gens)
+    if isempty(line_bins)
+        bins_lines = Int64.(round.(range(1, stop = TotalLines, length = n_bins_lines))) |> collect
+        remove_repeats!(bins_lines)
+    end
+    if isempty(bins_gens)
+        bins_gens = Int64.(round.(range(1, stop = length(ps.gen.bus), length = n_bins_gens))) |> collect
+        remove_repeats!(bins_gens)
+    end
     nlines = length(bins_lines)-1;
     ngens = length(bins_gens)-1;
     for iterat in 1:Num
